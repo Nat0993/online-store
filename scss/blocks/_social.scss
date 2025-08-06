@@ -1,0 +1,30 @@
+.social {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    gap: 12px;
+
+    &__link {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: $color-floral-white;
+
+        svg {
+            pointer-events: none;
+            width: 30px;
+            height: 30px;
+            transition: transform ease-in 0.1s;
+        }
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+
+            svg {
+                transform: scale(1.1);
+            }
+        }
+    }
+}
