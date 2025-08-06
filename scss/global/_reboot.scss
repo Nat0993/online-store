@@ -1,0 +1,41 @@
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: $ff-astra;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  color: $color-boraka-grey;
+  background-color: $color-floral-white;
+  user-select: none;
+}
+
+main {
+  flex-grow: 1;
+  padding-top: 72px;
+}
+
+footer {
+  margin-top: auto;
+}
+
+img {
+  display: block;
+  height: auto;
+  object-fit: cover;
+}
+
+a {
+  text-decoration: none;
+  color: $color-boraka-grey;
+}

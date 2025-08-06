@@ -1,0 +1,127 @@
+@font-face {
+  font-family: "Pt-Astra";
+  src: url("../fonts/pt-astra-sans.woff2") format("woff2"), url("../fonts/pt-astra-sans.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pt-Astra";
+  src: url("../fonts/pt-astra-sans.woff2") format("woff2"), url("../fonts/pt-astra-sans.woff2") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pt-Astra";
+  src: url("../fonts/pt-astra-sans-bold.woff2") format("woff2"), url("../fonts/pt-astra-sans-bold.woff2") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: "Pt-Astra", "Arial", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  color: #141211;
+  background-color: #fffbf3;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+main {
+  flex-grow: 1;
+  padding-top: 72px;
+}
+
+footer {
+  margin-top: auto;
+}
+
+img {
+  display: block;
+  height: auto;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+a {
+  text-decoration: none;
+  color: #141211;
+}
+
+.container {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.header {
+  padding: 15px 0;
+  position: fixed;
+  background-color: #ffffff;
+  width: 100%;
+  z-index: 10;
+  box-shadow: 0px 5px 15px -1px rgba(34, 60, 80, 0.2);
+}
+.header__wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header__weather {
+  font-size: 40px;
+  line-height: 44px;
+}
+.header__logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 200px;
+}
+.header__logo-link svg {
+  pointer-events: none;
+  width: 70px;
+  height: 70px;
+}
+.header__user-inner {
+  display: flex;
+  align-items: center;
+  gap: 100px;
+}
+.header__auth {
+  display: flex;
+  gap: 25px;
+}
+.header__auth-link {
+  text-transform: uppercase;
+}
+.header__links {
+  display: flex;
+  gap: 20px;
+}
+.header__user-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.header__user-link svg {
+  pointer-events: none;
+  width: 32px;
+  height: 32px;
+}/*# sourceMappingURL=style.css.map */

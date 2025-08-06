@@ -1,0 +1,64 @@
+.header {
+    padding: 15px 0;
+    position: fixed;
+    background-color: $color-white;
+    width: 100%;
+    z-index: 10;
+    box-shadow: 0px 5px 15px -1px rgba(34, 60, 80, 0.2);
+
+    &__wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__weather {
+        font-size: 40px;
+        line-height: 44px;
+    }
+
+    &__logo-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 200px;
+
+        svg {
+            pointer-events: none;
+            width: 70px;
+            height: 70px;
+        }
+    }
+
+    &__user-inner {
+        display: flex;
+        align-items: center;
+        gap: 100px;
+    }
+
+    &__auth {
+        display: flex;
+        gap: 25px;
+    }
+
+    &__auth-link {
+        text-transform: uppercase;
+    }
+
+    &__links {
+        display: flex;
+        gap: 20px;
+    }
+
+    &__user-link {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        svg {
+            pointer-events: none;
+            width: 32px;
+            height: 32px;
+        }
+    }
+}
