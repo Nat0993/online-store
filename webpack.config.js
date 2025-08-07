@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/burger.ts', // ваш основной TypeScript файл
+  entry: './src/index.ts', // ваш основной TypeScript файл
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'), // папка для итогового файла

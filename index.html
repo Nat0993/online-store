@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/css/style.css">
-    <title>Магазин</title>
+    <title>Интернет-магазин мебели</title>
 </head>
 
 <body>
@@ -47,7 +47,7 @@
                 </a>
                 <div class="header__user-inner">
                     <div class="header__auth">
-                        <a class="header__auth-link" href="#">Вход</a>
+                        <button class="header__auth-link" type="button">Войти</button>
                         <a class="header__auth-link" href="#">Регистрация</a>
                     </div>
                     <div class="header__links">
@@ -113,6 +113,25 @@
             </div>
         </section>
     </main>
+    <div class="auth">
+        <div class="auth__wrapper">
+            <div class="auth__inner">
+                <span class="auth__title">Вход</span>
+                <button class="auth__close">
+                    <svg width="20" height="20" aria-hidden="true">
+                            <use xlink:href="images/sprite.svg#icon-close"></use>
+                        </svg>
+                </button>
+            </div>
+            <form class="auth__form" action="#" method="post">
+                <input class="auth__input" type="email" id="user-email" placeholder="Адрес электронной почты" required>
+                <input class="auth__input" type="password" id="user-password" placeholder="Введите пароль" required>
+                <button class="auth__btn btn" type="button">Войти</button>
+                <a class="auth__link" href="#">Регистрация</a>
+                <span class="auth__description">Если у Вас еще нет аккаунта</span>
+            </form>
+        </div>
+    </div>
     <footer class="footer">
         <div class="container">
             <div class="footer__wrapper">

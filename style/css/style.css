@@ -1,20 +1,20 @@
 @font-face {
   font-family: "Pt-Astra";
-  src: url("../fonts/pt-astra-sans.woff2") format("woff2"), url("../fonts/pt-astra-sans.woff") format("woff");
+  src: url("../../fonts/pt-astra-sans.woff2") format("woff2"), url("../../fonts/pt-astra-sans.woff") format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Pt-Astra";
-  src: url("../../fonts/pt-astra-sans.woff2") format("woff2"), url("../../fonts/pt-astra-sans.woff2") format("woff");
+  src: url("../../fonts/pt-astra-sans-bold.woff2") format("woff2"), url("../../fonts/pt-astra-sans.woff") format("woff");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Pt-Astra";
-  src: url("../../fonts/pt-astra-sans-bold.woff2") format("woff2"), url("../../fonts/pt-astra-sans-bold.woff2") format("woff");
+  src: url("../../fonts/pt-astra-sans-bold.woff2") format("woff2"), url("../../fonts/pt-astra-sans-bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -41,6 +41,7 @@ body {
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+  position: relative;
 }
 
 main {
@@ -116,7 +117,18 @@ a {
   gap: 25px;
 }
 .header__auth-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Pt-Astra", "Arial", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #424242;
+  border: none;
+  background-color: transparent;
+  padding: 0;
   text-transform: uppercase;
+  cursor: pointer;
   transition: color ease-in 0.2s;
   position: relative;
 }
@@ -124,7 +136,7 @@ a {
   content: "";
   width: 100%;
   height: 1px;
-  background-color: #000;
+  background-color: #000000;
   clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%);
   position: absolute;
   bottom: 0;
@@ -136,6 +148,14 @@ a {
   color: #c2ae7d;
 }
 .header__auth-link:hover::before, .header__auth-link:focus-visible::before {
+  background-color: #c2ae7d;
+  clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+}
+.header__auth-link--active {
+  color: #c2ae7d;
+  cursor: default;
+}
+.header__auth-link--active::before {
   background-color: #c2ae7d;
   clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
 }
@@ -217,7 +237,7 @@ a {
   box-shadow: 0px 1px 15px 4px rgba(34, 60, 80, 0.2);
   opacity: 0;
   visibility: hidden;
-  transition: opacity ease-in 0.3s 0.4s, visibility ease-in 0.3s 0.4s;
+  transition: opacity ease-in 0.3s 0.3s, visibility ease-in 0.3s 0.3s;
   overflow: hidden;
 }
 .main-nav--active {
@@ -428,7 +448,7 @@ a {
   margin: 0 auto;
   width: 240px;
   opacity: 0;
-  animation: show 0.5s ease-in 4s forwards;
+  animation: showBottomToTop 0.5s ease-in 4s forwards;
 }
 @keyframes armchair {
   0% {
@@ -463,6 +483,16 @@ a {
     opacity: 0;
   }
   100% {
+    opacity: 1;
+  }
+}
+@keyframes showBottomToTop {
+  0% {
+    transform: translateY(125%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
     opacity: 1;
   }
 }
@@ -513,4 +543,157 @@ a {
   height: 270px;
   border-radius: 12px;
   margin: 0 0 20px;
+}
+
+.auth {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 20;
+  visibility: hidden;
+  transition: visibility 0.3s ease-in;
+}
+.auth::before {
+  content: "";
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+.auth--active {
+  visibility: visible;
+}
+.auth--active::before {
+  opacity: 1;
+}
+.auth--active .auth__wrapper {
+  transform: translateX(0);
+}
+.auth__wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 520px;
+  height: 100%;
+  padding: 20px;
+  background-color: #77655f;
+  z-index: 30;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in;
+}
+.auth__inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+.auth__title {
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 44px;
+}
+.auth__close {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #ffffff;
+}
+.auth__close svg {
+  pointer-events: none;
+  width: 30px;
+  height: 30px;
+  transition: transform ease-in 0.2s;
+}
+.auth__close:hover, .auth__close:focus-visible {
+  outline: none;
+}
+.auth__close:hover svg, .auth__close:focus-visible svg {
+  transform: rotate(90deg);
+}
+.auth__form {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0;
+}
+.auth__input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+  line-height: 24px;
+  background-color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 20px;
+}
+.auth__input::-moz-placeholder {
+  font-size: 16px;
+  line-height: 24px;
+}
+.auth__input::placeholder {
+  font-size: 16px;
+  line-height: 24px;
+}
+.auth__input:hover, .auth__input:focus-visible {
+  outline: none;
+}
+.auth__btn {
+  background: linear-gradient(301deg, rgb(247, 241, 223) 0%, rgb(194, 181, 145) 50%);
+  color: #424242;
+  font-weight: 400;
+  margin: 0 0 40px;
+  width: 100%;
+  transition: color ease-in 0.2s;
+}
+.auth__btn:hover, .auth__btn:focus-visible {
+  outline: none;
+}
+.auth__link {
+  text-align: center;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  color: #ffffff;
+  margin: 0 0 5px;
+  position: relative;
+}
+.auth__link::before {
+  content: "";
+  width: 100%;
+  height: 1px;
+  background-color: #ffffff;
+  clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transition: clip-path ease-in 0.2s, background-color ease-in 0.2s;
+}
+.auth__link:hover, .auth__link:focus-visible {
+  outline: none;
+}
+.auth__link:hover::before, .auth__link:focus-visible::before {
+  clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+}
+.auth__description {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
 }/*# sourceMappingURL=style.css.map */
