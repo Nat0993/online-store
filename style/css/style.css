@@ -112,14 +112,11 @@ a {
   align-items: center;
   gap: 100px;
 }
-.header__auth {
-  display: flex;
-  gap: 25px;
-}
-.header__auth-link {
+.header__login-btn {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 5px;
   font-family: "Pt-Astra", "Arial", sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -130,34 +127,15 @@ a {
   text-transform: uppercase;
   cursor: pointer;
   transition: color ease-in 0.2s;
-  position: relative;
 }
-.header__auth-link::before {
-  content: "";
-  width: 100%;
-  height: 1px;
-  background-color: #000000;
-  clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  transition: clip-path ease-in 0.2s, background-color ease-in 0.2s;
+.header__login-btn svg {
+  pointer-events: none;
+  width: 30px;
+  height: 30px;
 }
-.header__auth-link:hover, .header__auth-link:focus-visible {
+.header__login-btn:hover, .header__login-btn:focus-visible {
   outline: none;
   color: #c2ae7d;
-}
-.header__auth-link:hover::before, .header__auth-link:focus-visible::before {
-  background-color: #c2ae7d;
-  clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
-}
-.header__auth-link--active {
-  color: #c2ae7d;
-  cursor: default;
-}
-.header__auth-link--active::before {
-  background-color: #c2ae7d;
-  clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
 }
 .header__links {
   display: flex;
@@ -668,7 +646,11 @@ a {
 .auth__btn:hover, .auth__btn:focus-visible {
   outline: none;
 }
-.auth__link {
+.auth__switch-btn {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  font-family: "Pt-Astra", "Arial", sans-serif;
   text-align: center;
   font-weight: 700;
   font-size: 24px;
@@ -676,8 +658,9 @@ a {
   color: #ffffff;
   margin: 0 0 5px;
   position: relative;
+  cursor: pointer;
 }
-.auth__link::before {
+.auth__switch-btn::before {
   content: "";
   width: 100%;
   height: 1px;
@@ -688,10 +671,10 @@ a {
   left: 0;
   transition: clip-path ease-in 0.2s, background-color ease-in 0.2s;
 }
-.auth__link:hover, .auth__link:focus-visible {
+.auth__switch-btn:hover, .auth__switch-btn:focus-visible {
   outline: none;
 }
-.auth__link:hover::before, .auth__link:focus-visible::before {
+.auth__switch-btn:hover::before, .auth__switch-btn:focus-visible::before {
   clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
 }
 .auth__description {

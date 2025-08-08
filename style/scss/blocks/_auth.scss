@@ -138,7 +138,11 @@
         }
     }
 
-    &__link {
+    &__switch-btn {
+        padding: 0;
+        border: none;
+        background-color: transparent;
+        font-family: $ff-astra;
         text-align: center;
         font-weight: 700;
         font-size: 24px;
@@ -146,6 +150,7 @@
         color: $color-white;
         margin: 0 0 5px;
         position: relative;
+        cursor: pointer;
 
         &::before {
             content: '';

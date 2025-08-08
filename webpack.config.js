@@ -19,4 +19,10 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js'], // расширения для Webpack
   },
+  
+  devServer: {
+    static: './dist',
+    hot: true,
+    open: true,
+  },
 };

@@ -46,10 +46,12 @@
                     </svg>
                 </a>
                 <div class="header__user-inner">
-                    <div class="header__auth">
-                        <button class="header__auth-link" id="login-btn" type="button">Войти</button>
-                        <a class="header__auth-link" href="#">Регистрация</a>
-                    </div>
+                    <button class="header__login-btn" type="button">
+                        <svg width="20" height="20" aria-hidden="true">
+                            <use xlink:href="images/sprite.svg#icon-persone"></use>
+                        </svg>
+                        Войти
+                    </button>
                     <div class="header__links">
                         <a class="header__user-link" href="#" aria-label="Избранные товары">
                             <svg width="30" height="30" aria-hidden="true">
@@ -71,7 +73,8 @@
             <div class="container">
                 <div class="intro__wrap">
                     <picture>
-                        <img class="intro__img" src="images/intro-img.png" alt="Изображение кресла" width="200" height="350">
+                        <img class="intro__img" src="images/intro-img.png" alt="Изображение кресла" width="200"
+                            height="350">
                     </picture>
                     <h1 class="intro__title">
                         <span class="intro__title-text intro__title-text--left intro__title-top">Магазин</span>
@@ -89,24 +92,32 @@
                 <ul class="portfolio__list">
                     <li class="portfolio__item">
                         <picture>
-                            <img class="portfolio__img" src="images/portfolio-img-1.png" alt="Мебель в интерьере" width="600" height="350">
+                            <img class="portfolio__img" src="images/portfolio-img-1.png" alt="Мебель в интерьере"
+                                width="600" height="350">
                         </picture>
                     </li>
                     <li class="portfolio__item">
                         <picture>
-                            <img class="portfolio__img" src="images/portfolio-img-2.jpg" alt="Мебель в интерьере" width="600" height="350">
+                            <img class="portfolio__img" src="images/portfolio-img-2.jpg" alt="Мебель в интерьере"
+                                width="600" height="350">
                         </picture>
-                    </li><li class="portfolio__item">
+                    </li>
+                    <li class="portfolio__item">
                         <picture>
-                            <img class="portfolio__img" src="images/portfolio-img-3.jpg" alt="Мебель в интерьере" width="600" height="350">
+                            <img class="portfolio__img" src="images/portfolio-img-3.jpg" alt="Мебель в интерьере"
+                                width="600" height="350">
                         </picture>
-                    </li><li class="portfolio__item">
+                    </li>
+                    <li class="portfolio__item">
                         <picture>
-                            <img class="portfolio__img" src="images/portfolio-img-4.jpg" alt="Мебель в интерьере" width="600" height="350">
+                            <img class="portfolio__img" src="images/portfolio-img-4.jpg" alt="Мебель в интерьере"
+                                width="600" height="350">
                         </picture>
-                    </li><li class="portfolio__item">
+                    </li>
+                    <li class="portfolio__item">
                         <picture>
-                            <img class="portfolio__img" src="images/portfolio-img-5.jpg" alt="Мебель в интерьере" width="600" height="350">
+                            <img class="portfolio__img" src="images/portfolio-img-5.jpg" alt="Мебель в интерьере"
+                                width="600" height="350">
                         </picture>
                     </li>
                 </ul>
@@ -119,15 +130,15 @@
                 <span class="auth__title">Вход</span>
                 <button class="auth__close">
                     <svg width="20" height="20" aria-hidden="true">
-                            <use xlink:href="images/sprite.svg#icon-close"></use>
-                        </svg>
+                        <use xlink:href="images/sprite.svg#icon-close"></use>
+                    </svg>
                 </button>
             </div>
             <form class="auth__form" action="#" method="post">
                 <input class="auth__input" type="email" id="user-email" placeholder="Адрес электронной почты" required>
                 <input class="auth__input" type="password" id="user-password" placeholder="Введите пароль" required>
                 <button class="auth__btn btn" type="button">Войти</button>
-                <a class="auth__link" href="#">Регистрация</a>
+                <button class="auth__switch-btn" data-target="login" type="button">Регистрация</button>
                 <span class="auth__description">Если у Вас еще нет аккаунта</span>
             </form>
         </div>
