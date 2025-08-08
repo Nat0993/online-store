@@ -3,28 +3,61 @@ document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('.main-nav') as HTMLElement | null;
 
   const btnLogin = document.querySelector('.header__login-btn') as HTMLButtonElement | null;
-  const authModal = document.querySelector('.auth') as HTMLElement | null;
+  const modalWindow = document.querySelector('.auth') as HTMLElement | null;
   const btnCloseModal = document.querySelector('.auth__close') as HTMLButtonElement | null;
 
+  const btnSwitchModal = document.querySelector('.auth__switch-btn') as HTMLButtonElement | null;
+  const modalTitle = document.querySelector('.auth__title') as HTMLElement | null;
+  const modalBtn = document.querySelector('.auth__btn') as HTMLButtonElement | null;
+  const inputEmail = document.querySelector('#user-email') as HTMLInputElement | null;
+  const inputPassword = document.querySelector('#user-password') as HTMLInputElement | null;
+  const modalNote = document.querySelector('.auth__description') as HTMLElement | null;
+
+    //функция переключения модалки
+  function setAuthMode(mode: 'login' | 'register') {
+    const isLogin = mode === 'login';
+    const targetMode = isLogin ? 'login' : 'register';
+
+    btnSwitchModal!.setAttribute('data-target', targetMode);
+    btnSwitchModal!.textContent = isLogin? 'Регистрация' : 'Войти';
+    modalTitle!.textContent = isLogin? 'Вход' : 'Регистрация';
+    modalBtn!.textContent = isLogin? 'Войти' : 'Зарегистрироваться';
+    modalBtn!.setAttribute('data-target', targetMode);
+    inputEmail!.setAttribute('data-target', targetMode);
+    inputPassword!.setAttribute('data-target', targetMode);
+    inputPassword!.placeholder = isLogin? 'Введите пароль' : 'Придумайте пароль';
+    modalNote!.textContent = isLogin? 'Если у Вас еще нет аккаунта' : 'Если у Вас уже есть аккаунт';
+    
+    if (isLogin) {
+      modalWindow!.classList.remove('auth--register')
+    } else {
+      modalWindow!.classList.add('auth--register');
+    };
+  }
+
+
+     // активация бургера, открытие навигации
   if (btnBurger && nav) {
     btnBurger.onclick = () => {
       btnBurger.classList.toggle('burger--active')
       nav.classList.toggle('main-nav--active');
     };
   }
-
-  if (btnLogin && authModal) {
+    // открытие модалки
+  if (btnLogin && btnSwitchModal && modalTitle && modalBtn && inputEmail && inputPassword && modalNote && modalWindow) {
     btnLogin.onclick = () => {
-      authModal.classList.toggle('auth--active');
+      modalWindow.classList.toggle('auth--active');
+
+      setAuthMode('login');
     };
   }
-
+    // закрытие модалки по кнопке
   if (btnCloseModal) {
     btnCloseModal.onclick = () => {
-      authModal?.classList.remove('auth--active');
+      modalWindow!.classList.remove('auth--active');
     }
   }
-
+    // по клику в пустое пространство 
   document.addEventListener('click', (event) => {
     const target = event.target as Node;
 
@@ -35,43 +68,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // закрытие модалки
-    if (authModal && !authModal.contains(target) && btnLogin && !btnLogin.contains(target)) {
-      authModal.classList.remove('auth--active');
+    if (modalWindow && !modalWindow.contains(target) && btnLogin && !btnLogin.contains(target)) {
+      modalWindow.classList.remove('auth--active');
     }
   });
 
-  const btnSwitchModal = document.querySelector('.auth__switch-btn') as HTMLButtonElement | null;
-  const modalTitle = document.querySelector('.auth__title') as HTMLElement | null;
-  const modalBtn = document.querySelector('.auth__btn') as HTMLButtonElement | null;
-  const inputEmail = document.querySelector('#user-email') as HTMLInputElement | null;
-  const inputPassword = document.querySelector('#user-password') as HTMLInputElement | null;;
-  const modalNote = document.querySelector('.auth__description') as HTMLElement | null;;
-
-  if(btnSwitchModal && modalTitle && modalBtn && inputEmail && inputPassword && modalNote) {
+    // переключение модалки
+  if (btnSwitchModal && modalTitle && modalBtn && inputEmail && inputPassword && modalNote && modalWindow) {
     btnSwitchModal.onclick = () => {
       const target = btnSwitchModal.getAttribute('data-target');
 
-      if(target === 'login') {
-        btnSwitchModal.setAttribute('data-target', 'register');
-        btnSwitchModal.textContent = 'Войти';
-        modalTitle.textContent = 'Регистрация';
-        modalBtn.textContent = 'Зарегистрироваться';
-        modalBtn.setAttribute('data-target', 'register');
-        inputEmail.setAttribute('data-target', 'register');
-        inputEmail.placeholder = 'Придумайте пароль';
-        inputPassword.setAttribute('data-target', 'register');
-        modalNote.textContent = 'Если у Вас уже есть аккаунт';
+      if (target === 'login') {
+        setAuthMode('register');
       }
 
-      if(target === 'register') {
-        btnSwitchModal.setAttribute('data-target', 'login');
-        btnSwitchModal.textContent = 'Регистрация';
-        modalTitle.textContent = 'Вход';
-        modalBtn.textContent = 'Войти';
-        modalBtn.setAttribute('data-target', 'login');
-        inputEmail.setAttribute('data-target', 'login');
-        inputPassword.setAttribute('data-target', 'login');
-        modalNote.textContent = 'Если у Вас еще нет аккаунта';
+      if (target === 'register') {
+        setAuthMode('login');
       }
     }
   }

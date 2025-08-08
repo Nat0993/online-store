@@ -635,13 +635,25 @@ a {
 .auth__input:hover, .auth__input:focus-visible {
   outline: none;
 }
+.auth #confirm-password {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in, visibility 0.3s ease-in;
+}
+.auth__bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  transform: translateY(-42%);
+  transition: transform 0.3s ease-in;
+}
 .auth__btn {
   background: linear-gradient(301deg, rgb(247, 241, 223) 0%, rgb(194, 181, 145) 50%);
   color: #424242;
   font-weight: 400;
   margin: 0 0 40px;
   width: 100%;
-  transition: color ease-in 0.2s;
 }
 .auth__btn:hover, .auth__btn:focus-visible {
   outline: none;
@@ -681,4 +693,13 @@ a {
   text-align: center;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+.auth--register #confirm-password {
+  opacity: 1;
+  visibility: visible;
+}
+
+.auth--register .auth__bottom {
+  transform: translateY(0%);
 }/*# sourceMappingURL=style.css.map */

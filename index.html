@@ -137,9 +137,12 @@
             <form class="auth__form" action="#" method="post">
                 <input class="auth__input" type="email" id="user-email" placeholder="Адрес электронной почты" required>
                 <input class="auth__input" type="password" id="user-password" placeholder="Введите пароль" required>
-                <button class="auth__btn btn" type="button">Войти</button>
-                <button class="auth__switch-btn" data-target="login" type="button">Регистрация</button>
-                <span class="auth__description">Если у Вас еще нет аккаунта</span>
+                <input class="auth__input" type="password" id="confirm-password" placeholder="Повторите пароль" required>
+                <div class="auth__bottom">
+                    <button class="auth__btn btn" type="button">Войти</button>
+                    <button class="auth__switch-btn" data-target="login" type="button">Регистрация</button>
+                    <span class="auth__description">Если у Вас еще нет аккаунта</span>
+                </div>
             </form>
         </div>
     </div>
