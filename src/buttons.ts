@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('.main-nav') as HTMLElement | null;
   const btnLogin = document.querySelector('#login-btn') as HTMLButtonElement | null;
   const authModal = document.querySelector('.auth') as HTMLElement | null;
+  const btnCloseModal = document.querySelector('.auth__close') as HTMLButtonElement | null;
 
   if (btnBurger && nav) {
     btnBurger.onclick = () => {
@@ -15,6 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLogin.onclick = () => {
       authModal.classList.toggle('auth--active');
     };
+  }
+
+  if (btnCloseModal) {
+    btnCloseModal.onclick = () => {
+      authModal?.classList.remove('auth--active');
+    }
   }
 
   document.addEventListener('click', (event) => {
