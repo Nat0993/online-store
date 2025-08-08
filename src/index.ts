@@ -1,1 +1,1 @@
-import './burger';
+import './buttons';
