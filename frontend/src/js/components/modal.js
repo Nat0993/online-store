@@ -41,44 +41,57 @@ function initModal(modalContainer) {
     const modalNote = modalContainer.querySelector('.auth__description');
 
     let currentMode = 'login';
+    let isOpening = false;
 
-    modalWindow.classList.add('auth--active');
-    document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
-    document.addEventListener('keydown', handleEscapePress); // Закрытие по Escape
+    //1. Функция открытия модалки
+    function openModal() {
+        isOpening = true;
+        modalWindow.classList.add('auth--active');
+        document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
+        document.addEventListener('keydown', handleEscapePress); // Закрытие по Escape
+        setAuthMode('login');
 
-    // 1. Функция для закрытия модалки
+        setTimeout(() => {
+            isOpening = false;
+        }, 100);
+    }
+
+    // 2. Функция для закрытия модалки
 
     function closeModal() {
         modalWindow.classList.remove('auth--active');
-        setTimeout(() => {
-            modalContainer.innerHTML = '';
-        }, 300);
         document.body.style.overflow = ''; // Возвращаем прокрутку
         document.removeEventListener('keydown', handleEscapePress); // Убираем обработчик
         authForm.reset();
     };
 
-    // 2. Закрытие по клавише Escape
+    // 3. Закрытие по клавише Escape
     function handleEscapePress(event) {
         if (event.key === 'Escape') {
             closeModal();
         }
     };
 
-    // 3. Обработчики событий 
+    // 4. Обработчики событий 
 
     // Закрытие по клику на крестик 
     btnCloseModal.addEventListener('click', closeModal);
 
-    // Закрытие по клику вне контента модалки
+    //Закрытие по клику вне контента модалки
     document.addEventListener('click', (event) => {
         const target = event.target;
+
+        //Игнор кликов в момент открытия модалки (конфликт с кнопкой войти в хедере)
+        if (isOpening) {
+            return;
+        }
+
         if (!modalWindow.contains(target)) {
             closeModal();
         }
     });
 
-    // 4. Функция переключение режимов (Логин/Регистрация)
+    // 5. Функция переключение режимов (Логин/Регистрация)
     function setAuthMode(mode) {
         currentMode = mode;
         const isLogin = mode === 'login';
@@ -97,13 +110,13 @@ function initModal(modalContainer) {
         };
     };
 
-    // 5. переключение модалки по кнопке 
+    // 6. переключение модалки по кнопке 
     btnSwitchModal.addEventListener('click', () => {
         const target = btnSwitchModal.getAttribute('data-target');
         setAuthMode(target)
     });
 
-    // 6. Валидация формы
+    // 7. Валидация формы
     function validateForm() {
         let isValidate = true;
 
@@ -129,15 +142,21 @@ function initModal(modalContainer) {
             }
         }
 
+        inputEmail.reportValidity();
+        if (currentMode === 'register') {
+            inputPassword.reportValidity();
+            inputConfirm.reportValidity();
+        }
+
         return isValidate;
     };
 
-    // 7. Валидация в реальном времени
+    // 8. Валидация в реальном времени
     inputEmail.addEventListener('input', validateForm)
     inputPassword.addEventListener('input', validateForm);
     inputConfirm.addEventListener('input', validateForm);
 
-    //8. Обработчик отправки формы 
+    //9. Обработчик отправки формы 
     authForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
@@ -162,8 +181,7 @@ function initModal(modalContainer) {
         }
     });
 
-    //запускаем в начальном режиме
-    setAuthMode('login');
+    return openModal; //для использования в хедере
 };
 
 //Заглушки для входа и регистрации (пока только логируют данные)
@@ -183,7 +201,10 @@ export function renderModal() {
     modalContainer.innerHTML = createModal();
 
     //Подключаем логику, когда загружен DOM
-    initModal(modalContainer);
+    const openModalFunction = initModal(modalContainer);
 
-    return modalContainer;
+    return {
+        container: modalContainer,
+        functions: openModalFunction
+    };
 }

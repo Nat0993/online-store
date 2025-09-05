@@ -1,3 +1,5 @@
+import { renderModal } from './modal.js';
+
 //Функция, которая рисует хедер
 function createHeader() {
     return `
@@ -64,16 +66,15 @@ function createHeader() {
 };
 
 //Функция логики хедера
-function initHeader(headerContainer) {
+function initHeader(headerContainer, openModalFunction) {
     const btnLogin = headerContainer.querySelector('.header__login-btn');
     const btnBurger = headerContainer.querySelector('.burger');
     const nav = headerContainer.querySelector('.main-nav');
 
     //Обработчик клика на кнопку "Войти"
     btnLogin.addEventListener('click', () => {
-        import('./modal.js').then(module => {
-            module.openModal();
-        })
+        console.log('Клик по кнопке Войти!');
+        openModalFunction();
     });
 
     //Обработчик бургера
@@ -92,11 +93,11 @@ function initHeader(headerContainer) {
     });
 };
 
-export function renderHeader() {
+export function renderHeader(openModalFunction) {
     const headerContainer = document.createElement('div');
 
     headerContainer.innerHTML = createHeader();
-    initHeader(headerContainer);
+    initHeader(headerContainer, openModalFunction);
 
     return headerContainer;
 }
