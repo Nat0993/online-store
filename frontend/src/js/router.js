@@ -6,7 +6,7 @@ class Router {
     }
 
     //метод добавления маршрута
-    addRouter(page, renderFunction) {
+    addRouter(path, renderFunction) {
         this.routes[path] = renderFunction;
         console.log(`Добавлен маршрут ${path}`);
     }
@@ -31,7 +31,12 @@ class Router {
     }
 
     show404() {
-        document.getElementById('app').innerHTML = `
+        const app = document.querySelector('#app');
+        if(!app) {
+            console.error('Элемент #app не найден');
+            return;
+        }
+        app.innerHTML = `
             <div style="padding: 20px; text-align: center;">
                 <h1>404</h1>
                 <p>Страница не найдена</p>
