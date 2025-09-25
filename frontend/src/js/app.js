@@ -23,7 +23,7 @@ class App {
     }
 
     setupRouter () {
-        router.addRouter('/', () => this.renderPage('home'));
+        router.addRoute('/', () => this.renderPage('home'));
         //здесь будут маршруты страниц приложения
 
         router.init();

@@ -1,12 +1,11 @@
 class Router {
     constructor() {
         this.routes = {}; //объект для хранения маршрутов ('путь': функция)
-        this.currentPage = null;// хранит текущую страницу
         console.log('Роутер создан');
     }
 
     //метод добавления маршрута
-    addRouter(path, renderFunction) {
+    addRoute(path, renderFunction) {
         this.routes[path] = renderFunction;
         console.log(`Добавлен маршрут ${path}`);
     }
@@ -20,23 +19,36 @@ class Router {
 
     // Загрузка страницы
     loadPage(path) {
-        const renderFunction = this.routes[path] || this.routes['/404'];
+        const normalizedPath = this.normalizePath(path);
+        console.log('Загружаем страницу:', normalizedPath);
+        
+        const renderFunction = this.routes[normalizedPath] || this.routes['/404'];
 
         if (renderFunction) {
             renderFunction();
         } else {
-            console.error('Маршрут не найден:', path);
+            console.error('Маршрут не найден:', normalizedPath);
             this.show404();
         }
     }
 
+    normalizePath(path) {
+        if (path.includes('index.html')) {
+            return '/';
+        }
+        
+        
+        return path;
+    }
+
     show404() {
-        const app = document.querySelector('#app');
-        if(!app) {
-            console.error('Элемент #app не найден');
+        const mainComponent = document.querySelector('#main-component');
+        if (!mainComponent) {
+            console.error('Элемент #main-component не найден');
             return;
         }
-        app.innerHTML = `
+        
+        mainComponent.innerHTML = `
             <div style="padding: 20px; text-align: center;">
                 <h1>404</h1>
                 <p>Страница не найдена</p>
