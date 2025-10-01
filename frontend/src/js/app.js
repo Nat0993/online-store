@@ -24,6 +24,7 @@ class App {
 
     setupRouter () {
         router.addRoute('/', () => this.renderPage('home'));
+        router.addRoute('/profile', () => this.renderPage('profile'))
         //здесь будут маршруты страниц приложения
 
         router.init();
@@ -50,7 +51,8 @@ class App {
             case ('home') :
                 page = renderHomePage();
                 break;
-
+            case ('profile') :
+                page = renderProfilePage();
             //здесь будет рендеринг других страниц
         }
 

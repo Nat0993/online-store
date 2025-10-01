@@ -77,13 +77,21 @@ function initHeader(headerContainer, openModalFunction) {
     const btnLogout = headerContainer.querySelector('.header__logout-btn');
     const btnBurger = headerContainer.querySelector('.burger');
     const nav = headerContainer.querySelector('.main-nav');
-    
+
+    //Функция для обработки клика на кнопку войти/личного кабинета (смена функционала)
+    function handleLoginClick () {
+        const currentUser = getCurrentUser();
+
+        if(currentUser) {
+            window.history.pushState({}, '', '/profile');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        } else {
+            openModalFunction();
+        }
+    }
 
     //Обработчик клика на кнопку "Войти"
-    btnLogin.addEventListener('click', () => {
-        console.log('Клик по кнопке Войти!');
-        openModalFunction();
-    });
+    btnLogin.addEventListener('click', handleLoginClick);
 
     //Обработчик бургера
     btnBurger.addEventListener('click', () => {
