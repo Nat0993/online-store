@@ -16,19 +16,19 @@ function createHeader() {
                     <div class="main-nav">
                         <ul class="main-nav__list">
                             <li class="main-nav__item">
-                                <a class="main-nav__link" href="#">Каталог</a>
+                                <a class="main-nav__link" href="/catalog">Каталог</a>
                             </li>
                             <li class="main-nav__item">
-                                <a class="main-nav__link" href="#">Доставка и оплата</a>
+                                <a class="main-nav__link" href="/delivery">Доставка и оплата</a>
                             </li>
                             <li class="main-nav__item">
-                                <a class="main-nav__link" href="#">Акции</a>
+                                <a class="main-nav__link" href="/sales">Акции</a>
                             </li>
                             <li class="main-nav__item">
-                                <a class="main-nav__link" href="#">Отзывы</a>
+                                <a class="main-nav__link" href="/reviews">Отзывы</a>
                             </li>
                             <li class="main-nav__item">
-                                <a class="main-nav__link" href="#">Контакты</a>
+                                <a class="main-nav__link" href="/contacts">Контакты</a>
                             </li>
                         </ul>
                     </div>
@@ -37,14 +37,14 @@ function createHeader() {
                 <a class="header__logo-link" href="/"
                     aria-label="Логотип компании, переход на главную страницу">
                     <svg width="70" height="70" aria-hidden="true">
-                        <use xlink:href="../src/assets/images/sprite.svg#icon-logo"></use>
+                        <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-logo"></use>
                     </svg>
                 </a>
                 <div class="header__user-inner">
                     <div class="header__btn-wrap">
                         <button class="header__btn header__login-btn" type="button">
                             <svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
+                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
                             Войти
                         </button>
@@ -53,14 +53,14 @@ function createHeader() {
                         </button>
                     </div>
                     <div class="header__links">
-                        <a class="header__user-link" href="#" aria-label="Избранные товары">
+                        <a class="header__user-link" href="/favorites" aria-label="Избранные товары">
                             <svg width="30" height="30" aria-hidden="true">
-                                <use xlink:href="../src/assets/images/sprite.svg#icon-favorite"></use>
+                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-favorite"></use>
                             </svg>
                         </a>
-                        <a class="header__user-link" href="#" aria-label="Корзина">
+                        <a class="header__user-link" href="/cart" aria-label="Корзина">
                             <svg width="30" height="30" aria-hidden="true">
-                                <use xlink:href="../src/assets/images/sprite.svg#icon-basket"></use>
+                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-basket"></use>
                             </svg>
                         </a>
                     </div>
@@ -77,12 +77,43 @@ function initHeader(headerContainer, openModalFunction) {
     const btnLogout = headerContainer.querySelector('.header__logout-btn');
     const btnBurger = headerContainer.querySelector('.burger');
     const nav = headerContainer.querySelector('.main-nav');
+    const logoLink = headerContainer.querySelector('.header__logo-link');
+    const navLinks = headerContainer.querySelectorAll('.main-nav__link');
+    const userLinks = headerContainer.querySelectorAll('.header__user-link');
+
+    //Обработчк клика на логотип
+    logoLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.history.pushState({}, '', '/');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    })
+
+    //Обработчик всех ссылок хедера
+    const allLinks = headerContainer.querySelectorAll('a');
+    allLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
+            if (link === logoLink || link.href.includes('http')) {
+                return;
+            }
+
+            event.preventDefault();
+            const path = link.getAttribute('href');
+
+            console.log('Навигация по:', path);
+
+            nav.classList.remove('main-nav--active');
+            btnBurger.classList.remove('burger--active');
+
+            window.history.pushState({}, '', path);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        })
+    });
 
     //Функция для обработки клика на кнопку войти/личного кабинета (смена функционала)
-    function handleLoginClick () {
+    function handleLoginClick() {
         const currentUser = getCurrentUser();
 
-        if(currentUser) {
+        if (currentUser) {
             window.history.pushState({}, '', '/profile');
             window.dispatchEvent(new PopStateEvent('popstate'));
         } else {
@@ -114,13 +145,13 @@ function initHeader(headerContainer, openModalFunction) {
 
         if (currentUser) {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
+                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
                             ${currentUser.name}`;
             btnLogout.style.display = 'block';
         } else {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
+                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
                             Войти`;
             btnLogout.style.display = 'none';
@@ -134,8 +165,6 @@ function initHeader(headerContainer, openModalFunction) {
     });
 
     updateHeader();
-
-    setInterval(updateHeader, 1000);
 };
 
 export function renderHeader(openModalFunction) {
