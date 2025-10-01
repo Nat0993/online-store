@@ -45,11 +45,13 @@
         gap: 100px;
     }
 
-    &__login-btn {
+    &__btn-wrap {
         display: flex;
-        justify-content: center;
         align-items: center;
-        gap: 5px;
+        gap: 15px;
+    }
+
+    &__btn {
         font-family: $ff-astra;
         font-size: 16px;
         line-height: 24px;
@@ -61,17 +63,28 @@
         cursor: pointer;
         transition: color ease-in 0.2s;
 
-        svg {
-            pointer-events: none;
-            width: 30px;
-            height: 30px;
-        }
-
         &:hover,
         &:focus-visible {
             outline: none;
             color: $color-ecru;
         }
+    }
+
+    &__login-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        
+        svg {
+            pointer-events: none;
+            width: 30px;
+            height: 30px;
+        }
+    }
+
+    &__logout-btn {
+        display: none;
     }
 
     &__links {

@@ -1,3 +1,11 @@
+import {
+    registerUser,
+    loginUser,
+    setCurrentUser,
+    getCurrentUser,
+    logoutUser
+} from '../data.js';
+
 // Функция, которая возвращает HTML-разметку модального окна
 function createModal() {
     return `
@@ -184,14 +192,43 @@ function initModal(modalContainer) {
     return openModal; //для использования в хедере
 };
 
-//Заглушки для входа и регистрации (пока только логируют данные)
-function handleLogin(formData) {
-    console.log('Запрос на вход:', formData);
-    //позже будут fetch-запросы
+//Функции входа и регистрации
+async function handleLogin(formData) {
+    try {
+        console.log('Запрос на вход:', formData);
+        
+        const user = await loginUser(formData.email, formData.password);
+        console.log('Успешный вход:', user);
+
+        setCurrentUser(user);
+        closeModal();
+
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        alert(error.message || 'Ошибка входа');
+    }
 };
 
-function handleRegistration(formData) {
-    console.log('Запрос на регистрацию:', formData);
+async function handleRegistration(formData) {
+    try {
+        console.log('Запрос на регистрацию:', formData);
+
+        const user = await registerUser({
+            email: formData.email,
+            password: formData.password,
+            name: formData.email.split('@')[0]
+        });
+
+        console.log('Успешная регистрация:', user);
+
+        setCurrentUser(user);
+        closeModal();
+
+        alert('Регистрация прошла успешно!');
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        alert(error.message || 'Ошибка регистрации');
+    }
 };
 
 export function renderModal() {

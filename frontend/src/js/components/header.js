@@ -1,4 +1,5 @@
 import { renderModal } from './modal.js';
+import { getCurrentUser, logoutUser } from '../data.js';
 
 //Функция, которая рисует хедер
 function createHeader() {
@@ -33,19 +34,24 @@ function createHeader() {
                     </div>
                     <span class="header__weather">Погода</span>
                 </div>
-                <a class="header__logo-link" href="index.html"
+                <a class="header__logo-link" href="/"
                     aria-label="Логотип компании, переход на главную страницу">
                     <svg width="70" height="70" aria-hidden="true">
                         <use xlink:href="../src/assets/images/sprite.svg#icon-logo"></use>
                     </svg>
                 </a>
                 <div class="header__user-inner">
-                    <button class="header__login-btn" type="button">
-                        <svg width="20" height="20" aria-hidden="true">
-                            <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
-                        </svg>
-                        Войти
-                    </button>
+                    <div class="header__btn-wrap">
+                        <button class="header__btn header__login-btn" type="button">
+                            <svg width="20" height="20" aria-hidden="true">
+                                <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
+                            </svg>
+                            Войти
+                        </button>
+                        <button class="header__btn header__logout-btn" type="button">
+                            Выйти
+                        </button>
+                    </div>
                     <div class="header__links">
                         <a class="header__user-link" href="#" aria-label="Избранные товары">
                             <svg width="30" height="30" aria-hidden="true">
@@ -68,8 +74,10 @@ function createHeader() {
 //Функция логики хедера
 function initHeader(headerContainer, openModalFunction) {
     const btnLogin = headerContainer.querySelector('.header__login-btn');
+    const btnLogout = headerContainer.querySelector('.header__logout-btn');
     const btnBurger = headerContainer.querySelector('.burger');
     const nav = headerContainer.querySelector('.main-nav');
+    
 
     //Обработчик клика на кнопку "Войти"
     btnLogin.addEventListener('click', () => {
@@ -79,7 +87,7 @@ function initHeader(headerContainer, openModalFunction) {
 
     //Обработчик бургера
     btnBurger.addEventListener('click', () => {
-        btnBurger.classList.toggle('burger--active')
+        btnBurger.classList.toggle('burger--active');
         nav.classList.toggle('main-nav--active');
     });
 
@@ -91,6 +99,35 @@ function initHeader(headerContainer, openModalFunction) {
             btnBurger.classList.remove('burger--active');
         }
     });
+
+    //Обновление интерфейса хедера при авторизации
+    function updateHeader() {
+        const currentUser = getCurrentUser();
+
+        if (currentUser) {
+            btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
+                                <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
+                            </svg>
+                            ${currentUser.name}`;
+            btnLogout.style.display = 'block';
+        } else {
+            btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
+                                <use xlink:href="../src/assets/images/sprite.svg#icon-persone"></use>
+                            </svg>
+                            Войти`;
+            btnLogout.style.display = 'none';
+        }
+    }
+
+    btnLogout.addEventListener('click', () => {
+        logoutUser();
+        updateHeader();
+        console.log('Пользователь вышел');
+    });
+
+    updateHeader();
+
+    setInterval(updateHeader, 1000);
 };
 
 export function renderHeader(openModalFunction) {
