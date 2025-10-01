@@ -5,7 +5,7 @@ function createIntro() {
             <div class="container">
                 <div class="intro__wrap">
                     <picture>
-                        <img class="intro__img" src="../src/assets/images/intro-img.png" alt="Изображение кресла" width="200"
+                        <img class="intro__img" src="/frontend/src/assets/images/intro-img.png" alt="Изображение кресла" width="200"
                             height="350">
                     </picture>
                     <h1 class="intro__title">
