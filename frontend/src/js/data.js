@@ -172,7 +172,7 @@ export const loginUser = (email, password) => {
     return user;
 };
 
-export const setCurrentUser = () => {
+export const setCurrentUser = (user) => {
     localStorage.setItem('currentUser', JSON.stringify(user));
 };
 
