@@ -92,6 +92,20 @@ export const getCartItemsWithProducts = () => {
     }).filter(item => item.product); // убираем товары, которые не найдены
 };
 
+export function updateCartQuantity (cartItemId, newQuantity) {
+    const cartItem = cart.find(item => item.id === cartItemId);
+    if(cartItem) {
+        if(newQuantity > 0) {
+            cartItem.quantity = newQuantity;
+            saveToLocalStorage('cart', cart);
+        } else {
+            removeFromCart(cartItemId);
+        }
+
+        return cart;
+    }
+}
+
 // Избранное
 export const toggleFavorite = (productId) => {
     const existingIndex = favorites.findIndex(fav => fav.productId === productId);
