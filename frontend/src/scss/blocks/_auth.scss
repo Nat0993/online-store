@@ -103,6 +103,12 @@
         margin: auto 0;
     }
 
+    &__input-inner {
+        width: 100%;
+        margin: 0 0 20px;
+        position: relative;
+    }
+
     &__input {
         width: 100%;
         padding: 12px;
@@ -111,7 +117,9 @@
         font-size: 16px;
         line-height: 24px;
         background-color: $color-white-70;
-        margin: 0 0 20px;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+        
 
         &::placeholder {
             font-size: 16px;
@@ -121,19 +129,26 @@
         &:hover,
         &:focus-visible {
             outline: none;
-        }
-
-        &:focus:invalid {
-            border: 1px solid #e74c3c;
-            box-shadow: 0 0 5px rgba(231, 76, 60, 0.3);
-            outline: none;
+            border-color: $color-white;
         }
     }
 
-    #confirm-password {
+    .auth__input-inner--confirm {
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease-in, visibility 0.3s ease-in;
+    }
+
+    &__error {
+        color: #a32b2b;
+        font-size: 12px;
+        line-height: 16px;
+        position: absolute;
+        left: 0;
+        bottom: -18px;
+        opacity: 0;
+        transition: opacity 0.3s ease-in;
+        pointer-events: none;
     }
 
     &__bottom {
@@ -201,7 +216,7 @@
     }
 }
 
-.auth--register #confirm-password {
+.auth--register .auth__input-inner--confirm {
     opacity: 1;
     visibility: visible;
 }

@@ -78,8 +78,7 @@ function initHeader(headerContainer, openModalFunction) {
     const btnBurger = headerContainer.querySelector('.burger');
     const nav = headerContainer.querySelector('.main-nav');
     const logoLink = headerContainer.querySelector('.header__logo-link');
-    const navLinks = headerContainer.querySelectorAll('.main-nav__link');
-    const userLinks = headerContainer.querySelectorAll('.header__user-link');
+
 
     //Обработчк клика на логотип
     logoLink.addEventListener('click', (event) => {
