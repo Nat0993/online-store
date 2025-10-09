@@ -7,7 +7,7 @@ import {
     updateCartQuantity,
 } from '../data.js';
 
-export function createProductCard(product) {
+function createProductCard(product) {
     const isFavorite = isInFavorites(product.id);
 
     return `
@@ -37,7 +37,7 @@ export function createProductCard(product) {
     `;
 }
 
-export function initProductCard (cardElement) {
+function initProductCard (cardElement) {
     const favoriteBtn = cardElement.querySelector('.product-card__favorite');
     const cartControls = cardElement.querySelector('.product-card__cart-controls');
     const productId = cardElement.dataset.productId;
@@ -119,4 +119,12 @@ export function initProductCard (cardElement) {
     }
 
     updateCartButton();
+}
+
+export function renderProductCard (product) {
+    const cardContainer = document.createElement('div');
+    cardContainer.innerHTML = createProductCard(product);
+    initProductCard(cardContainer);
+    
+    return cardContainer;
 }
