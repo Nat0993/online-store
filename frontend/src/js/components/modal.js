@@ -277,6 +277,11 @@ function initModal(modalContainer) {
     
             setCurrentUser(user);
             closeModal();
+
+            // Отправляем событие о входе
+            window.dispatchEvent(new CustomEvent('auth:change', { 
+            detail: { user, type: 'login' }
+        }));
     
         } catch (error) {
             console.error('Ошибка входа:', error);
@@ -305,6 +310,11 @@ function initModal(modalContainer) {
     
             setCurrentUser(user);
             closeModal();
+
+            // Отправляем событие о входе
+            window.dispatchEvent(new CustomEvent('auth:change', { 
+            detail: { user, type: 'login' }
+        }));
     
             alert('Регистрация прошла успешно!');
         } catch (error) {

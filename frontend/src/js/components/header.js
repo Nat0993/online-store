@@ -141,6 +141,7 @@ function initHeader(headerContainer, openModalFunction) {
     //Обновление интерфейса хедера при авторизации
     function updateHeader() {
         const currentUser = getCurrentUser();
+        console.log('Обновление хедера, пользователь:', currentUser);
 
         if (currentUser) {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
@@ -161,6 +162,17 @@ function initHeader(headerContainer, openModalFunction) {
         logoutUser();
         updateHeader();
         console.log('Пользователь вышел');
+
+        // Отправляем событие о выходе
+        window.dispatchEvent(new CustomEvent('auth:change', { 
+            detail: { user: null, type: 'logout' }
+        }));
+    });
+
+    // Слушаем события авторизации
+    window.addEventListener('auth:change', (event) => {
+        console.log('Получено событие auth:change', event.detail);
+        updateHeader();
     });
 
     updateHeader();
