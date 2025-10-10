@@ -37,14 +37,14 @@ function createHeader() {
                 <a class="header__logo-link" href="/"
                     aria-label="Логотип компании, переход на главную страницу">
                     <svg width="70" height="70" aria-hidden="true">
-                        <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-logo"></use>
+                        <use xlink:href="/src/assets/images/sprite.svg#icon-logo"></use>
                     </svg>
                 </a>
                 <div class="header__user-inner">
                     <div class="header__btn-wrap">
                         <button class="header__btn header__login-btn" type="button">
                             <svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-persone"></use>
+                                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
                             Войти
                         </button>
@@ -55,12 +55,12 @@ function createHeader() {
                     <div class="header__links">
                         <a class="header__user-link" href="/favorites" aria-label="Избранные товары">
                             <svg width="30" height="30" aria-hidden="true">
-                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-favorite"></use>
+                                <use xlink:href="/src/assets/images/sprite.svg#icon-favorite"></use>
                             </svg>
                         </a>
                         <a class="header__user-link" href="/cart" aria-label="Корзина">
                             <svg width="30" height="30" aria-hidden="true">
-                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-basket"></use>
+                                <use xlink:href="/src/assets/images/sprite.svg#icon-basket"></use>
                             </svg>
                         </a>
                     </div>
@@ -145,13 +145,13 @@ function initHeader(headerContainer, openModalFunction) {
 
         if (currentUser) {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-persone"></use>
+                                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
                             ${currentUser.name}`;
             btnLogout.style.display = 'block';
         } else {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-persone"></use>
+                                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
                             Войти`;
             btnLogout.style.display = 'none';

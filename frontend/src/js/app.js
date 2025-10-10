@@ -2,6 +2,7 @@ import { renderHeader } from './components/header.js';
 import { renderFooter } from './components/footer.js';
 import { renderModal } from './components/modal.js';
 import { renderHomePage } from './pages/homePage.js';
+import { renderCategoriesPage } from './pages//categoriesPage.js';
 import { router } from './router.js';
 
 class App {
@@ -17,14 +18,20 @@ class App {
             this.setupRouter();
             this.renderComponents();
             console.log('Приложение запущено!');
-        } catch(error) {
+        } catch (error) {
             console.error('Ошибка при запуске:', error);
         }
     }
 
-    setupRouter () {
+    setupRouter() {
         router.addRoute('/', () => this.renderPage('home'));
-        router.addRoute('/profile', () => this.renderPage('profile'))
+        router.addRoute('/profile', () => this.renderPage('profile'));
+        router.addRoute('/catalog', () => this.renderPage('categories'));
+        router.addRoute('/catalog/chairs', () => this.renderPage('catalog', 'chairs'));
+        router.addRoute('/catalog/tables', () => this.renderPage('catalog', 'tables'));
+        router.addRoute('/catalog/sofas', () => this.renderPage('catalog', 'sofas'));
+        router.addRoute('/catalog/wardrobes', () => this.renderPage('catalog', 'wardrobes'));
+        router.addRoute('/catalog/beds', () => this.renderPage('catalog', 'beds'));
         //здесь будут маршруты страниц приложения
 
         router.init();
@@ -41,18 +48,25 @@ class App {
         document.querySelector('#modal-component').appendChild(this.components.modal.container);
     }
 
-    renderPage (pageName, param = null) {
+    renderPage(pageName, param = null) {
         const mainComponent = document.querySelector('#main-component');
         mainComponent.innerHTML = '';
 
         let page;
 
-        switch(pageName) {
-            case ('home') :
+        switch (pageName) {
+            case ('home'):
                 page = renderHomePage();
                 break;
-            case ('profile') :
+            case ('profile'):
                 page = renderProfilePage();
+                break;
+            case ('categories'):
+                page = renderCategoriesPage();
+                break;
+             case ('catalog'):
+            page = renderCatalogPage(param); 
+            break;
             //здесь будет рендеринг других страниц
         }
 

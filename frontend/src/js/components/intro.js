@@ -5,7 +5,7 @@ function createIntro() {
             <div class="container">
                 <div class="intro__wrap">
                     <picture>
-                        <img class="intro__img" src="/frontend/src/assets/images/intro-img.png" alt="Изображение кресла" width="200"
+                        <img class="intro__img" src="/src/assets/images/intro-img.png" alt="Изображение кресла" width="200"
                             height="350">
                     </picture>
                     <h1 class="intro__title">
@@ -15,7 +15,7 @@ function createIntro() {
                     </h1>
                 </div>
                 <span class="intro__description">создаем ваш уют</span>
-                <a class="intro__btn-link btn" href="#">Перейти в каталог</a>
+                <button class="intro__btn-link btn" type="button">Перейти в каталог</button>
             </div>
         </section>
     `
@@ -29,7 +29,9 @@ function initIntro (introContainer) {
     introBtn.addEventListener('click', (e) => {
         e.preventDefault();
         console.log('Переход в каталог');
-        //здесь будет логика перехода
+        
+        window.history.pushState({}, '', '/catalog');
+        window.dispatchEvent(new PopStateEvent('popstate'));
     });
 };
 
