@@ -3,6 +3,7 @@ import { renderFooter } from './components/footer.js';
 import { renderModal } from './components/modal.js';
 import { renderHomePage } from './pages/homePage.js';
 import { renderCategoriesPage } from './pages//categoriesPage.js';
+import { initSPANavigation } from './utils/navigation.js';
 import { router } from './router.js';
 
 class App {
@@ -24,6 +25,7 @@ class App {
     }
 
     setupRouter() {
+        initSPANavigation()
         router.addRoute('/', () => this.renderPage('home'));
         router.addRoute('/profile', () => this.renderPage('profile'));
         router.addRoute('/catalog', () => this.renderPage('categories'));

@@ -87,27 +87,6 @@ function initHeader(headerContainer, openModalFunction) {
         window.dispatchEvent(new PopStateEvent('popstate'));
     })
 
-    //Обработчик всех ссылок хедера
-    const allLinks = headerContainer.querySelectorAll('a');
-    allLinks.forEach(link => {
-        link.addEventListener('click', (event) => {
-            if (link === logoLink || link.href.includes('http')) {
-                return;
-            }
-
-            event.preventDefault();
-            const path = link.getAttribute('href');
-
-            console.log('Навигация по:', path);
-
-            nav.classList.remove('main-nav--active');
-            btnBurger.classList.remove('burger--active');
-
-            window.history.pushState({}, '', path);
-            window.dispatchEvent(new PopStateEvent('popstate'));
-        })
-    });
-
     //Функция для обработки клика на кнопку войти/личного кабинета (смена функционала)
     function handleLoginClick() {
         const currentUser = getCurrentUser();

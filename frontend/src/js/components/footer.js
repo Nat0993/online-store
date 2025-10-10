@@ -8,19 +8,19 @@ function createFooter () {
                     <div class="footer__left-col">
                         <ul class="footer__nav-list">
                             <li class="footer__nav-item">
-                                <a class="footer__nav-link footer__text" href="#">Каталог</a>
+                                <a class="footer__nav-link footer__text" href="/catalog">Каталог</a>
                             </li>
                             <li class="footer__nav-item">
-                                <a class="footer__nav-link footer__text" href="#">Доставка и оплата</a>
+                                <a class="footer__nav-link footer__text" href="/delivery">Доставка и оплата</a>
                             </li>
                             <li class="footer__nav-item">
-                                <a class="footer__nav-link footer__text" href="#">Акции</a>
+                                <a class="footer__nav-link footer__text" href="/sales">Акции</a>
                             </li>
                             <li class="footer__nav-item">
-                                <a class="footer__nav-link footer__text" href="#">Отзывы</a>
+                                <a class="footer__nav-link footer__text" href="/reviews">Отзывы</a>
                             </li>
                             <li class="footer__nav-item">
-                                <a class="footer__nav-link footer__text" href="#">Контакты</a>
+                                <a class="footer__nav-link footer__text" href="/contacts">Контакты</a>
                             </li>
                         </ul>
                     </div>
