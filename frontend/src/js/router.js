@@ -52,9 +52,9 @@ class Router {
             <div style="padding: 20px; text-align: center;">
                 <h1>404</h1>
                 <p>Страница не найдена</p>
-                <button onclick="router.navigateTo('/')">
+                <a href="/" class="btn" style="width: 240px; margin: 0 auto;">
                     На главную
-                </button>
+                </a>
             </div>
         `;
     }
