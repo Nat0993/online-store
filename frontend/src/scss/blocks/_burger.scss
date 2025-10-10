@@ -14,6 +14,7 @@
 
     &:hover,
     &:focus-visible {
+        outline: none;
         .burger__line {
             outline: none;
             background-color: $color-ecru;

@@ -1,9 +1,28 @@
 .categories {
-    padding: 60px 0 100px;
+    padding: 0 0 100px;
 
     &__header {
+        padding: 40px 0 0;
         display: flex;
         flex-direction: column;
         align-items: center;
+        margin: 0 0 40px;
+    }
+
+    &__title {
+        margin: 0 0 20px;
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    &__description {
+        margin: 0;
+    }
+
+    &__wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: center;
     }
 }

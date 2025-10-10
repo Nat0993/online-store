@@ -3,11 +3,40 @@ function generateId(prefix = 'item') {
 }
 
 export const categories = [
-    { id: 'chairs', name: "Стулья" },
-    { id: 'tables', name: "Столы" },
-    { id: 'sofas', name: "Диваны" },
-    { id: 'wardrobes', name: "Шкафы" },
-    { id: 'beds', name: "Кровати" }
+    {
+        id: 'chairs',
+        name: "Стулья",
+        image: "/src/assets/images/catalog/categories/chairs.jpg",
+        description: "Эргономичные стулья для дома и офиса. От классических деревянных моделей до современных дизайнерских решений с регулируемой высотой и ортопедическими спинками.",
+    },
+    {
+        id: 'tables',
+        name: "Столы",
+        image: "/src/assets/images/catalog/categories/tables.jpg",
+        description: "Письменные, обеденные и кофейные столы из натурального дерева, стекла и металла. Практичные решения для любой комнаты с раздвижными механизмами и стильным дизайном.",
+
+    },
+    {
+        id: 'sofas',
+        name: "Диваны",
+        image: "/src/assets/images/catalog/categories/sofas.jpg",
+        description: "Угловые, прямые и модульные диваны для просторных гостиных. Мягкие модели с ортопедическими основаниями, раскладными механизмами и съемными чехлами для легкой чистки.",
+
+    },
+    {
+        id: 'wardrobes',
+        name: "Шкафы",
+        image: "/src/assets/images/catalog/categories/wardrobes.jpg",
+        description: "Вместительные шкафы и гардеробные системы для оптимальной организации пространства. Распашные и купейные модели с зеркальными дверями и системами хранения.",
+
+    },
+    {
+        id: 'beds',
+        name: "Кровати",
+        image: "/src/assets/images/catalog/categories/beds.jpg",
+        description: "Односпальные и двуспальные кровати с ортопедическими матрасами. Модели с подъемными механизмами, встроенными ящиками и регулируемыми основаниями для здорового сна.",
+
+    }
 ];
 
 export const products = [
@@ -16,16 +45,16 @@ export const products = [
         name: "Стул 'Mariano'",
         categoryId: 'chairs',
         price: 5500,
-        image: "../assets/images/catalog/products/chair/chair1.jpg",
+        image: "/src/assets/images/catalog/products/chair/chair1.jpg",
         description: "Элегантный стул с деревянными ножками",
         inStock: true
     },
     {
         id: generateId('prod'),
         name: "Стул 'Moose'",
-        categoryId: 'chairs',  
+        categoryId: 'chairs',
         price: 8300,
-        image: "../assets/images/catalog/products/chair/chair2.jpg",
+        image: "/src/assets/images/catalog/products/chair/chair2.jpg",
         description: "Современный стул в скандинавском стиле",
         inStock: true
     },
@@ -34,7 +63,7 @@ export const products = [
         name: "Диван 'Milano'",
         categoryId: 'sofas',
         price: 45500,
-        image: "../assets/images/catalog/products/sofas/sofa1.jpg",
+        image: "/src/assets/images/catalog/products/sofas/sofa1.jpg",
         description: "Просторный угловой диван",
         inStock: true
     }
@@ -63,7 +92,7 @@ export const addToCart = (productId, quantity = 1) => {
     if (!product) return cart;
 
     const existingItem = cart.find(item => item.productId === productId);
-    
+
     if (existingItem) {
         existingItem.quantity += quantity;
     } else {
@@ -74,7 +103,7 @@ export const addToCart = (productId, quantity = 1) => {
             addedAt: new Date().toISOString()
         });
     }
-    
+
     saveToLocalStorage('cart', cart);
     return cart;
 };
@@ -92,10 +121,10 @@ export const getCartItemsWithProducts = () => {
     }).filter(item => item.product); // убираем товары, которые не найдены
 };
 
-export function updateCartQuantity (cartItemId, newQuantity) {
+export function updateCartQuantity(cartItemId, newQuantity) {
     const cartItem = cart.find(item => item.id === cartItemId);
-    if(cartItem) {
-        if(newQuantity > 0) {
+    if (cartItem) {
+        if (newQuantity > 0) {
             cartItem.quantity = newQuantity;
             saveToLocalStorage('cart', cart);
         } else {
@@ -109,7 +138,7 @@ export function updateCartQuantity (cartItemId, newQuantity) {
 // Избранное
 export const toggleFavorite = (productId) => {
     const existingIndex = favorites.findIndex(fav => fav.productId === productId);
-    
+
     if (existingIndex > -1) {
         favorites.splice(existingIndex, 1);
     } else {
@@ -119,7 +148,7 @@ export const toggleFavorite = (productId) => {
             addedAt: new Date().toISOString()
         });
     }
-    
+
     saveToLocalStorage('favorites', favorites);
     return favorites;
 };
@@ -145,7 +174,7 @@ export const saveToLocalStorage = (key, data) => {
     }
 };
 
-export function loadFromLocalStorage (key) {
+export function loadFromLocalStorage(key) {
     try {
         const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : null;

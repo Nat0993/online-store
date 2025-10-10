@@ -17,7 +17,7 @@ function createProductCard(product) {
                 <button class="product-card__favorite ${isFavorite ? 'product-card__favorite--active' : ''}" 
                         type="button" aria-label="Добавить в избранное">
                     <svg width="20" height="20" aria-hidden="true">
-                        <use xlink:href="/frontend/src/assets/images/sprite.svg#icon-favorite"></use>
+                        <use xlink:href="/src/assets/images/sprite.svg#icon-favorite"></use>
                     </svg>
                 </button>
             </div>

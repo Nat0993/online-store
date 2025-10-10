@@ -1,0 +1,26 @@
+.breadcrumbs {
+    padding: 20px 0 0;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    &__text {
+       font-size: 14px;
+       line-height: 18px; 
+    }
+
+    &__link {
+        transition: color ease-in 0.2s;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            color: $color-ecru;
+        }
+    }
+
+    &__current {
+        color: $color-charcoal-50;
+    }
+}
