@@ -2,8 +2,9 @@ import { renderHeader } from './components/header.js';
 import { renderFooter } from './components/footer.js';
 import { renderModal } from './components/modal.js';
 import { renderHomePage } from './pages/homePage.js';
-import { renderCategoriesPage } from './pages//categoriesPage.js';
+import { renderCategoriesPage } from './pages/categoriesPage.js';
 import { initSPANavigation } from './utils/navigation.js';
+import { renderCatalogPage } from './pages/catalogPage.js';
 import { router } from './router.js';
 
 class App {

@@ -1,0 +1,92 @@
+.catalog {
+    padding: 0 0 100px;
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    &__controls {
+        padding: 80px 0 10px;
+        display: flex;
+        gap: 20px;
+        border-bottom: 1px solid $color-charcoal;
+        margin: 0 0 25px;
+        align-items: center;
+    }
+
+    &__filter-btn {
+        border: none;
+        padding: 0;
+        background-color: transparent;
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+        color: $color-charcoal;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 18px;
+        transition: color ease-in 0.2s;
+
+        svg {
+            pointer-events: none;
+        }
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            color: $color-ecru;
+        }
+    }
+
+    &__sort-select {
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: white;
+        font-size: 14px;
+        cursor: pointer;
+        appearance: none; 
+        background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        padding-right: 15px;
+        color: $color-charcoal;
+        transition: border-color ease-in 0.2s, background-color ease-in 0.2s;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            border-color: $color-ecru;
+            background-color: $color-ecru-10;
+        }
+    }
+
+    &__product-list {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 30px;
+    }
+
+    &__empty-message {
+        padding: 80px 0 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__empty-title {
+        margin: 0 0 15px;
+    }
+
+    &__empty-description {
+        margin: 0 0 20px;
+    }
+}

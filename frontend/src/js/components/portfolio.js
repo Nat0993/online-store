@@ -31,7 +31,7 @@ function createPortfolio () {
                     </li>
                     <li class="portfolio__item">
                         <picture>
-                            <img class="portfolio__img" src="/frontend/src/assets/images/portfolio-img-5.jpg" alt="Мебель в интерьере"
+                            <img class="portfolio__img" src="/src/assets/images/portfolio-img-5.jpg" alt="Мебель в интерьере"
                                 width="600" height="350">
                         </picture>
                     </li>

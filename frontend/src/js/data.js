@@ -41,25 +41,79 @@ export const categories = [
 
 export const products = [
     {
-        id: generateId('prod'),
-        name: "Стул 'Mariano'",
+        id: 'prod_chair_1',
+        name: "Стул 'Marco'",
         categoryId: 'chairs',
-        price: 5500,
-        image: "/src/assets/images/catalog/products/chair/chair1.jpg",
-        description: "Элегантный стул с деревянными ножками",
+        price: 9500,
+        image: "/src/assets/images/catalog/products/chairs/chair1.jpg",
+        description: "",
         inStock: true
     },
     {
-        id: generateId('prod'),
+        id: 'prod_chair_2',
         name: "Стул 'Moose'",
         categoryId: 'chairs',
-        price: 8300,
-        image: "/src/assets/images/catalog/products/chair/chair2.jpg",
-        description: "Современный стул в скандинавском стиле",
+        price: 10300,
+        image: "/src/assets/images/catalog/products/chairs/chair2.jpg",
+        description: "",
         inStock: true
     },
     {
-        id: generateId('prod'),
+        id: 'prod_chair_3',
+        name: "Стул 'Cocktail'",
+        categoryId: 'chairs',
+        price: 8600,
+        image: "/src/assets/images/catalog/products/chairs/chair3.jpg",
+        description: "",
+        inStock: true
+    },
+    {
+        id: 'prod_chair_4',
+        name: "Стул 'Venice'",
+        categoryId: 'chairs',
+        price: 10950,
+        image: "/src/assets/images/catalog/products/chairs/chair4.jpg",
+        description: "",
+        inStock: true
+    },
+    {
+        id: 'prod_chair_5',
+        name: "Стул 'Nonton'",
+        categoryId: 'chairs',
+        price: 6980,
+        image: "/src/assets/images/catalog/products/chairs/chair5.jpg",
+        description: "",
+        inStock: true
+    },
+    {
+        id: 'prod_chair_6',
+        name: "Стул 'April'",
+        categoryId: 'chairs',
+        price: 16400,
+        image: "/src/assets/images/catalog/products/chairs/chair6.jpg",
+        description: "",
+        inStock: true
+    },
+    {
+        id: 'prod_chair_7',
+        name: "Стул 'Shado'",
+        categoryId: 'chairs',
+        price: 10360,
+        image: "/src/assets/images/catalog/products/chairs/chair7.jpg",
+        description: "",
+        inStock: true
+    },
+    {
+        id: 'prod_chair_8',
+        name: "Стул 'Modena'",
+        categoryId: 'chairs',
+        price: 12600,
+        image: "/src/assets/images/catalog/products/chairs/chair8.jpg",
+        description: "",
+        inStock: true
+    },
+    {
+        id: 'prod_sofa_1',
         name: "Диван 'Milano'",
         categoryId: 'sofas',
         price: 45500,
@@ -151,10 +205,6 @@ export const toggleFavorite = (productId) => {
 
     saveToLocalStorage('favorites', favorites);
     return favorites;
-};
-
-export const isInFavorites = (productId) => {
-    return favorites.some(fav => fav.productId === productId);
 };
 
 export const getFavoritesWithProducts = () => {

@@ -24,10 +24,10 @@ function createFooter () {
                             </li>
                         </ul>
                     </div>
-                    <a class="footer__logo-link" href="index.html"
+                    <a class="footer__logo-link" href="/"
                         aria-label="Логотип компании, переход на главную страницу">
                         <svg width="70" height="70" aria-hidden="true">
-                            <use xlink:href="../src/assets/images/sprite.svg#icon-logo"></use>
+                            <use xlink:href="/src/assets/images/sprite.svg#icon-logo"></use>
                         </svg>
                     </a>
                     <div class="footer__right-col">
@@ -35,7 +35,7 @@ function createFooter () {
                             <span class="footer__text">Мы всегда на связи:</span>
                             <a class="footer__phone-link" href="tel:880088008000" aria-label="Звонок в компанию">
                                 <svg width="20" height="20" aria-hidden="true">
-                                    <use xlink:href="../src/assets/images/sprite.svg#icon-phone"></use>
+                                    <use xlink:href="/src/assets/images/sprite.svg#icon-phone"></use>
                                 </svg>
                                 8 (800) 88 00 80 00
                             </a>
@@ -46,28 +46,28 @@ function createFooter () {
                                 <li class="social__item">
                                     <a class="social__link" href="#" aria-label="Перейти в VK">
                                         <svg width="30" height="30" aria-hidden="true">
-                                            <use xlink:href="../src/assets/images/sprite.svg#icon-vk"></use>
+                                            <use xlink:href="/src/assets/images/sprite.svg#icon-vk"></use>
                                         </svg>
                                     </a>
                                 </li>
                                 <li class="social__item">
                                     <a class="social__link" href="#" aria-label="Перейти в Telegram">
                                         <svg width="30" height="30" aria-hidden="true">
-                                            <use xlink:href="../src/assets/images/sprite.svg#icon-tg"></use>
+                                            <use xlink:href="/src/assets/images/sprite.svg#icon-tg"></use>
                                         </svg>
                                     </a>
                                 </li>
                                 <li class="social__item">
                                     <a class="social__link" href="#" aria-label="Перейти в WhatsApp">
                                         <svg width="30" height="30" aria-hidden="true">
-                                            <use xlink:href="../src/assets/images/sprite.svg#icon-whatsapp"></use>
+                                            <use xlink:href="/src/assets/images/sprite.svg#icon-whatsapp"></use>
                                         </svg>
                                     </a>
                                 </li>
                                 <li class="social__item">
                                     <a class="social__link" href="#" aria-label="Перейти в Почту">
                                         <svg width="30" height="30" aria-hidden="true">
-                                            <use xlink:href="../src/assets/images/sprite.svg#icon-email"></use>
+                                            <use xlink:href="/src/assets/images/sprite.svg#icon-email"></use>
                                         </svg>
                                     </a>
                                 </li>
