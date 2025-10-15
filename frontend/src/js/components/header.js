@@ -1,5 +1,5 @@
 import { renderModal } from './modal.js';
-import { getCurrentUser, logoutUser } from '../data.js';
+import { getCurrentCart, getCurrentFavorites, getCurrentUser, logoutUser } from '../data.js';
 
 //Функция, которая рисует хедер
 function createHeader() {
@@ -57,11 +57,13 @@ function createHeader() {
                             <svg width="30" height="30" aria-hidden="true">
                                 <use xlink:href="/src/assets/images/sprite.svg#icon-favorite"></use>
                             </svg>
+                            <span class="header__counter header__favorites-counter">0</span>
                         </a>
                         <a class="header__user-link" href="/cart" aria-label="Корзина">
                             <svg width="30" height="30" aria-hidden="true">
                                 <use xlink:href="/src/assets/images/sprite.svg#icon-basket"></use>
                             </svg>
+                            <span class="header__counter header__cart-counter">0</span>
                         </a>
                     </div>
                 </div>
@@ -78,6 +80,8 @@ function initHeader(headerContainer, openModalFunction) {
     const btnBurger = headerContainer.querySelector('.burger');
     const nav = headerContainer.querySelector('.main-nav');
     const logoLink = headerContainer.querySelector('.header__logo-link');
+    const favoritesCounter = headerContainer.querySelector('.header__favorites-counter');
+    const cartCounter = headerContainer.querySelector('.header__cart-counter');
 
 
     //Обработчк клика на логотип
@@ -117,6 +121,21 @@ function initHeader(headerContainer, openModalFunction) {
         }
     });
 
+    //Функция обновлния счетчиков
+    function updateCounters () {
+        const cartItems = getCurrentCart();
+        const favorites = getCurrentFavorites();
+
+        const totalCartItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+        cartCounter.textContent = totalCartItems > 99 ? '99+' : totalCartItems.toString();
+        cartCounter.style.display = totalCartItems > 0 ? 'flex' : 'none';
+
+        favoritesCounter.textContent = favorites.length > 99 ? '99+' : favorites.length.toString();
+        favoritesCounter.style.display = favorites.length > 0 ? 'flex' : 'none';
+
+        console.log('Счетчки обновлены:', { cart: totalCartItems, favorites: favorites.length });
+    }
+
     //Обновление интерфейса хедера при авторизации
     function updateHeader() {
         const currentUser = getCurrentUser();
@@ -135,6 +154,8 @@ function initHeader(headerContainer, openModalFunction) {
                             Войти`;
             btnLogout.style.display = 'none';
         }
+
+        updateCounters();
     }
 
     btnLogout.addEventListener('click', () => {
@@ -152,6 +173,15 @@ function initHeader(headerContainer, openModalFunction) {
     window.addEventListener('auth:change', (event) => {
         console.log('Получено событие auth:change', event.detail);
         updateHeader();
+    });
+
+    //Слушаем события изменения корзины и избранного
+    window.addEventListener('cart:update', () => {
+        updateCounters();
+    });
+
+    window.addEventListener('favorites:update', () => {
+        updateCounters();
     });
 
     updateHeader();
