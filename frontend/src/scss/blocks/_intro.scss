@@ -57,6 +57,7 @@
         margin: 0 auto;
         width: 240px;
         opacity: 0;
+        visibility: hidden;
         animation: showBottomToTop 0.5s ease-in 4s forwards;
     }
 
@@ -108,11 +109,13 @@
         0% {
             transform: translateY(125%);
             opacity: 0;
+            visibility: hidden;
         }
 
         100% {
             transform: translateY(0);
             opacity: 1;
+            visibility: visible;
         }
     }
 }
