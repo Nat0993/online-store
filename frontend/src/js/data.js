@@ -123,8 +123,6 @@ export const products = [
     }
 ];
 
-export let cart = loadFromLocalStorage('cart') || [];
-export let favorites = loadFromLocalStorage('favorites') || [];
 export let users = loadFromLocalStorage('users') || [];
 
 // Функции для работы с данными
@@ -141,10 +139,26 @@ export const getCategoryById = (id) => {
 };
 
 // Работа с корзиной
+ 
+//Получаем корзину текущего пользователя
+export const getCurrentCart = () => {
+    const user = getCurrentUser();
+    const key = user ? `cart_${user.id}` : 'cart_guest';
+    return loadFromLocalStorage(key) || [];
+};
+
+//Сохраняем корзину текущ пользователя
+export const saveCurrentCart = (cartData) => {
+    const user = getCurrentUser();
+    const key = user ? `cart_${user.id}` : 'cart_guest';
+    saveToLocalStorage(key, cartData);
+};
+
 export const addToCart = (productId, quantity = 1) => {
     const product = getProductById(productId);
     if (!product) return cart;
 
+    const cart = getCurrentCart();
     const existingItem = cart.find(item => item.productId === productId);
 
     if (existingItem) {
@@ -158,17 +172,19 @@ export const addToCart = (productId, quantity = 1) => {
         });
     }
 
-    saveToLocalStorage('cart', cart);
+    saveCurrentCart(cart);
     return cart;
 };
 
 export const removeFromCart = (cartItemId) => {
-    cart = cart.filter(item => item.id !== cartItemId);
-    saveToLocalStorage('cart', cart);
-    return cart;
+    const cart = getCurrentCart();
+    const updatedCart = cart.filter(item => item.id !== cartItemId);
+    saveCurrentCart(updatedCart);
+    return updatedCart;
 };
 
 export const getCartItemsWithProducts = () => {
+    const cart = getCurrentCart();
     return cart.map(item => {
         const product = getProductById(item.productId);
         return { ...item, product };
@@ -176,11 +192,12 @@ export const getCartItemsWithProducts = () => {
 };
 
 export function updateCartQuantity(cartItemId, newQuantity) {
+    const cart = getCurrentCart();
     const cartItem = cart.find(item => item.id === cartItemId);
     if (cartItem) {
         if (newQuantity > 0) {
             cartItem.quantity = newQuantity;
-            saveToLocalStorage('cart', cart);
+            saveCurrentCart(cart);
         } else {
             removeFromCart(cartItemId);
         }
@@ -190,7 +207,23 @@ export function updateCartQuantity(cartItemId, newQuantity) {
 }
 
 // Избранное
+
+//Получаем избранное текущ пользов-ля
+export const getCurrentFavorites = () => {
+    const user = getCurrentUser();
+    const key = user ? `favorites_${user.id}` : 'favorites_guest';
+    return loadFromLocalStorage(key) || [];
+};
+
+// Сохраняем избранное текущ пользователя
+export const saveCurrentFavorites = (favoritesData) => {
+    const user = getCurrentUser();
+    const key = user ? `favorites_${user.id}` : 'favorites_guest';
+    saveToLocalStorage(key, favoritesData);
+};
+
 export const toggleFavorite = (productId) => {
+    const favorites = getCurrentFavorites();
     const existingIndex = favorites.findIndex(fav => fav.productId === productId);
 
     if (existingIndex > -1) {
@@ -203,11 +236,12 @@ export const toggleFavorite = (productId) => {
         });
     }
 
-    saveToLocalStorage('favorites', favorites);
+    saveCurrentFavorites(favorites);
     return favorites;
 };
 
 export const getFavoritesWithProducts = () => {
+    const favorites = getCurrentFavorites();
     return favorites.map(fav => {
         const product = getProductById(fav.productId);
         return { ...fav, product };
@@ -252,6 +286,12 @@ export const registerUser = (userData) => {
 
     users.push(newUser);
     saveToLocalStorage('users', users);
+
+    // Мигрируем гостевые данные в новую учетку
+    migrateGuestToUser(newUser.id);
+
+    setCurrentUser(newUser);
+
     return newUser;
 };
 
@@ -262,8 +302,48 @@ export const loginUser = (email, password) => {
         throw new Error('Неверный email или пароль');
     }
 
+    // Мигрируем данные из гостевой учетки в пользовательскую
+    migrateGuestToUser(user.id);
+
+    setCurrentUser(user);
+
     return user;
 };
+
+export function migrateGuestToUser (userId) {
+    const guestCart = loadFromLocalStorage('cart_guest') || [];
+    const userCart = loadFromLocalStorage(`cart_${userId}`) || [];
+
+    if(guestCart.length > 0) {
+        const mergedCart = [...userCart];
+        
+        guestCart.forEach(guestItem => {
+            const existingItem = mergedCart.find(item => item.productId === guestItem.productId);
+            if (existingItem) {
+                existingItem.quantity += guestItem.quantity;
+            } else {
+                mergedCart.push(guestItem);
+            }
+        });
+        
+        saveToLocalStorage(`cart_${userId}`, mergedCart);
+        localStorage.removeItem('cart_guest');
+    }
+
+    // Мигрируем избранное
+    const guestFavorites = loadFromLocalStorage('favorites_guest') || [];
+    const userFavorites = loadFromLocalStorage(`favorites_${userId}`) || [];
+    
+    if (guestFavorites.length > 0) {
+        // Объединяем избранное (убираем дубликаты)
+        const mergedFavorites = [...userFavorites, ...guestFavorites];
+        const uniqueFavorites = mergedFavorites.filter((fav, index, array) => 
+            array.findIndex(f => f.productId === fav.productId) === index
+        );
+        saveToLocalStorage(`favorites_${userId}`, uniqueFavorites);
+        localStorage.removeItem('favorites_guest');
+    }
+}
 
 export const setCurrentUser = (user) => {
     localStorage.setItem('currentUser', JSON.stringify(user));

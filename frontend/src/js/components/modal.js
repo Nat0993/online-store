@@ -274,8 +274,7 @@ function initModal(modalContainer) {
     
             const user = await loginUser(formData.email, formData.password);
             console.log('Успешный вход:', user);
-    
-            setCurrentUser(user);
+
             closeModal();
 
             // Отправляем событие о входе
@@ -308,7 +307,6 @@ function initModal(modalContainer) {
     
             console.log('Успешная регистрация:', user);
     
-            setCurrentUser(user);
             closeModal();
 
             // Отправляем событие о входе

@@ -4,13 +4,17 @@ import {
     toggleFavorite,
     getCartItemsWithProducts,
     updateCartQuantity,
-    loadFromLocalStorage,
+    getCurrentCart,
+    getCurrentFavorites,
 } from '../data.js';
 
+function getIsFavorite(productId) {
+    const currentFavorites = getCurrentFavorites();
+    return currentFavorites.some(fav => fav.productId === productId);
+}
+
 function createProductCard(product) {
-    const currentFavorites = loadFromLocalStorage('favorites') || [];
-    console.log('данные избранного загружены');
-    const isFavorite = currentFavorites.some(fav => fav.productId === product.id);
+    const isFavorite = getIsFavorite(product.id);
 
     return `
     <div class="product-card" data-product-id="${product.id}">
@@ -40,17 +44,29 @@ function initProductCard(cardElement) {
     const productId = cardElement.dataset.productId;
     const favoriteBtn = cardElement.querySelector('.product-card__favorite');
 
+    function updateFavoriteState () {
+        const isFavorite = getIsFavorite(productId);
+        favoriteBtn.classList.toggle('product-card__favorite--active', isFavorite);
+    }
+
     // Обработчик кнопки избранного
     favoriteBtn.addEventListener('click', () => {
         toggleFavorite(productId);
-        favoriteBtn.classList.toggle('product-card__favorite--active');
+        updateFavoriteState();
         window.dispatchEvent(new CustomEvent('favorites:update'));
+    });
+
+    //Слушаем событие авторизации для смены интерфейса выбранных товров
+    window.addEventListener('auth:change', (event) => {
+        console.log('Обновляем карточку после смены пользователя:', event.detail);
+        updateCartButton();
+        updateFavoriteState();
     });
 
     //Функция обновления кнопки корзины
     function updateCartButton() {
-        const cartItems = getCartItemsWithProducts();
-        const cartItem = cartItems.find(item => item.productId === productId);
+        const currentCart = getCurrentCart();
+        const cartItem = currentCart.find(item => item.productId === productId);
         const inCart = Boolean(cartItem);
         const quantity = inCart ? cartItem.quantity : 0;
 
@@ -116,6 +132,7 @@ function initProductCard(cardElement) {
     }
 
     updateCartButton();
+    updateFavoriteState();
 }
 
 export function renderProductCard(product) {
