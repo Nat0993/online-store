@@ -1,3 +1,4 @@
+import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { getCategoryById, getProductsByCategory } from "../data.js";
 import { renderProductCard } from "../components/product-card.js";
 
@@ -12,17 +13,7 @@ function createCatalogPage(categoryId) {
     return `
     <section class="catalog">
             <div class="container">
-                <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                    <a href="/" class="breadcrumbs__link breadcrumbs__text">Главная</a>
-                    <span class="breadcrumbs__separator breadcrumbs__text">/</span>
-                    <a href="/catalog" class="breadcrumbs__link breadcrumbs__text">Каталог</a>
-                    <span class="breadcrumbs__separator breadcrumbs__text">/</span>
-                    <span class="breadcrumbs__current breadcrumbs__text">${category.name}</span>
-                </nav>
-                <!--<div class="catalog__header">
-                    <h1 class="catalog__title">${category.name}</h1>
-                    <p class="catalog__description">${category.description || 'Товары категории'}</p>
-                </div>--!>
+                <!-- здесь встанет Breadcrumbs -->
 
                 <div class="catalog__controls">
                     <div class="catalog__filters">
@@ -91,6 +82,16 @@ function initCatalogPage(pageContainer, categoryId) {
 export function renderCatalogPage(categoryId) {
     const pageContainer = document.createElement('div');
     pageContainer.innerHTML = createCatalogPage(categoryId);
+
+    const category = getCategoryById(categoryId);
+    const container = pageContainer.querySelector('.container');
+    const breadcrumbs = renderBreadcrumbs([
+        { url: '/', text: 'Главная' },
+        { url: '/catalog', text: 'Категории' }, 
+        { text: category.name }
+    ]);
+
+    container.prepend(breadcrumbs);
 
     initCatalogPage(pageContainer, categoryId);
 

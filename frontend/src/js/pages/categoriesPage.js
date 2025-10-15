@@ -1,14 +1,11 @@
+import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { categories } from '../data.js';
 
 function createCategoriesPage() {
     return `
         <section class="categories">
             <div class="container">
-                <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                    <a href="/" class="breadcrumbs__link breadcrumbs__text">Главная</a>
-                    <span class="breadcrumbs__separator breadcrumbs__text">/</span>
-                    <span class="breadcrumbs__current breadcrumbs__text">Категории</span>
-                </nav>
+                <!-- здесь встанет Breadcrumbs -->
                 <div class="categories__header">
                     <h1 class="categories__title">Категории мебели</h1>
                     <p class="categories__description">Выберите интересующую вас категорию</p>
@@ -49,6 +46,15 @@ function initCategoriesPage(pageContainer) {
 export function renderCategoriesPage() {
     const pageContainer = document.createElement('div');
     pageContainer.innerHTML = createCategoriesPage();
+
+    const container = pageContainer.querySelector('.container');
+    const breadcrumbs = renderBreadcrumbs([
+        { url: '/', text: 'Главная' },
+        { text: 'Категории' }
+    ]);
+
+    container.prepend(breadcrumbs);
+    
     initCategoriesPage(pageContainer);
     return pageContainer;
 }
