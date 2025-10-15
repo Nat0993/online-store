@@ -82,21 +82,8 @@ function createFooter () {
     `
 };
 
-function initFooter(footerContainer) {
-    const navLinks = footerContainer.querySelectorAll('.footer__nav-link');
-
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Переход по ссылке');
-            //Здесь будет обработка навигации
-        })
-    });
-};
-
 export function renderFooter () {
     const footerContainer = document.createElement('div');
     footerContainer.innerHTML = createFooter();
-    initFooter(footerContainer);
     return footerContainer;
 };
