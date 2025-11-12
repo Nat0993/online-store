@@ -44,7 +44,11 @@ function createModal() {
 };
 
 
-// Функция для инициализации логики модального окна
+/**
+ * Инициализирует логику модального окна авторизации
+ * @param {HTMLElement} modalContainer - контейнер модального окна
+ * @returns {Function} Функция открытия модального окна
+ */
 function initModal(modalContainer) {
     const modalWindow = modalContainer.querySelector('.auth');
     const btnCloseModal = modalContainer.querySelector('.auth__close');
@@ -113,7 +117,11 @@ function initModal(modalContainer) {
         }
     });
 
-    // 5. Функция переключение режимов (Логин/Регистрация)
+    // 5. 
+    /**
+    * Устанавливает режим работы модального окна (логин/регистрация)
+    * @param {string} mode - режим работы ('login' или 'register')
+    */
     function setAuthMode(mode) {
         currentMode = mode;
         const isLogin = mode === 'login';
@@ -246,9 +254,9 @@ function initModal(modalContainer) {
     authForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-    if (!validateForm()) {
-        return;
-    }
+        if (!validateForm()) {
+            return;
+        }
 
         const formData = {
             email: inputEmail.value.trim(),
@@ -267,24 +275,27 @@ function initModal(modalContainer) {
 
     });
 
-    //Функции входа и регистрации
+    /**
+    * Валидирует форму и выполняет вход/регистрацию
+    * @param {Object} formData - данные формы {email, password}
+    */
     async function handleLogin(formData) {
         try {
             console.log('Запрос на вход:', formData);
-    
+
             const user = await loginUser(formData.email, formData.password);
             console.log('Успешный вход:', user);
 
             closeModal();
 
             // Отправляем событие о входе
-            window.dispatchEvent(new CustomEvent('auth:change', { 
-            detail: { user, type: 'login' }
-        }));
-    
+            window.dispatchEvent(new CustomEvent('auth:change', {
+                detail: { user, type: 'login' }
+            }));
+
         } catch (error) {
             console.error('Ошибка входа:', error);
-    
+
             if (error.message.includes('email') || error.message.includes('Email')) {
                 showError(emailError, error.message);
             } else if (error.message.includes('password') || error.message.includes('пароль')) {
@@ -294,26 +305,26 @@ function initModal(modalContainer) {
             }
         };
     };
-    
+
     async function handleRegistration(formData) {
         try {
             console.log('Запрос на регистрацию:', formData);
-    
+
             const user = await registerUser({
                 email: formData.email,
                 password: formData.password,
                 name: formData.email.split('@')[0]
             });
-    
+
             console.log('Успешная регистрация:', user);
-    
+
             closeModal();
 
             // Отправляем событие о входе
-            window.dispatchEvent(new CustomEvent('auth:change', { 
-            detail: { user, type: 'login' }
-        }));
-    
+            window.dispatchEvent(new CustomEvent('auth:change', {
+                detail: { user, type: 'login' }
+            }));
+
             alert('Регистрация прошла успешно!');
         } catch (error) {
             console.error('Ошибка регистрации:', error);
@@ -330,6 +341,12 @@ function initModal(modalContainer) {
     return openModal; //для использования в хедере
 };
 
+/**
+ * Рендерит модальное окно авторизации/регистрации
+ * @returns {Object} Объект с контейнером и функциями модального окна
+ * @property {HTMLElement} container - DOM-элемент модального окна
+ * @property {Function} functions - функция открытия модального окна
+ */
 export function renderModal() {
     const modalContainer = document.createElement('div');;
 

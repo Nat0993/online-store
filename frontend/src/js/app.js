@@ -5,14 +5,22 @@ import { renderHomePage } from './pages/homePage.js';
 import { renderCategoriesPage } from './pages/categoriesPage.js';
 import { initSPANavigation } from './utils/navigation.js';
 import { renderCatalogPage } from './pages/catalogPage.js';
+import { renderProfilePage } from './pages/profilePage.js';
 import { router } from './router.js';
 
+/**
+ * Главный класс приложения, управляющий инициализацией и маршрутизацией
+ */
 class App {
     constructor() {
         this.components = {};
         this.currentPage = null;
     }
 
+    /**
+     * Инициализирует приложение (роутер, компоненты)
+     * @returns {Promise<void>}
+     */
     async init() {
         console.log('Запуск приложения...');
 
@@ -25,6 +33,9 @@ class App {
         }
     }
 
+    /**
+     * Настраивает маршрутизацию приложения
+     */
     setupRouter() {
         initSPANavigation()
         router.addRoute('/', () => this.renderPage('home'));
@@ -51,8 +62,19 @@ class App {
         document.querySelector('#modal-component').appendChild(this.components.modal.container);
     }
 
+    /**
+     * Рендерит страницу по её имени
+     * @param {string} pageName - имя страницы
+     * @param {string} [param] - дополнительный параметр (например, ID категории)
+     */
     renderPage(pageName, param = null) {
         const mainComponent = document.querySelector('#main-component');
+
+        if (!mainComponent) {
+            console.error('Элемент #main-component не найден');
+            return;
+        }
+
         mainComponent.innerHTML = '';
 
         let page;
@@ -67,10 +89,13 @@ class App {
             case ('categories'):
                 page = renderCategoriesPage();
                 break;
-             case ('catalog'):
-            page = renderCatalogPage(param); 
-            break;
+            case ('catalog'):
+                page = renderCatalogPage(param);
+                break;
             //здесь будет рендеринг других страниц
+            default:
+                console.warn('Неизвестная страница:', pageName);
+                return;
         }
 
         if (page) {

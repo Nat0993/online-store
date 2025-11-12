@@ -1,8 +1,7 @@
 /**
- * Простая SPA навигация
- * Делает все внутренние ссылки работающими без перезагрузки страницы
+ * Инициализирует SPA-навигацию для всех внутренних ссылок
+ * @returns {void}
  */
-
 export function initSPANavigation () {
     //вешаем обработчик на весь документ
     document.addEventListener('click', (e) => {
@@ -25,6 +24,11 @@ export function initSPANavigation () {
     console.log('SPA навигация включена');
 }
 
+/**
+ * Проверяет является ли ссылка внешней
+ * @param {HTMLAnchorElement} link - элемент ссылки
+ * @returns {boolean} true если ссылка внешняя
+ */
 function isExternalLink(link) {
     const href = link.href;
 
@@ -51,6 +55,11 @@ function isExternalLink(link) {
     return false;
 }
 
+/**
+ * Выполняет переход по указанному пути в SPA-режиме
+ * @param {string} path - путь для перехода
+ * @returns {void}
+ */
 function goToPath(path) {
     console.log('Переход на:', path);
 

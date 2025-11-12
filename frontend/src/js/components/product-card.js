@@ -7,18 +7,29 @@ import {
     getCurrentCart,
     getCurrentFavorites,
 } from '../data.js';
+import { escapeHtml, isValidProduct } from '../utils/security.js';
 
+/**
+ * Проверяет, находится ли товар в избранном
+ * @param {string} productId - ID товара
+ * @returns {boolean} true если товар в избранном
+ */
 function getIsFavorite(productId) {
     const currentFavorites = getCurrentFavorites();
     return currentFavorites.some(fav => fav.productId === productId);
 }
 
+/**
+ * Создает HTML-разметку карточки товара
+ * @param {Object} product - Объект товара
+ * @returns {string} HTML-разметка карточки
+ */
 function createProductCard(product) {
     const isFavorite = getIsFavorite(product.id);
 
     return `
-    <div class="product-card" data-product-id="${product.id}">
-            <img class="product-card__image" src="${product.image}" alt="${product.name}" loading="lazy">
+    <div class="product-card" data-product-id="${escapeHtml(product.id)}">
+            <img class="product-card__image" src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
             <button class="product-card__favorite ${isFavorite ? 'product-card__favorite--active' : ''}" 
                     type="button" aria-label="Добавить в избранное">
                 <svg class="product-card__favorite-icon" width="30" height="30">
@@ -28,7 +39,7 @@ function createProductCard(product) {
                     <use xlink:href="/src/assets/images/sprite.svg#icon-favorite-card-active"></use>
                 </svg>
             </button>
-            <h3 class="product-card__title">${product.name}</h3>
+            <h3 class="product-card__title">${escapeHtml(product.name)}</h3>
             <span class="product-card__price">${product.price.toLocaleString()} ₽</span>
             <div class="product-card__cart-controls">
                 <button class="product-card__cart-btn btn" type="button">
@@ -39,6 +50,10 @@ function createProductCard(product) {
     `;
 }
 
+/**
+ * Инициализирует логику карточки товара (избранное, корзина, события)
+ * @param {HTMLElement} cardElement - DOM-элемент карточки товара
+ */
 function initProductCard(cardElement) {
     const cartControls = cardElement.querySelector('.product-card__cart-controls');
     const productId = cardElement.dataset.productId;
@@ -135,7 +150,20 @@ function initProductCard(cardElement) {
     updateFavoriteState();
 }
 
+/**
+ * Рендерит карточку товара
+ * @param {Object} product - Объект товара
+ * @returns {HTMLElement} DOM-элемент карточки товара
+ */
 export function renderProductCard(product) {
+     if (!isValidProduct(product)) {
+        console.error('Invalid product provided to renderProductCard:', product);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'product-card product-card--error';
+        errorDiv.textContent = 'Ошибка загрузки товара';
+        return errorDiv;
+    }
+
     const cardContainer = document.createElement('div');
     cardContainer.innerHTML = createProductCard(product);
 

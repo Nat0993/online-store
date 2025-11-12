@@ -1,5 +1,6 @@
 import { renderModal } from './modal.js';
 import { getCurrentCart, getCurrentFavorites, getCurrentUser, logoutUser } from '../data.js';
+import { escapeHtml } from '../utils/security.js';
 
 //Функция, которая рисует хедер
 function createHeader() {
@@ -145,7 +146,7 @@ function initHeader(headerContainer, openModalFunction) {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
                                 <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
                             </svg>
-                            ${currentUser.name}`;
+                            ${escapeHtml(currentUser.name)}`;
             btnLogout.style.display = 'block';
         } else {
             btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
@@ -187,6 +188,11 @@ function initHeader(headerContainer, openModalFunction) {
     updateHeader();
 };
 
+/**
+ * Рендерит компонент хедера
+ * @param {Function} openModalFunction - функция открытия модального окна авторизации
+ * @returns {HTMLElement} DOM-элемент хедера
+ */
 export function renderHeader(openModalFunction) {
     const headerContainer = document.createElement('div');
 

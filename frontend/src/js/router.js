@@ -4,20 +4,40 @@ class Router {
         console.log('Роутер создан');
     }
 
-    //метод добавления маршрута
+    /**
+     * Добавляет маршрут в роутер
+     * @param {string} path - путь маршрута
+     * @param {Function} renderFunction - функция рендера страницы
+     */
     addRoute(path, renderFunction) {
+        if (typeof path !== 'string' || typeof renderFunction !== 'function') {
+            console.error('Неверные параметры для addRoute:', { path, renderFunction });
+            return;
+        }
+
         this.routes[path] = renderFunction;
         console.log(`Добавлен маршрут ${path}`);
     }
 
-    //переход на страницу
+    /**
+     * Выполняет переход на указанный путь
+     * @param {string} path - путь для перехода
+     */
     navigateTo(path) {
+        if (typeof path !== 'string') {
+            console.error('Неверный путь для navigateTo:', path);
+            return;
+        }
+
         console.log(`Переходим на ${path}`);
         window.history.pushState({}, '', path);
         this.loadPage(path);
     }
 
-    // Загрузка страницы
+    /**
+     * Загружает страницу по указанному пути
+     * @param {string} path - путь страницы
+     */
     loadPage(path) {
         const normalizedPath = this.normalizePath(path);
         console.log('Загружаем страницу:', normalizedPath);
@@ -32,15 +52,26 @@ class Router {
         }
     }
 
+    /**
+     * Нормализует путь (убирает index.html и т.д.)
+     * @param {string} path - исходный путь
+     * @returns {string} нормализованный путь
+     */
     normalizePath(path) {
+        if (!path || typeof path !== 'string') {
+            return '/';
+        }
+
         if (path.includes('index.html')) {
             return '/';
         }
         
-        
         return path;
     }
 
+    /**
+    * Показывает страницу 404 (не найдено)
+    */
     show404() {
         const mainComponent = document.querySelector('#main-component');
         if (!mainComponent) {
@@ -59,6 +90,9 @@ class Router {
         `;
     }
 
+    /**
+    * Инициализирует роутер (обработка истории браузера, загрузка текущей страницы)
+    */
     init() {
         console.log('Роутер запущен');
 

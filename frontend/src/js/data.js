@@ -1,3 +1,10 @@
+import { isValidCategory, isValidProduct } from "./utils/security.js";
+
+/**
+ * Генерирует уникальный ID с префиксом
+ * @param {string} [prefix='item'] - префикс для ID
+ * @returns {string} уникальный ID
+ */
 function generateId(prefix = 'item') {
     return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 }
@@ -126,34 +133,79 @@ export const products = [
 export let users = loadFromLocalStorage('users') || [];
 
 // Функции для работы с данными
+
+/**
+ * Получает товары по ID категории
+ * @param {string} categoryId - ID категории
+ * @returns {Array} массив товаров категории
+ */
 export const getProductsByCategory = (categoryId) => {
-    return products.filter(product => product.categoryId === categoryId);
+    if (!categoryId || typeof categoryId !== 'string') {
+        console.warn('Invalid categoryId:', categoryId);
+        return [];
+    }
+
+    return products.filter(product => product.categoryId === categoryId && isValidProduct(product));
 };
 
+/**
+ * Находит товар по ID
+ * @param {string} id - ID товара
+ * @returns {Object|null} объект товара или null
+ */
 export const getProductById = (id) => {
-    return products.find(product => product.id === id);
+    if (!id || typeof id !== 'string') {
+        console.warn('Invalid product id:', id);
+        return null;
+    }
+
+    const product = products.find(product => product.id === id);
+    return isValidProduct(product) ? product : null;
 };
 
+/**
+ * Находит категорию по ID
+ * @param {string} id - ID категории
+ * @returns {Object|null} объект категории или null
+ */
 export const getCategoryById = (id) => {
-    return categories.find(category => category.id === id);
+    if (!id || typeof id !== 'string') {
+        console.warn('Invalid category id:', id);
+        return null;
+    }
+
+    const category = categories.find(category => category.id === id)
+    return isValidCategory(category) ? category : null;
 };
 
 // Работа с корзиной
  
-//Получаем корзину текущего пользователя
+/**
+ * Получает корзину текущего пользователя
+ * @returns {Array} массив товаров в корзине
+ */
 export const getCurrentCart = () => {
     const user = getCurrentUser();
     const key = user ? `cart_${user.id}` : 'cart_guest';
     return loadFromLocalStorage(key) || [];
 };
 
-//Сохраняем корзину текущ пользователя
+/**
+ * Сохраняет корзину текущего пользователя
+ * @param {Array} cartData - данные корзины
+ */
 export const saveCurrentCart = (cartData) => {
     const user = getCurrentUser();
     const key = user ? `cart_${user.id}` : 'cart_guest';
     saveToLocalStorage(key, cartData);
 };
 
+/**
+ * Добавляет товар в корзину
+ * @param {string} productId - ID товара
+ * @param {number} [quantity=1] - количество
+ * @returns {Array} обновленная корзина
+ */
 export const addToCart = (productId, quantity = 1) => {
     const product = getProductById(productId);
     if (!product) return cart;
@@ -176,6 +228,11 @@ export const addToCart = (productId, quantity = 1) => {
     return cart;
 };
 
+/**
+ * Удаляет товар из корзины по его ID в корзине
+ * @param {string} cartItemId - ID товара в корзине
+ * @returns {Array} обновленная корзина
+ */
 export const removeFromCart = (cartItemId) => {
     const cart = getCurrentCart();
     const updatedCart = cart.filter(item => item.id !== cartItemId);
@@ -183,6 +240,10 @@ export const removeFromCart = (cartItemId) => {
     return updatedCart;
 };
 
+/**
+ * Получает элементы корзины с полной информацией о товарах
+ * @returns {Array} массив элементов корзины с товарами
+ */
 export const getCartItemsWithProducts = () => {
     const cart = getCurrentCart();
     return cart.map(item => {
@@ -191,6 +252,12 @@ export const getCartItemsWithProducts = () => {
     }).filter(item => item.product); // убираем товары, которые не найдены
 };
 
+/**
+ * Обновляет колличество товара в корзине
+ * @param {string} cartItemId - ID товара в корзине
+ * @param {number} newQuantity - новое количество товара
+ * @returns {Array} обновленная корзина
+ */
 export function updateCartQuantity(cartItemId, newQuantity) {
     const cart = getCurrentCart();
     const cartItem = cart.find(item => item.id === cartItemId);
@@ -208,20 +275,31 @@ export function updateCartQuantity(cartItemId, newQuantity) {
 
 // Избранное
 
-//Получаем избранное текущ пользов-ля
+/**
+ * Получает избранное текущего пользователя
+ * @returns {Array} массив избранных товаров
+ */
 export const getCurrentFavorites = () => {
     const user = getCurrentUser();
     const key = user ? `favorites_${user.id}` : 'favorites_guest';
     return loadFromLocalStorage(key) || [];
 };
 
-// Сохраняем избранное текущ пользователя
+/**
+ * Сохраняет избранное текущего пользователя
+ * @param {Array} favoritesData - данные избранного
+ */
 export const saveCurrentFavorites = (favoritesData) => {
     const user = getCurrentUser();
     const key = user ? `favorites_${user.id}` : 'favorites_guest';
     saveToLocalStorage(key, favoritesData);
 };
 
+/**
+ * Добавляет или удаляет товар из избранного
+ * @param {string} productId - ID товара
+ * @returns {Array} обновленное избранное
+ */
 export const toggleFavorite = (productId) => {
     const favorites = getCurrentFavorites();
     const existingIndex = favorites.findIndex(fav => fav.productId === productId);
@@ -240,6 +318,10 @@ export const toggleFavorite = (productId) => {
     return favorites;
 };
 
+/**
+ * Получает избранное с полной информацией о товарах
+ * @returns {Array} массив избранного с товарами
+ */
 export const getFavoritesWithProducts = () => {
     const favorites = getCurrentFavorites();
     return favorites.map(fav => {
@@ -249,6 +331,12 @@ export const getFavoritesWithProducts = () => {
 };
 
 // Локальное хранилище
+
+/**
+ * Сохраняет данные в localStorage
+ * @param {string} key - ключ
+ * @param {any} data - данные
+ */
 export const saveToLocalStorage = (key, data) => {
     try {
         localStorage.setItem(key, JSON.stringify(data));
@@ -258,6 +346,11 @@ export const saveToLocalStorage = (key, data) => {
     }
 };
 
+/**
+ * Загружает данные из localStorage
+ * @param {string} key - ключ
+ * @returns {any} данные или null
+ */
 export function loadFromLocalStorage(key) {
     try {
         const data = localStorage.getItem(key);
@@ -269,10 +362,24 @@ export function loadFromLocalStorage(key) {
 };
 
 // Пользователи
+
+/**
+ * Находит пользователя по email
+ * @param {string} email - email пользователя
+ * @returns {Object|null} объект пользователя или null
+ */
 export const findUserByEmail = (email) => {
     return users.find(user => user.email === email);
 };
 
+/**
+ * Регистрирует нового пользователя
+ * @param {Object} userData - данные пользователя
+ * @param {string} userData.email - email пользователя
+ * @param {string} userData.password - пароль пользователя
+ * @returns {Object} созданный пользователь
+ * @throws {Error} если пользователь с таким email уже существует
+ */
 export const registerUser = (userData) => {
     if (findUserByEmail(userData.email)) {
         throw new Error('Пользователь с таким email уже существует');
@@ -295,6 +402,13 @@ export const registerUser = (userData) => {
     return newUser;
 };
 
+/**
+ * Выполняет вход пользователя
+ * @param {string} email - email пользователя
+ * @param {string} password - пароль пользователя
+ * @returns {Object} объект пользователя
+ * @throws {Error} если неверный email или пароль
+ */
 export const loginUser = (email, password) => {
     const user = findUserByEmail(email);
 
@@ -310,6 +424,10 @@ export const loginUser = (email, password) => {
     return user;
 };
 
+/**
+ * Мигрирует гостевые данные (корзину и избранное) в пользовательские
+ * @param {string} userId - ID пользователя
+ */
 export function migrateGuestToUser (userId) {
     const guestCart = loadFromLocalStorage('cart_guest') || [];
     const userCart = loadFromLocalStorage(`cart_${userId}`) || [];
@@ -345,14 +463,25 @@ export function migrateGuestToUser (userId) {
     }
 }
 
+/**
+ * Устанавливает текущего пользователя в localStorage
+ * @param {Object} user - объект пользователя
+ */
 export const setCurrentUser = (user) => {
     localStorage.setItem('currentUser', JSON.stringify(user));
 };
 
+/**
+ * Получает текущего пользователя из localStorage
+ * @returns {Object|null} объект пользователя или null
+ */
 export const getCurrentUser = () => {
     return JSON.parse(localStorage.getItem('currentUser') || null);
 };
 
+/**
+ * Выполняет выход пользователя (удаляет из localStorage)
+ */
 export const logoutUser = () => {
     localStorage.removeItem('currentUser');
 }

@@ -1,4 +1,7 @@
-//Отрисовка
+/**
+ * Создает HTML-разметку футера
+ * @returns {string} HTML-разметка футера
+ */
 function createFooter () {
     return `
     <footer class="footer">
@@ -82,6 +85,10 @@ function createFooter () {
     `
 };
 
+/**
+ * Рендерит компонент футера
+ * @returns {HTMLElement} DOM-элемент футера
+ */
 export function renderFooter () {
     const footerContainer = document.createElement('div');
     footerContainer.innerHTML = createFooter();

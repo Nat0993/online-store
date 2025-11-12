@@ -1,13 +1,28 @@
 import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { getCategoryById, getProductsByCategory } from "../data.js";
 import { renderProductCard } from "../components/product-card.js";
+import { escapeHtml } from '../utils/security.js';
 
+/**
+ * Создает HTML-разметку страницы каталога
+ * @param {string} categoryId - ID категории товаров
+ * @returns {string} HTML-разметка страницы
+ */
 function createCatalogPage(categoryId) {
     const category = getCategoryById(categoryId);
-    const products = getProductsByCategory(categoryId);
 
     if (!category) {
-        return '<div>Категория не найдена</div>';
+        return `
+            <section class="catalog">
+                <div class="container">
+                    <div class="catalog__error">
+                        <h1>Категория не найдена</h1>
+                        <p>Запрошенная категория товаров не существует</p>
+                        <a href="/catalog" class="btn">Вернуться в каталог</a>
+                    </div>
+                </div>
+            </section>
+        `;
     }
 
     return `
@@ -45,6 +60,11 @@ function createCatalogPage(categoryId) {
     `
 }
 
+/**
+ * Инициализирует логику страницы каталога
+ * @param {HTMLElement} pageContainer - контейнер страницы
+ * @param {string} categoryId - id категории товаров
+ */
 function initCatalogPage(pageContainer, categoryId) {
     console.log('Инициализация каталога для категории:', categoryId);
 
@@ -79,7 +99,17 @@ function initCatalogPage(pageContainer, categoryId) {
     });
 }
 
+/**
+ * Рендерит страницу каталога товаров
+ * @param {string} categoryId - ID категории для отображения
+ * @returns {HTMLElement} DOM-элемент страницы каталога
+ */
 export function renderCatalogPage(categoryId) {
+    if (!categoryId || typeof categoryId !== 'string') {
+        console.error('Invalid categoryId provided to renderCatalogPage');
+        categoryId = '';
+    }
+
     const pageContainer = document.createElement('div');
     pageContainer.innerHTML = createCatalogPage(categoryId);
 

@@ -5,8 +5,7 @@ function createIntro() {
             <div class="container">
                 <div class="intro__wrap">
                     <picture>
-                        <img class="intro__img" src="/src/assets/images/intro-img.png" alt="Изображение кресла" width="200"
-                            height="350">
+                        <img class="intro__img" src="/src/assets/images/intro-img.png" alt="Изображение кресла">
                     </picture>
                     <h1 class="intro__title">
                         <span class="intro__title-text intro__title-text--left intro__title-top">Магазин</span>
@@ -22,7 +21,10 @@ function createIntro() {
 };
 
 
-//Подключение логики 
+/**
+ * Инициализирует логику интро-секции (навигация по кнопке)
+ * @param {HTMLElement} introContainer - контейнер интро-секции
+ */
 function initIntro (introContainer) {
     const introBtn = introContainer.querySelector('.intro__btn-link');
 
@@ -35,6 +37,10 @@ function initIntro (introContainer) {
     });
 };
 
+/**
+ * Рендерит интро-секцию главной страницы
+ * @returns {HTMLElement} DOM-элемент интро-секции
+ */
 export function renderIntro () {
     const introContainer = document.createElement('div');
     introContainer.innerHTML = createIntro();

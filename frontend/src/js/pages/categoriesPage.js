@@ -1,7 +1,27 @@
 import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { categories } from '../data.js';
+import { isValidCategory, escapeHtml } from '../utils/security.js';
 
+/**
+ * Создает HTML-разметку страницы категорий
+ * @returns {string} HTML-разметка
+ */
 function createCategoriesPage() {
+    //Валидация категорий
+    const validCategories = categories.filter(isValidCategory);
+
+    if(validCategories.length === 0) {
+        return `
+            <section class="categories">
+                <div class="container">
+                    <div class="categories__error">
+                        <h1>Категории временно недоступны</h1>
+                        <p>Попробуйте обновить страницу позже</p>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
     return `
         <section class="categories">
             <div class="container">
@@ -12,13 +32,13 @@ function createCategoriesPage() {
                 </div>
 
                 <div class="categories__wrapper">
-                    ${categories.map(category => `
-                        <button class="category-card" data-category-id="${category.id}" type="button" aria-label="Перейти к категории ${category.name}">
-                            <img class="category-card__image" src="${category.image}" 
-                                 alt="${category.name}" width="300" height="200"/>
+                    ${validCategories.map(category => `
+                        <button class="category-card" data-category-id="${escapeHtml(category.id)}" type="button" aria-label="Перейти к категории ${escapeHtml(category.name)}">
+                            <img class="category-card__image" src="${escapeHtml(category.image)}" 
+                                 alt="${escapeHtml(category.name)}"/>
                             <div class="category-card__content">
-                                <h2 class="category-card__title">${category.name}</h2>
-                                <p class="category-card__description">${category.description}</p>
+                                <h2 class="category-card__title">${escapeHtml(category.name)}</h2>
+                                <p class="category-card__description">${escapeHtml(category.description)}</p>
                             </div>
                         </button>       
                     `).join('')}
@@ -28,6 +48,10 @@ function createCategoriesPage() {
     `;
 }
 
+/**
+ * Инициализирует логику страницы категорий (навигация по карточкам)
+ * @param {HTMLElement} pageContainer - контейнер страницы категорий
+ */
 function initCategoriesPage(pageContainer) {
     const categoryCards = pageContainer.querySelectorAll('.category-card');
 
@@ -43,6 +67,10 @@ function initCategoriesPage(pageContainer) {
     });
 }
 
+/**
+ * Рендерит страницу категорий товаров
+ * @returns {HTMLElement} DOM-элемент страницы категорий
+ */
 export function renderCategoriesPage() {
     const pageContainer = document.createElement('div');
     pageContainer.innerHTML = createCategoriesPage();
