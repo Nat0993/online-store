@@ -208,7 +208,7 @@ export const saveCurrentCart = (cartData) => {
  */
 export const addToCart = (productId, quantity = 1) => {
     const product = getProductById(productId);
-    if (!product) return cart;
+    if (!product) return getCurrentCart();
 
     const cart = getCurrentCart();
     const existingItem = cart.find(item => item.productId === productId);

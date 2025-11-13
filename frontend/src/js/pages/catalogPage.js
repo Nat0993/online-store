@@ -2,6 +2,7 @@ import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { getCategoryById, getProductsByCategory } from "../data.js";
 import { renderProductCard } from "../components/product-card.js";
 import { escapeHtml } from '../utils/security.js';
+import { renderEmptyMessage } from '../components/emptyMessage.js';
 
 /**
  * Создает HTML-разметку страницы каталога
@@ -76,14 +77,26 @@ function initCatalogPage(pageContainer, categoryId) {
 
     // Проверяем есть ли товары
     if (products.length === 0) {
-        const container = pageContainer.querySelector('.container');
-        container.innerHTML = `
-            <div class="catalog__empty-message">
-                <h3 class="catalog__empty-title">Товары не найдены</h3>
-                <p class="catalog__empty-description">В данной категории пока нет товаров</p>
-                <a href="/catalog" class="catalog__empty-btn btn">Вернуться в каталог</a>
-            </div>
-        `;
+
+        //Удаляем список
+        productList.remove();
+
+        //Удаляем заголовок, если есть
+        const pageHeader = pageContainer.querySelector('.page-header');
+        if (pageHeader) {
+            pageHeader.remove();
+        };
+
+        //Удаляем фильтры и сортировку
+        const catalogControls = pageContainer.querySelector('.catalog__controls');
+        if(catalogControls) {
+            catalogControls.remove();
+        };
+
+        // Используем emptyMessage для пустой категории
+        const emptyMessage = renderEmptyMessage('В данной категории пока нет товаров', 'Скоро мы добавим новые товары в эту категорию', {url: '/catalog', text: 'Вернуться в каталог'});
+        const breadcrumbs = pageContainer.querySelector('.breadcrumbs');
+        breadcrumbs.after(emptyMessage);
         return;
     }
 
@@ -115,13 +128,15 @@ export function renderCatalogPage(categoryId) {
 
     const category = getCategoryById(categoryId);
     const container = pageContainer.querySelector('.container');
-    const breadcrumbs = renderBreadcrumbs([
-        { url: '/', text: 'Главная' },
-        { url: '/catalog', text: 'Категории' }, 
-        { text: category.name }
-    ]);
+    if (category) {
+        const breadcrumbs = renderBreadcrumbs([
+            { url: '/', text: 'Главная' },
+            { url: '/catalog', text: 'Категории' }, 
+            { text: category.name }
+        ]);
+        container.prepend(breadcrumbs);
+    }
 
-    container.prepend(breadcrumbs);
 
     initCatalogPage(pageContainer, categoryId);
 

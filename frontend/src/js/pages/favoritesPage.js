@@ -1,4 +1,6 @@
 import { renderBreadcrumbs } from '../components/breadcrumbs.js';
+import { renderEmptyMessage } from '../components/emptyMessage.js';
+import { renderPageHeader } from '../components/pageHeader.js';
 import { renderProductCard } from '../components/product-card.js';
 import { getFavoritesWithProducts } from '../data.js';
 
@@ -11,10 +13,7 @@ function createFavoritesPage() {
         <section class="favorites">
             <div class="container">
                 <!-- здесь встанет Breadcrumbs -->
-                <div class="favorites__header">
-                    <h1 class="favorites__title">Избранные товары</h1>
-                    <span class="favorites__description">Товары, которые вам понравились</span>
-                </div>
+                <!-- здесь будет заголовок или сообщение о пустоте -->
 
                 <ul class="favorites__list">
                     <!-- здесь будут подгружаться карточки -->
@@ -38,16 +37,24 @@ function initFavoritesPage(pageContainer) {
 
     //Проверяем, есть ли избранные товары
     if (favorites.length === 0) {
-        favoritesList.innerHTML = `
-        <li class="favorites__empty-message">
-                <h3 class="favorites__empty-title">В избранном пока нет товаров</h3>
-                <a href="/catalog" class="favorites__empty-btn btn">Перейти в каталог</a>
-            </li>
-        `;
+        // Удаляем список товаров
+        favoritesList.remove();
+        
+        // Удаляем заголовок страницы (если есть)
+        const pageHeader = pageContainer.querySelector('.page-header');
+        if (pageHeader) {
+            pageHeader.remove();
+        }
+
+        // Создаем сообщение о пустом избранном
+        const emptyMessage = renderEmptyMessage('В Избранном пока нет товаров', 'Выберите понравившиеся Вам товары', {url: '/catalog', text: 'Перейти в каталог'});
+
+        const breadcrumbs = pageContainer.querySelector('.breadcrumbs');
+        breadcrumbs.after(emptyMessage);
         return;
     }
 
-    //Добавляем карточки для избранных товаров
+    // Если есть товары - оставляем заголовок и добавляем товары
     favorites.forEach(favItem => {
         const listItem = document.createElement('li');
         listItem.className = 'favorites__item';
@@ -75,6 +82,9 @@ export function renderFavoritesPage() {
     ]);
     container.prepend(breadcrumbs);
 
+    const pageHeader = renderPageHeader('Избранные товары', 'Товары, которые Вам понравились');
+    breadcrumbs.after(pageHeader);
+    
     initFavoritesPage(pageContainer);
 
     return pageContainer;
