@@ -39,7 +39,9 @@ function createCatalogPage(categoryId) {
                             </svg>
                             Фильтры
                         </button>
-                        <!-- Здесь будут фильтры -->
+                        <div class="catalog__active-filters">
+                        <!-- Здесь будут отображаться активные фильтры -->
+                    </div>
                     </div>
                     
                     <div class="catalog__sort">
@@ -51,6 +53,52 @@ function createCatalogPage(categoryId) {
                         </select>
                     </div>
                 </div>
+
+                <!-- Модальное окно фильтров -->
+            <div class="filters-modal">
+                <div class="filters-modal__content">
+                    <div class="filters-modal__header">
+                        <h3 class="filters-modal__title">Фильтры</h3>
+                        <button class="filters-modal__close" type="button" aria-label="Закрыть окно фильтрации">
+                            <svg class="filters-modal__icon-close" aria-hidden="true">
+                                <use xlink:href="/src/assets/images/sprite.svg#icon-close"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="filters-modal__body">
+                        <div class="filters-modal__wrapper">
+                            <!-- Фильтр по цене -->
+                            <div class="filters-modal__group">
+                                <h4 class="filters-modal__group-title">Цена, ₽</h4>
+                                <div class="filters-modal__group-inner">
+                                    <input type="text" class="filters-modal__input" id="min-price" placeholder="0" min="0">
+                                    <span class="filters-modal__separator">-</span>
+                                    <input type="text" class="filters-modal__input" id="max-price" placeholder="100000" min="0">
+                                </div>
+                            </div>
+                            
+                            <!-- Фильтр по наличию -->
+                            <div class="filters-modal__group">
+                                <h4 class="filters-modal__group-title">Наличие</h4>
+                                <input class="filters-modal__checkbox-input" type="checkbox" id="in-stock" value="in-stock">
+                                <label class="filters-modal__label" for="in-stock">
+                                    <svg class="filters-modal__icon-check" aria-hidden="true">
+                                    <use xlink:href="/src/assets/images/sprite.svg#icon-check"></use>
+                                </svg>
+                                    <span class="filters-modal__checkbox-text">В наличии</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button class="filters-modal__reset">Сбросить фильтры</button>
+                    </div>
+                    
+                    <div class="filters-modal__footer">
+                        
+                        <button class="filters-modal__apply btn">Применить</button>
+                    </div>
+                </div>
+            </div>
 
                 <ul class="product-list">
                 <!-- здесь будут подгружаться карточки -->

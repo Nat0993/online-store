@@ -54,7 +54,9 @@
             right: 15px;
             transition: transform 0.2s ease-in;
 
-            &:hover {
+            &:hover,
+            &:focus-visible {
+                outline: none;
                 transform: scale(1.2);
             }
         }

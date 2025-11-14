@@ -1,0 +1,218 @@
+.filters-modal {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+
+    &--active {
+        opacity: 1;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: $color-black-60;
+        top: 0;
+        left: 0;
+
+    }
+
+    &__content {
+        background-color: $color-white;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 40px;
+        padding: 40px 60px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__header {
+        position: relative;
+        margin: 0 0 25px;
+    }
+
+    &__title {
+        font-size: 28px;
+        line-height: 32px;
+        margin: 0;
+        text-align: center;
+    }
+
+    &__close {
+        border: none;
+        background-color: transparent;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        top: -10px;
+        right: -25px;
+        color: $color-charcoal;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+
+        svg {
+            pointer-events: none;
+        }
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            transform: rotate(90deg);
+        }
+    }
+
+    &__icon-close {
+        width: 30px;
+        height: 30px;
+    }
+
+    &__body {
+        border-top: 1px solid $color-charcoal-50;
+        border-bottom: 1px solid $color-charcoal-50;
+        padding: 10px 0;
+        margin: 0 0 30px;
+    }
+
+    &__wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        margin: 0 0 30px;
+    }
+
+    &__group-title {
+        margin: 0 0 10px;
+    }
+
+    &__group-inner {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    &__input {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid $color-charcoal-50;
+        font-family: $ff-astra;
+        font-size: 14px;
+        line-height: 18px;
+        transition: border-color 0.2s ease-in;
+
+        &:hover {
+            border: 1px solid $color-charcoal;
+        }
+
+        &:focus-visible {
+            outline: none;
+            border: 1px solid $color-ecru;
+        }
+        
+    }
+
+
+    &__label {
+        position: relative;
+        cursor: pointer;
+        color: $color-charcoal;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+
+            .filters-modal__checkbox-text::before {
+                border: 1px solid $color-charcoal;
+            }
+        }
+
+
+    }
+
+    &__checkbox-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        border: 0;
+        clip: rect(0 0 0 0);
+        clip-path: inset(100%);
+
+        &:checked~.filters-modal__label .filters-modal__icon-check {
+            display: block;
+            color: $color-white;
+        }
+
+        &:checked~.filters-modal__label .filters-modal__checkbox-text::before {
+            background-color: $color-ecru;
+            border-color: $color-ecru;
+        }
+    }
+
+    &__icon-check {
+        pointer-events: none;
+        width: 12px;
+        height: 12px;
+        position: absolute;
+        top: 3px;
+        left: 4px;
+        display: none;
+        z-index: 1;
+    }
+
+    &__checkbox-text {
+        font-size: 16px;
+        line-height: 18px;
+        padding-left: 26px;
+
+
+        &::before {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 1px solid $color-charcoal-50;
+            border-radius: 4px;
+            transition: border-color 0.2s ease-in, background-color 0.2s ease-in;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+
+    &__reset {
+        border: 1px solid $color-charcoal-50;
+        padding: 8px;
+        background-color: transparent;
+        border-radius: 4px;
+        font-family: $ff-astra;
+        background-color: $color-ecru-10;
+        color: $color-charcoal;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            background-color: $color-ecru-20;
+        }
+    }
+
+    &__apply {
+        margin: 0 auto;
+        font-size: 16px;
+        line-height: 22px;
+        padding: 14px;
+    }
+}
