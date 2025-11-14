@@ -37,7 +37,6 @@
 
         svg {
             pointer-events: none;
-
         }
 
         &--active {
@@ -47,6 +46,16 @@
 
             .product-card__favorite-icon--active {
                 display: block;
+            }
+        }
+
+        &--remove {
+            top: 15px;
+            right: 15px;
+            transition: transform 0.2s ease-in;
+
+            &:hover {
+                transform: scale(1.2);
             }
         }
 
@@ -63,6 +72,11 @@
 
         &--active {
             display: none;
+        }
+
+        &--remove {
+            width: 25px;
+            height: 25px;
         }
     }
 

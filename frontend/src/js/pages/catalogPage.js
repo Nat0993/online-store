@@ -52,7 +52,7 @@ function createCatalogPage(categoryId) {
                     </div>
                 </div>
 
-                <ul class="catalog__product-list" id="product-list">
+                <ul class="product-list">
                 <!-- здесь будут подгружаться карточки -->
                 <li class="catalog__empty">Загрузка товаров...</li>
             </ul>
@@ -70,7 +70,7 @@ function initCatalogPage(pageContainer, categoryId) {
     console.log('Инициализация каталога для категории:', categoryId);
 
     const products = getProductsByCategory(categoryId);
-    const productList = pageContainer.querySelector('#product-list');
+    const productList = pageContainer.querySelector('.product-list');
 
     // Очищаем список
     productList.innerHTML = '';
@@ -103,7 +103,7 @@ function initCatalogPage(pageContainer, categoryId) {
     // Добавляем карточки через renderProductCard
     products.forEach(product => {
         const listItem = document.createElement('li');
-        listItem.className = 'catalog__product-item';
+        listItem.className = 'product-list__item';
 
         const productCard = renderProductCard(product);
         listItem.appendChild(productCard);

@@ -1,0 +1,25 @@
+.product-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 30px;
+
+    &__item {
+
+        &--removing {
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+
+        }
+
+        &--sliding {
+            transition: transform 0.3s ease-in;
+            transition-duration: 0.3s;
+            transform: translateX(-100%);
+        }
+    }
+
+}

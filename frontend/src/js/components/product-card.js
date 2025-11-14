@@ -35,7 +35,7 @@ function createProductCard(product) {
                 <svg class="product-card__favorite-icon" width="30" height="30">
                     <use xlink:href="/src/assets/images/sprite.svg#icon-favorite-card"></use>
                 </svg>
-                <svg class="product-card__favorite-icon product-card__favorite-icon--active" width="30" height="30">
+                <svg class="product-card__favorite-icon product-card__favorite-icon--active">
                     <use xlink:href="/src/assets/images/sprite.svg#icon-favorite-card-active"></use>
                 </svg>
             </button>
