@@ -71,6 +71,7 @@ function initCatalogPage(pageContainer, categoryId) {
 
     const products = getProductsByCategory(categoryId);
     const productList = pageContainer.querySelector('.product-list');
+    const sortSelect = pageContainer.querySelector('.catalog__sort-select');
 
     // Очищаем список
     productList.innerHTML = '';
@@ -89,27 +90,62 @@ function initCatalogPage(pageContainer, categoryId) {
 
         //Удаляем фильтры и сортировку
         const catalogControls = pageContainer.querySelector('.catalog__controls');
-        if(catalogControls) {
+        if (catalogControls) {
             catalogControls.remove();
         };
 
         // Используем emptyMessage для пустой категории
-        const emptyMessage = renderEmptyMessage('В данной категории пока нет товаров', 'Скоро мы добавим новые товары в эту категорию', {url: '/catalog', text: 'Вернуться в каталог'});
+        const emptyMessage = renderEmptyMessage('В данной категории пока нет товаров', 'Скоро мы добавим новые товары в эту категорию', { url: '/catalog', text: 'Вернуться в каталог' });
         const breadcrumbs = pageContainer.querySelector('.breadcrumbs');
         breadcrumbs.after(emptyMessage);
         return;
     }
 
-    // Добавляем карточки через renderProductCard
-    products.forEach(product => {
-        const listItem = document.createElement('li');
-        listItem.className = 'product-list__item';
+    //Функция сортировки товаров
+    function sortProducts(sortType) {
 
-        const productCard = renderProductCard(product);
-        listItem.appendChild(productCard);
+        //Дублируем массив
+        const sortedProducts = [...products];
 
-        productList.appendChild(listItem);
+        //Возвращаем новый массив после сортировки
+        switch (sortType) {
+            case 'price-asc':
+                return sortedProducts.sort((a, b) => a.price - b.price);
+            case 'price-desc':
+                return sortedProducts.sort((a, b) => b.price - a.price);
+            case 'new':
+                // Пока сортируем по Id как по новизне
+                return sortedProducts.sort((a, b) => b.id.localeCompare(a.id));
+            case 'popular':
+            default:
+                // По умолчанию - как в исходном порядке
+                return sortedProducts;
+        }
+    }
+
+    // Функция рендера товаров
+    function renderProducts (productsToRender) {
+
+        productList.innerHTML = ''; 
+
+        productsToRender.forEach(product => {
+            const listItem = document.createElement('li');
+            listItem.className = 'product-list__item';
+    
+            const productCard = renderProductCard(product);
+            listItem.appendChild(productCard);
+    
+            productList.appendChild(listItem);
+        });
+    }
+
+    // Обработчик изменения сортировки
+    sortSelect.addEventListener('change', (e) => {
+        const sortedProducts = sortProducts(e.target.value);
+        renderProducts(sortedProducts);
     });
+
+    renderProducts(products);
 }
 
 /**
@@ -131,7 +167,7 @@ export function renderCatalogPage(categoryId) {
     if (category) {
         const breadcrumbs = renderBreadcrumbs([
             { url: '/', text: 'Главная' },
-            { url: '/catalog', text: 'Категории' }, 
+            { url: '/catalog', text: 'Категории' },
             { text: category.name }
         ]);
         container.prepend(breadcrumbs);
