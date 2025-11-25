@@ -7,6 +7,7 @@ import { initSPANavigation } from './utils/navigation.js';
 import { renderCatalogPage } from './pages/catalogPage.js';
 import { renderProfilePage } from './pages/profilePage.js';
 import { renderFavoritesPage } from './pages/favoritesPage.js';
+import { renderCartPage } from './pages/cartPage.js';
 import { router } from './router.js';
 
 /**
@@ -48,6 +49,7 @@ class App {
         router.addRoute('/catalog/wardrobes', () => this.renderPage('catalog', 'wardrobes'));
         router.addRoute('/catalog/beds', () => this.renderPage('catalog', 'beds'));
         router.addRoute('/favorites', () => this.renderPage('favorites'));
+        router.addRoute('/cart', () => this.renderPage('cart'));
         //здесь будут маршруты страниц приложения
 
         router.init();
@@ -96,6 +98,9 @@ class App {
                 break;
             case ('favorites'):
                 page = renderFavoritesPage();
+                break;
+            case ('cart'):
+                page = renderCartPage();
                 break;
             //здесь будет рендеринг других страниц
             default:

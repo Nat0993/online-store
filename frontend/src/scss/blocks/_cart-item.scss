@@ -1,0 +1,120 @@
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    border-bottom: 1px solid $color-charcoal;
+    padding: 15px;
+    transition: background-color ease-in 0.2s;
+    transition: transform 0.3s ease-in, opacity 0.2s ease-in;
+
+    &--removing {
+        opacity: 0;
+        transform: scale(0.8) translateX(-50px);
+    }
+
+    &--sliding {
+        transform: translateY(-100%);
+    }
+
+    &:hover {
+        background-color: $color-ecru-20;
+    }
+
+    &__info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    &__img {
+        width: 100px;
+        border: 1px solid $color-charcoal;
+        border-radius: 6px;
+    }
+
+    &__title {
+        font-size: 18px;
+        line-height: 24px;
+        margin: 0 0 10px;
+    }
+
+    &__price {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+    &__wrapper {
+        display: flex;
+        gap: 60px;
+        align-items: center;
+    }
+
+    &__total {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+    }
+
+    &__controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        background-color: $color-ecru-30;
+        border-radius: 12px;
+        font-size: 18px;
+        line-height: 24px;
+        color: $color-charcoal;
+        padding: 6px 0;
+    }
+
+    &__quantity-btn {
+        background-color: transparent;
+        border: none;
+        padding: 0 25px;
+        height: 100%;
+        font-size: 28px;
+        line-height: 36px;
+        color: $color-charcoal;
+        cursor: pointer;
+        transition: color ease-in 0.2s;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            color: $color-ecru;
+        }
+    }
+
+    &__total-price {
+        font-size: 24px;
+        line-height: 32px;
+    }
+
+    &__remove {
+        border: none;
+        background-color: transparent;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        color: $color-charcoal;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform ease-in 0.2s;
+
+        svg {
+            pointer-events: none;
+            width: 30px;
+            height: 30px;
+        }
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            transform: scale(1.2);
+        }
+    }
+}

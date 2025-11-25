@@ -72,9 +72,9 @@ function createCatalogPage(categoryId) {
                             <div class="filters-modal__group">
                                 <h4 class="filters-modal__group-title">Цена, ₽</h4>
                                 <div class="filters-modal__group-inner">
-                                    <input type="text" class="filters-modal__input" id="min-price" placeholder="0" min="0">
+                                    <input type="number" class="filters-modal__input" id="min-price" placeholder="0" min="0">
                                     <span class="filters-modal__separator">-</span>
-                                    <input type="text" class="filters-modal__input" id="max-price" placeholder="100000" min="0">
+                                    <input type="number" class="filters-modal__input" id="max-price" placeholder="100000" min="0">
                                 </div>
                             </div>
                             
@@ -121,6 +121,23 @@ function initCatalogPage(pageContainer, categoryId) {
     const productList = pageContainer.querySelector('.product-list');
     const sortSelect = pageContainer.querySelector('.catalog__sort-select');
 
+    //Элементы фильрации
+    const filterBtn = pageContainer.querySelector('.catalog__filter-btn');
+    const filtersModal = pageContainer.querySelector('.filters-modal');
+    const closeFilterBtn = pageContainer.querySelector('.filters-modal__close');
+    const applyFilterBtn = pageContainer.querySelector('.filters-modal__apply');
+    const resetFilterBtn = pageContainer.querySelector('.filters-modal__reset');
+    const minPriceInput = pageContainer.querySelector('#min-price');
+    const maxPriceInput = pageContainer.querySelector('#max-price');
+    const inStockCheckbox = pageContainer.querySelector('#in-stock');
+
+    // Фильтры по умолчанию
+    let currentFilters = {
+        minPrice: null,
+        maxPrice: null,
+        inStock: false
+    };
+
     // Очищаем список
     productList.innerHTML = '';
 
@@ -149,11 +166,21 @@ function initCatalogPage(pageContainer, categoryId) {
         return;
     }
 
+    //Функция открытия модального окна
+    function openFiltersModal() {
+        filtersModal.classList.add('filters-modal--active');
+    }
+
+    //Функция закрытия модального окна
+    function closeFiltersModal() {
+        filtersModal.classList.remove('filters-modal--active');
+    }
+
     //Функция сортировки товаров
-    function sortProducts(sortType) {
+    function sortProducts(sortType, productsToSort = products) {
 
         //Дублируем массив
-        const sortedProducts = [...products];
+        const sortedProducts = [...productsToSort];
 
         //Возвращаем новый массив после сортировки
         switch (sortType) {
@@ -171,27 +198,107 @@ function initCatalogPage(pageContainer, categoryId) {
         }
     }
 
-    // Функция рендера товаров
-    function renderProducts (productsToRender) {
+    //Функция фильтрации товаров
+    function filterProducts(filters, productsToFilter = products) {
+        return productsToFilter.filter(product => {
+            //по цене
+            if (filters.minPrice !== null && product.price < filters.minPrice) {
+                return false;
+            }
 
-        productList.innerHTML = ''; 
+            if (filters.maxPrice !== null && product.price > filters.maxPrice) {
+                return false;
+            }
+
+            //по наличию 
+            if (filters.inStock && !product.inStock) {
+                return false;
+            }
+
+            return true;
+        })
+    }
+
+    //Функция применения фильтрации и сортировки 
+    function applyFiltersAndSort() {
+        let filteredProducts = filterProducts(currentFilters);
+        const sortType = sortSelect.value;
+        filteredProducts = sortProducts(sortType, filteredProducts)
+        renderProducts(filteredProducts);
+
+        closeFiltersModal();
+    }
+
+    //Функция сброса фильтров
+    function resetFilters() {
+        currentFilters = {
+            minPrice: null,
+            maxPrice: null,
+            inStock: false
+        }
+
+        minPriceInput.value = '';
+        maxPriceInput.value = '';
+        inStockCheckbox.checked = false;
+
+        let filteredProducts = filterProducts(currentFilters);
+        const sortType = sortSelect.value;
+        filteredProducts = sortProducts(sortType, filteredProducts);
+        renderProducts(filteredProducts);
+    }
+
+    // Функция рендера товаров
+    function renderProducts(productsToRender) {
+
+        productList.innerHTML = '';
 
         productsToRender.forEach(product => {
             const listItem = document.createElement('li');
             listItem.className = 'product-list__item';
-    
+
             const productCard = renderProductCard(product);
             listItem.appendChild(productCard);
-    
+
             productList.appendChild(listItem);
         });
     }
 
+    //Обработчики событий
+
+    //Открытие окна фильтрации по кнопке
+    filterBtn.addEventListener('click', openFiltersModal);
+
+    //Закрытие окна фильтрации по кнопке
+    closeFilterBtn.addEventListener('click', closeFiltersModal);
+
+    //Применение фильтров по кнопке
+    applyFilterBtn.addEventListener('click', () => {
+        //собираем данные с инпутов
+        currentFilters.minPrice = minPriceInput.value.trim() ? parseInt(minPriceInput.value) : null;
+        currentFilters.maxPrice = maxPriceInput.value.trim() ? parseInt(maxPriceInput.value) : null;
+        currentFilters.inStock = inStockCheckbox.checked;
+
+        applyFiltersAndSort();
+    })
+
+    //Сброс фильтров по кнопке
+    resetFilterBtn.addEventListener('click', resetFilters);
+
+    //Закрытие по клику вне модалки
+    filtersModal.addEventListener('click', (e) => {
+        if (e.target === filtersModal) {
+            closeFiltersModal();
+        }
+    })
+
+    //Закрытие по Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && filtersModal.classList.contains('filters-modal--active')) {
+            closeFiltersModal();
+        }
+    })
     // Обработчик изменения сортировки
-    sortSelect.addEventListener('change', (e) => {
-        const sortedProducts = sortProducts(e.target.value);
-        renderProducts(sortedProducts);
-    });
+    sortSelect.addEventListener('change', applyFiltersAndSort);
 
     renderProducts(products);
 }

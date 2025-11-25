@@ -6,10 +6,12 @@
     left: 0;
     z-index: 1000;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.3s ease-in;
 
     &--active {
         opacity: 1;
+        pointer-events: auto;
     }
 
     &::before {
@@ -20,6 +22,7 @@
         background-color: $color-black-60;
         top: 0;
         left: 0;
+        pointer-events: none;
 
     }
 
@@ -117,7 +120,18 @@
             outline: none;
             border: 1px solid $color-ecru;
         }
-        
+
+        /* Убираем стрелочки в Chrome, Safari, Edge, Opera */
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Убираем стрелочки в Firefox */
+        &[type=number] {
+            -moz-appearance: textfield;
+        }
     }
 
 
