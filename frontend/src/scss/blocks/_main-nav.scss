@@ -10,7 +10,6 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity ease-in 0.3s 0.3s, visibility ease-in 0.3s 0.3s;
-    $root: &;
     overflow: hidden;
 
     &--active {
@@ -25,7 +24,6 @@
         list-style: none;
         display: flex;
         flex-direction: column;
-
     }
 
     &__item:not(:last-child) {
