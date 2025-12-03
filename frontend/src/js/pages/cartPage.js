@@ -147,6 +147,14 @@ function initCartPage(pageContainer) {
     function updateCartDisplay() {
         const cartItems = getCartItemsWithProducts();
 
+        // Удаляем все существующие empty-message элементы
+        const existingEmptyMessages = pageContainer.querySelectorAll('.empty-message');
+        existingEmptyMessages.forEach(msg => {
+            if (msg.parentNode) {
+                msg.remove();
+            }
+        });
+
         // Очищаем список перед добавлением новых элементов
         cartList.innerHTML = '';
 
