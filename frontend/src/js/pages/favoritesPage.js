@@ -172,6 +172,23 @@ function initFavoritesPage(pageContainer, favorites) {
         listItem.appendChild(productCard);
         favoritesList.appendChild(listItem);
     });
+
+    // При смене пользователя перезагружаем страницу
+    window.addEventListener('auth:change', () => {
+        if (window.location.pathname === '/favorites') {
+            // Небольшая задержка для гарантии, что данные в data.js обновились
+            setTimeout(() => {
+                window.history.pushState({}, '', '/favorites');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+            }, 150);
+        }
+    });
+
+    // Слушаем обновления избранного для обновления заголовка
+    window.addEventListener('favorites:update', () => {
+        const updatedFavorites = getFavoritesWithProducts();
+        updatePageHeader(updatedFavorites.length);
+    });
 }
 
 /**

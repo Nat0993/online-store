@@ -194,6 +194,17 @@ function initCartPage(pageContainer) {
     // Слушаем глобальные события обновления корзины
     window.addEventListener('cart:update', updateCartDisplay);
 
+    // При смене пользователя перезагружаем страницу
+    window.addEventListener('auth:change', () => {
+        if (window.location.pathname === '/cart') {
+            // Небольшая задержка для гарантии, что данные в data.js обновились
+            setTimeout(() => {
+                window.history.pushState({}, '', '/cart');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+            }, 150);
+        }
+    });
+
     // Первоначальная инициализация отображения
     updateCartDisplay();
 }
