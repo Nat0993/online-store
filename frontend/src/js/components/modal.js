@@ -51,6 +51,7 @@ function createModal() {
  */
 function initModal(modalContainer) {
     const modalWindow = modalContainer.querySelector('.auth');
+    const modalWrapper = modalContainer.querySelector('.auth__wrapper')
     const btnCloseModal = modalContainer.querySelector('.auth__close');
     const btnSwitchModal = modalContainer.querySelector('.auth__switch-btn');
     const modalTitle = modalContainer.querySelector('.auth__title');
@@ -103,18 +104,34 @@ function initModal(modalContainer) {
     // Закрытие по клику на крестик 
     btnCloseModal.addEventListener('click', closeModal);
 
-    //Закрытие по клику вне контента модалки
-    document.addEventListener('click', (event) => {
-        const target = event.target;
+    //Закрытие по клику вне модалки (предотвращаем закрытие при выделении текста)
+    let isDragging = false;
+    let startX, startY;
 
+    if (modalWrapper) {
+        modalWrapper.addEventListener('mousedown', (e) => {
+            isDragging = false;
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        modalWrapper.addEventListener('mousemove', (e) => {
+            if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+                isDragging = true; // пользователь выделяет текст
+            }
+        });
+    }
+
+    modalWindow.addEventListener('click', (e) => {
         //Игнор кликов в момент открытия модалки (конфликт с кнопкой войти в хедере)
         if (isOpening) {
             return;
         }
 
-        if (!modalWindow.contains(target)) {
-            closeModal();
+        if (e.target === modalWindow && !isDragging) {
+            closeModal(); // закрываем только если не было выделения
         }
+        isDragging = false;
     });
 
     // 5. 
@@ -313,7 +330,13 @@ function initModal(modalContainer) {
             const user = await registerUser({
                 email: formData.email,
                 password: formData.password,
-                name: formData.email.split('@')[0]
+                login: formData.email.split('@')[0],
+                firstName: '',
+                lastName: '',
+                middleName: '',
+                phone: '',
+                addresses: [],
+                orders: []
             });
 
             console.log('Успешная регистрация:', user);
@@ -348,7 +371,7 @@ function initModal(modalContainer) {
  * @property {Function} functions - функция открытия модального окна
  */
 export function renderModal() {
-    const modalContainer = document.createElement('div');;
+    const modalContainer = document.createElement('div');
 
     //Вставляем разметку
     modalContainer.innerHTML = createModal();

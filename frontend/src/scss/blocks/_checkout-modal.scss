@@ -1,0 +1,178 @@
+.checkout-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+
+    &--active {
+        opacity: 1;
+    }
+
+    &::before {
+        content: "";
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: $color-black-60;
+    }
+
+    &__wrapper {
+        background: $color-white;
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        height: 90%;
+        position: relative;
+        z-index: 1100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        transition: opacity 0.3s ease-in;
+
+        &--form {
+            flex: 1;
+            min-height: 0;
+        }
+
+        &--success {
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            height: 100%;
+        }
+    }
+
+    &__title {
+        margin: 0 0 40px;
+        font-size: 24px;
+        line-height: 32px;
+        text-align: center;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    &__close {
+        padding: 0;
+        border: none;
+        background-color: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        color: $color-charcoal;
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        transition: transform 0.2s ease-in;
+        cursor: pointer;
+        z-index: 1200;
+
+        svg {
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            transform: rotate(45deg);
+        }
+    }
+
+    &__inner {
+        overflow-y: auto;
+        padding-right: 10px;
+
+        // Кастомный скроллбар
+        scrollbar-width: thin;
+        scrollbar-color: $color-charcoal-50 transparent;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 10px 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: $color-charcoal-50;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background-color: $color-charcoal-50;
+            }
+        }
+    }
+
+    &__main-content {
+        display: grid;
+        grid-template-columns: 450px 1fr;
+        flex: 1;
+        min-height: 0;
+        gap: 40px;
+        margin: 0 0 60px;
+
+    }
+
+    &__footer {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__confirm-btn {
+        width: 80%;
+    }
+
+    &__agreement {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    &__agreement-link {
+        text-decoration: underline;
+    }
+
+    &__success-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__success-title {
+        margin: 0 0 15px;
+    }
+
+    &__message {
+        font-size: 16px;
+        line-height: 18px;
+        margin: 0 0 30px;
+    }
+
+
+}

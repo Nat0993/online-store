@@ -2,6 +2,7 @@ import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { renderCartItem } from '../components/cartItem.js';
 import { renderEmptyMessage } from '../components/emptyMessage.js';
 import { getCartItemsWithProducts, saveCurrentCart } from '../data.js';
+import { renderCheckoutModal } from '../components/checkoutModal.js';
 
 /**
  * Создает HTML-разметку страницы корзины
@@ -130,13 +131,16 @@ function initCartPage(pageContainer) {
      * Временная заглушка (будет реализована полная логика оформления)
      */
     function handleCheckout() {
-        const cartItems = getCartItemsWithProducts();
-
-        // Проверка на пустую корзину
-        if (cartItems.length === 0) return;
-
-        // Временная реализация
-        alert('Функция оформления заказа в разработке! Скоро будет доступна.');
+        // Создаем модалку
+    const checkoutModal = renderCheckoutModal();
+    
+    // Добавляем контейнер модалки в DOM (если еще не добавлен)
+    if (!document.body.contains(checkoutModal.container)) {
+        document.body.appendChild(checkoutModal.container);
+    }
+    
+    // Открываем модалку
+    checkoutModal.open();
     }
 
     /**

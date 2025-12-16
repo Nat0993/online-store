@@ -7,7 +7,6 @@
     z-index: 120;
     visibility: hidden;
     transition: visibility 0.3s ease-in;
-    pointer-events: none;
 
     &::before {
         content: "";
@@ -140,7 +139,7 @@
     }
 
     &__error {
-        color: #a32b2b;
+        color: $color-crimson-dark;
         font-size: 12px;
         line-height: 16px;
         position: absolute;

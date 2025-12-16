@@ -330,6 +330,69 @@ export const getFavoritesWithProducts = () => {
     }).filter(fav => fav.product);
 };
 
+// Заказы
+
+/**
+ * Генерирует уникальный номер заказа
+ * @returns {string} номер заказа в формате "ORD-XXXXXXXX"
+ */
+export function generateOrderNumber() {
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `ORD-${timestamp.slice(-8)}-${random}`;
+}
+
+/**
+ * Добавляет новый заказ
+ * @param {Object} orderData - данные заказа
+ * @returns {Object} созданный заказ с номером
+ */
+export const addOrder = (orderData) => {
+    const user = getCurrentUser();
+    const key = user ? `orders_${user.id}` : 'orders_guest';
+    
+    const orders = getCurrentOrders();
+    
+    const orderNumber = generateOrderNumber();
+    const order = {
+        ...orderData,
+        id: generateId('order'),
+        orderNumber: orderNumber,
+        status: 'pending', // "pending", "processing", "shipped", "delivered", "cancelled"
+        createdAt: new Date().toISOString(),
+        userId: user?.id || null,
+        isGuest: !user
+    };
+
+    orders.push(order);
+    saveToLocalStorage(key, orders);
+    
+    console.log('Заказ сохранен:', { key, order });
+    return order;
+};
+
+/**
+ * Получает заказы текущего пользователя/гостя
+ * (может понадобиться для истории заказов)
+ * @returns {Array} массив заказов
+ */
+export const getCurrentOrders = () => {
+    const user = getCurrentUser();
+    const key = user ? `orders_${user.id}` : 'orders_guest';
+    return loadFromLocalStorage(key) || [];
+};
+
+/**
+ * Находит заказ по номеру
+ * @param {string} orderNumber - номер заказа
+ * @returns {Object|null} заказ или null
+ */
+export const getOrderByNumber = (orderNumber) => {
+    const orders = getCurrentOrders();
+    return orders.find(order => order.orderNumber === orderNumber) || null;
+};
+
+
 // Хранение данных
 
 /**
@@ -585,3 +648,29 @@ export const getCurrentUser = () => {
 export const logoutUser = () => {
     localStorage.removeItem('currentUser');
 }
+
+/**
+ * Обновляет данные текущего пользователя
+ * @param {Object} updates - объект с обновляемыми полями {name?, email?}
+ * @returns {Object|null} обновленный пользователь или null
+ */
+export const updateCurrentUser = (updates) => {
+    const user = getCurrentUser();
+    if (!user) return null;
+
+    // Обновляем поля
+    const updatedUser = { ...user, ...updates };
+    
+    // Сохраняем в общий список пользователей
+    const userIndex = users.findIndex(u => u.id === user.id);
+    if (userIndex !== -1) {
+        users[userIndex] = updatedUser;
+        saveToLocalStorage('users', users);
+    }
+    
+    // Обновляем текущего пользователя
+    setCurrentUser(updatedUser);
+    
+    console.log('Данные пользователя обновлены:', updatedUser);
+    return updatedUser;
+};

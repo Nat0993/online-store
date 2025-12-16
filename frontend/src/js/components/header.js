@@ -123,7 +123,7 @@ function initHeader(headerContainer, openModalFunction) {
     });
 
     //Функция обновлния счетчиков
-    function updateCounters () {
+    function updateCounters() {
         const cartItems = getCurrentCart();
         const favorites = getCurrentFavorites();
 
@@ -143,16 +143,43 @@ function initHeader(headerContainer, openModalFunction) {
         console.log('Обновление хедера, пользователь:', currentUser);
 
         if (currentUser) {
-            btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
-                            </svg>
-                            ${escapeHtml(currentUser.name)}`;
+            // Определяем, что показывать: firstName или login
+            let displayName;
+
+            if (currentUser.firstName && currentUser.firstName.trim() !== '') {
+                // Если есть заполненное имя - показываем его
+                displayName = currentUser.firstName;
+            } else if (currentUser.login) {
+                // Иначе показываем логин (часть email до @)
+                displayName = currentUser.login;
+            } else {
+                // На всякий: если вдруг login тоже undefined
+                displayName = 'Пользователь';
+            }
+
+            //проверяем что displayName - строка
+            displayName = String(displayName || 'Пользователь');
+
+            // Обрезаем слишком длинные имена
+            if (displayName.length > 15) {
+                displayName = displayName.substring(0, 15) + '...';
+            }
+
+            btnLogin.innerHTML = `
+            <svg width="20" height="20" aria-hidden="true">
+                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
+            </svg>
+            <span class="user-name">${escapeHtml(displayName)}</span>
+        `;
             btnLogout.style.display = 'block';
+
         } else {
-            btnLogin.innerHTML = `<svg width="20" height="20" aria-hidden="true">
-                                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
-                            </svg>
-                            Войти`;
+            btnLogin.innerHTML = `
+            <svg width="20" height="20" aria-hidden="true">
+                <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
+            </svg>
+            <span>Войти</span>
+        `;
             btnLogout.style.display = 'none';
         }
 
@@ -165,7 +192,7 @@ function initHeader(headerContainer, openModalFunction) {
         console.log('Пользователь вышел');
 
         // Отправляем событие о выходе
-        window.dispatchEvent(new CustomEvent('auth:change', { 
+        window.dispatchEvent(new CustomEvent('auth:change', {
             detail: { user: null, type: 'logout' }
         }));
     });

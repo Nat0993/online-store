@@ -1,0 +1,213 @@
+<!-- Основной контейнер модального окна -->
+<div class="checkout-modal">
+  <div class="checkout-modal__wrapper">
+
+    <!-- ЭКРАН ФОРМЫ ОФОРМЛЕНИЯ -->
+    <div class="checkout-modal__content checkout-modal__content--form checkout-modal__content--active">
+
+      <!-- Заголовок и кнопка закрытия -->
+      <div class="checkout-modal__header">
+        <h2 class="checkout-modal__title">Оформление заказа</h2>
+        <button class="checkout-modal__close" type="button" aria-label="Закрыть окно оформления">
+          <svg width="20" height="20" aria-hidden="true">
+            <use xlink:href="/src/assets/images/sprite.svg#icon-close"></use>
+          </svg>
+        </button>
+      </div>
+
+      <div class="checkout-modal__inner">
+        <!-- Основной контент в двух колонках -->
+        <div class="checkout-modal__main-content">
+  
+          <!-- ЛЕВАЯ КОЛОНКА: ФОРМА -->
+          <form class="checkout-form" id="checkout-form">
+  
+            <!-- Секция 1: Контактные данные -->
+            <div class="checkout-form__group">
+              <h3 class="checkout-form__group-title">Контактные данные</h3>
+  
+              <div class="checkout-form__group-inner">
+                <!-- Поле: ФИО -->
+                <div class="checkout-form__field">
+                  <input type="text" id="checkout-name" class="checkout-form__input" placeholder="ФИО" required>
+                  <span class="checkout-form__error" id="name-error"></span>
+                </div>
+  
+                <!-- Поле: Телефон -->
+                <div class="checkout-form__field">
+                  <input type="tel" id="checkout-phone" class="checkout-form__input" placeholder="Телефон" required>
+                  <span class="checkout-form__error" id="phone-error"></span>
+                </div>
+  
+                <!-- Поле: Email -->
+                <div class="checkout-form__field">
+                  <input type="email" id="checkout-email" class="checkout-form__input" placeholder="Email" required>
+                  <span class="checkout-form__error" id="email-error"></span>
+                </div>
+              </div>
+            </div>
+  
+            <!-- Секция 2: Адрес доставки -->
+            <div class="checkout-form__group">
+              <h3 class="checkout-form__group-title">Адрес доставки</h3>
+  
+              <div class="checkout-form__group-inner">
+                <!-- Поле: Адрес -->
+                <div class="checkout-form__field">
+                  <input type="text" id="checkout-address" class="checkout-form__input"
+                    placeholder="Город, улица, дом, квартира" required>
+                  <span class="checkout-form__error" id="address-error"></span>
+                </div>
+  
+                <!-- Поле: Комментарий -->
+                <div class="checkout-form__field">
+                  <textarea id="checkout-comment" class="checkout-form__textarea checkout-form__input"
+                    placeholder="Комментарий для курьера (необязательно)">
+                  </textarea>
+                </div>
+              </div>
+            </div>
+  
+            <!-- Секция 3: Способ оплаты -->
+            <div class="checkout-form__group">
+              <h3 class="checkout-form__group-title">Способ оплаты</h3>
+  
+              <!-- Группа радио-кнопок -->
+              <div class="checkout-form__radio-group">
+  
+                <!-- Вариант 1: Картой онлайн -->
+                <label class="checkout-form__radio-label">
+                  <input type="radio" name="payment" value="card" class="checkout-form__radio" checked>
+                  <span class="checkout-form__radio-custom"></span>
+                  <span class="checkout-form__radio-text">Картой онлайн</span>
+                </label>
+  
+                <!-- Вариант 2: Наличными -->
+                <label class="checkout-form__radio-label">
+                  <input type="radio" name="payment" value="cash" class="checkout-form__radio">
+                  <span class="checkout-form__radio-custom"></span>
+                  <span class="checkout-form__radio-text">Наличными при получении</span>
+                </label>
+  
+                <!-- Вариант 3: Картой курьеру -->
+                <label class="checkout-form__radio-label">
+                  <input type="radio" name="payment" value="card_courier" class="checkout-form__radio">
+                  <span class="checkout-form__radio-custom"></span>
+                  <span class="checkout-form__radio-text">Картой курьеру</span>
+                </label>
+  
+              </div>
+            </div>
+  
+          </form>
+  
+          <!-- ПРАВАЯ КОЛОНКА: ИТОГИ -->
+          <div class="checkout-summary">
+  
+            <!-- Заголовок раздела -->
+            <h3 class="checkout-summary__title">Ваш заказ</h3>
+  
+            <!-- Список товаров -->
+            <ul class="checkout-summary__items-list">
+  
+              <!-- Пример товара 1 -->
+              <li class="checkout-summary__item">
+                <div class="checkout-summary__item-info">
+                  <span class="checkout-summary__item-name">Смартфон iPhone 15 Pro Max 512GB Gold</span>
+                  <span class="checkout-summary__item-quantity">× 1</span>
+                </div>
+                <span class="checkout-summary__item-price">144 999 ₽</span>
+              </li>
+  
+              <!-- Пример товара 2 -->
+              <li class="checkout-summary__item">
+                <div class="checkout-summary__item-info">
+                  <span class="checkout-summary__item-name">Защитное стекло для iPhone 15 Pro Max</span>
+                  <span class="checkout-summary__item-quantity">× 2</span>
+                </div>
+                <span class="checkout-summary__item-price">3 998 ₽</span>
+              </li>
+  
+              <!-- Пример товара 3 -->
+              <li class="checkout-summary__item">
+                <div class="checkout-summary__item-info">
+                  <span class="checkout-summary__item-name">Чехол для iPhone 15 Pro Max кожаный</span>
+                  <span class="checkout-summary__item-quantity">× 1</span>
+                </div>
+                <span class="checkout-summary__item-price">7 999 ₽</span>
+              </li>
+  
+            </ul>
+          </div>
+  
+          <!-- Итоговая стоимость (всегда внизу правой колонки) -->
+          <div class="checkout-summary__total">
+  
+            <!-- Строка: Товары -->
+            <div class="checkout-summary__total-row">
+              <span>Товары (3):</span>
+              <span>156 996 ₽</span>
+            </div>
+  
+            <!-- Строка: Доставка -->
+            <div class="checkout-summary__total-row">
+              <span>Доставка:</span>
+              <span>Бесплатно</span>
+            </div>
+  
+            <!-- Строка: Итого (жирный) -->
+            <div class="checkout-summary__total-row checkout-summary__total-row--final">
+              <span>Итого:</span>
+              <span>156 996 ₽</span>
+            </div>
+  
+          </div>
+  
+        </div>
+  
+        <!-- ФУТЕР МОДАЛКИ с кнопкой и соглашением (ВНЕ КОЛОНОК) -->
+        <div class="checkout-modal__footer">
+          <button type="button" class="checkout-modal__confirm-btn btn" id="confirm-order">
+            Подтвердить заказ
+          </button>
+          <p class="checkout-modal__agreement">
+            Нажимая кнопку, вы соглашаетесь с
+            <a href="/agreement" class="checkout-modal__agreement-link" target="_blank">
+              условиями обработки персональных данных
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ЭКРАН УСПЕШНОГО ОФОРМЛЕНИЯ (скрыт по умолчанию) -->
+    <div class="checkout-modal__content checkout-modal__content--success" style="display: none;">
+  
+      <div class="checkout-modal__success-wrap">
+        <!-- Заголовок -->
+        <h2 class="checkout-modal__title checkout-modal__succes-title">Спасибо за заказ!</h2>
+  
+        <!-- Сообщение -->
+        <p class="checkout-modal__message">
+          Ваш заказ успешно оформлен.<br>
+          Скоро мы свяжемся с Вами для подтверждения.
+        </p>
+  
+        <!-- Кнопка продолжения -->
+        <button type="button" class="checkout-modal__succes-btn btn" id="continue-shopping">
+          Продолжить покупки
+        </button>
+  
+        <!-- Информация о заказе -->
+        <p class="checkout-modal__order-info">
+          Номер вашего заказа: <strong id="order-number">#ORD-98123456</strong>
+        </p>
+  
+  
+      </div>
+    </div>
+  </div>
+
+
+</div>
