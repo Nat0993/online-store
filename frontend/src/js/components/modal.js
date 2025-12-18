@@ -335,8 +335,6 @@ function initModal(modalContainer) {
                 lastName: '',
                 middleName: '',
                 phone: '',
-                addresses: [],
-                orders: []
             });
 
             console.log('Успешная регистрация:', user);

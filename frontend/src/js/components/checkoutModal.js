@@ -126,7 +126,7 @@ function createContactFormSection() {
                 <input type="tel" 
                        id="checkout-phone" 
                        class="checkout-form__input" 
-                       placeholder="Телефон" 
+                       placeholder="+7 (999) 999 99 99" 
                        value="${escapeHtml(phone)}"
                        required>
                 <span class="checkout-form__error" id="phone-error"></span>
@@ -610,26 +610,71 @@ function initCheckoutModal(modalContainer) {
      */
     function validatePhone() {
         const value = phoneInput.value.trim();
-        const phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;
 
         if (!value) {
             showError(phoneInput, phoneError, 'Введите номер телефона');
             return false;
         }
 
-        const digitsOnly = value.replace(/\D/g, '');
-        if (digitsOnly.length < 10) {
-            showError(phoneInput, phoneError, 'Номер слишком короткий');
+        // Нормализуем для проверки
+        const normalizedPhone = normalizePhone(value);
+
+        // 1. Проверяем, что номер начинается с +7
+        if (!normalizedPhone.startsWith('+7')) {
+            showError(phoneInput, phoneError, 'Номер должен начинаться с +7');
             return false;
         }
 
-        if (!phoneRegex.test(value)) {
-            showError(phoneInput, phoneError, 'Неверный формат номера');
+        // 2. Проверяем длину (должно быть 12 символов: +7 + 10 цифр)
+        if (normalizedPhone.length !== 12) {
+            showError(phoneInput, phoneError, 'В номере должно быть 10 цифр после +7');
+            return false;
+        }
+
+        // 3. Проверяем, что после +7 только цифры
+        const digitsOnly = normalizedPhone.substring(2);
+        if (!/^\d{10}$/.test(digitsOnly)) {
+            showError(phoneInput, phoneError, 'Номер содержит недопустимые символы');
             return false;
         }
 
         clearError(phoneInput, phoneError);
         return true;
+    }
+
+    /**
+     * Нормализует номер телефона (убирает все нецифровые символы кроме +)
+    * @param {string} phone - номер телефона
+    * @returns {string} номер в формате +7XXXXXXXXXX
+    */
+    function normalizePhone(phone) {
+        if (!phone) return '';
+
+        // Оставляем только + и цифры
+        const normalized = phone.replace(/[^\d+]/g, '');
+
+        // Если начинается с +7, оставляем как есть
+        if (normalized.startsWith('+7')) {
+            return normalized;
+        }
+
+        // Если начинается с 7, добавляем +
+        if (normalized.startsWith('7')) {
+            return '+' + normalized;
+        }
+
+        // Если начинается с 8, меняем на +7
+        if (normalized.startsWith('8')) {
+            return '+7' + normalized.substring(1);
+        }
+
+        // Если начинается с 9, добавляем +7
+        if (normalized.startsWith('9')) {
+            return '+7' + normalized;
+        }
+
+        // По умолчанию добавляем +7
+        return '+7' + normalized;
     }
 
     /**
@@ -725,7 +770,7 @@ function initCheckoutModal(modalContainer) {
             lastName: lastNameInput.value.trim(),
             firstName: firstNameInput.value.trim(),
             middleName: middleNameInput.value.trim(),
-            phone: phoneInput.value.trim(),
+            phone: normalizePhone(phoneInput.value.trim()),
             email: emailInput.value.trim(),
             address: addressInput.value.trim(),
             comment: commentInput.value.trim(),
@@ -779,7 +824,6 @@ function initCheckoutModal(modalContainer) {
                 const hasPhoneChanged = currentUser.phone !== formData.phone;
 
                 if (hasNameChanged || hasPhoneChanged) {
-                    let shouldSave = false;
                     let message = '';
 
                     if (hasNameChanged && hasPhoneChanged) {
