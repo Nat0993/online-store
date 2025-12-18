@@ -4,7 +4,6 @@ import {
     getCurrentUser,
     saveCurrentCart,
     addOrder,
-    generateOrderNumber,
     updateCurrentUser
 } from '../data.js';
 
@@ -23,7 +22,6 @@ function calculateOrderTotal(orderItems) {
  * @returns {string} HTML-разметка формы
  */
 function createFormScreen() {
-    const currentUser = getCurrentUser();
 
     return `
     <div class="checkout-modal__content checkout-modal__content--form">
@@ -291,7 +289,7 @@ function createSuccessScreenHTML(orderNumber) {
         </p>
   
         <!-- Кнопка продолжения -->
-        <button type="button" class="checkout-modal__succes-btn btn" id="continue-shopping">
+        <button type="button" class="checkout-modal__success-btn btn" id="continue-shopping">
           Продолжить покупки
         </button>
   
@@ -761,24 +759,42 @@ function initCheckoutModal(modalContainer) {
                     formData.middleName
                 ].filter(Boolean).join(' ');
 
-                // Создаем объект обновления
-                const userUpdates = {
-                    lastName: formData.lastName,
-                    firstName: formData.firstName,
-                    middleName: formData.middleName,
-                    name: fullName // Полное имя для обратной совместимости
-                };
-
-                // Проверяем, менялось ли имя
+                // Вычисляем текущее полное имя пользователя
                 const currentFullName = [
                     currentUser.lastName,
                     currentUser.firstName,
                     currentUser.middleName
                 ].filter(Boolean).join(' ');
 
-                if (currentFullName !== fullName) {
-                    // Если пользователь ранее не заполнял имя или изменил его
-                    if (!currentUser.firstName || confirm('Сохранить ваше имя для будущих заказов?')) {
+                // Создаем объект обновления
+                const userUpdates = {
+                    lastName: formData.lastName,
+                    firstName: formData.firstName,
+                    middleName: formData.middleName,
+                    phone: formData.phone,
+                    name: fullName // Полное имя для обратной совместимости
+                };
+
+                const hasNameChanged = currentFullName !== fullName;
+                const hasPhoneChanged = currentUser.phone !== formData.phone;
+
+                if (hasNameChanged || hasPhoneChanged) {
+                    let shouldSave = false;
+                    let message = '';
+
+                    if (hasNameChanged && hasPhoneChanged) {
+                        message = 'Сохранить ваши имя и телефон для будущих заказов?';
+                    } else if (hasNameChanged) {
+                        message = 'Сохранить ваше имя для будущих заказов?';
+                    } else if (hasPhoneChanged) {
+                        message = 'Сохранить ваш телефон для будущих заказов?';
+                    }
+
+                    // Если пользователь ранее не заполнял данные или согласен сохранить изменения
+                    if ((!currentUser.firstName && !currentUser.middleName && !currentUser.lastName && hasNameChanged) ||
+                        (!currentUser.phone && hasPhoneChanged) ||
+                        confirm(message)) {
+
                         const updatedUser = updateCurrentUser(userUpdates);
 
                         // Отправляем событие для обновления UI в хедере
@@ -817,6 +833,7 @@ function initCheckoutModal(modalContainer) {
             confirmBtn.textContent = 'Подтвердить заказ';
         }
     }
+
 
     // Навешиваем обработчики событий
     if (closeBtn) {
