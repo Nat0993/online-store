@@ -500,7 +500,6 @@ function initCheckoutModal(modalContainer) {
         // Автозаполнение полей из данных пользователя
         const currentUser = getCurrentUser();
         if (currentUser) {
-            // Автозаполнение ФИО
             if (lastNameInput && !lastNameInput.value) lastNameInput.value = currentUser.lastName || '';
             if (firstNameInput && !firstNameInput.value) firstNameInput.value = currentUser.firstName || '';
             if (middleNameInput && !middleNameInput.value) middleNameInput.value = currentUser.middleName || '';
@@ -557,8 +556,8 @@ function initCheckoutModal(modalContainer) {
     }
 
     /**
- * Валидирует поле фамилии
- */
+    * Валидирует поле фамилии
+    */
     function validateLastName() {
         const value = lastNameInput.value.trim();
         if (!value) {
@@ -817,7 +816,7 @@ function initCheckoutModal(modalContainer) {
                     firstName: formData.firstName,
                     middleName: formData.middleName,
                     phone: formData.phone,
-                    name: fullName // Полное имя для обратной совместимости
+                    name: fullName 
                 };
 
                 const hasNameChanged = currentFullName !== fullName;
