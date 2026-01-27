@@ -1,5 +1,6 @@
 import { escapeHtml } from '../utils/security.js';
 import { addToCart } from '../data.js';
+import { renderOrderDetailsModal } from '../components/orderDetailsModal.js';
 
 /**
  * Создает HTML-разметку заказа в истории заказов
@@ -11,27 +12,27 @@ function createOrderItem(order) {
     <li class="order-item" data-order-id="${escapeHtml(order.id)}">
         <div class="order-item__info">
             <div class="order-item__header">
-            <span class="order-item__number">Заказ #${escapeHtml(order.orderNumber)}</span>
-            <span class="order-item__date">
+            <span class="order-item__text order-item__text--bold">Заказ #${escapeHtml(order.orderNumber)}</span>
+            <span class="order-item__text">
                 ${new Date(order.createdAt).toLocaleDateString('ru-RU')}
             </span>
             </div>
             <div class="order-item__summary">
             <div class="order-item__goods">
-                <span>Товары:</span>
-                <span>${order.items.length} шт.</span>
+                <span class="order-item__text order-item__text--bold">Товары:</span>
+                <span class="order-item__text">${order.items.length} шт.</span>
             </div>
             <div class="order-item__summ">
-                <span>Сумма:</span>
-                <span class="order-item__total">${order.total.toLocaleString()} ₽</span>
+                <span class="order-item__text order-item__text--bold">Сумма:</span>
+                <span class="order-item__text">${order.total.toLocaleString()} ₽</span>
             </div>
             </div>
         </div>
         <div class="order-item__btn-inner">
-            <button class="order-item__details-btn btn" type="button">
+            <button class="order-item__btn btn" id="details-btn" type="button">
             Подробнее
             </button>
-            <button class="order-item__repeat-btn btn" type="button">
+            <button class="order-item__btn btn" id="repeat-btn" type="button">
             Повторить заказ
             </button>
         </div>
@@ -39,27 +40,30 @@ function createOrderItem(order) {
     `;
 }
 
+// Глобальная переменная для экземпляра модалки
+let orderDetailsModal = null;
+
 /**
  * Инициализирует логику карточки заказа
  * @param {HTMLElement} itemElement - DOM-элемент заказа
  * @param {Object} order - объект заказа
  */
 function initOrderItem(itemElement, order) {
-    const detailsBtn = itemElement.querySelector('.order-item__details-btn');
-    const repeatBtn = itemElement.querySelector('.order-item__repeat-btn');
+    const detailsBtn = itemElement.querySelector('#details-btn');
+    const repeatBtn = itemElement.querySelector('#repeat-btn');
+
+    // Инициализируем модалку при первом использовании
+    if (!orderDetailsModal) {
+        orderDetailsModal = renderOrderDetailsModal();
+        document.body.appendChild(orderDetailsModal.container);
+    }
 
     /**
-     * Открывает детали заказа (пока заглушка)
+     * Открывает модальное окно с деталями заказа
      */
     function handleShowDetails() {
         console.log('Детали заказа:', order.orderNumber);
-        // TODO: модальное окно с деталями
-        alert(`Детали заказа #${order.orderNumber}\n\n` +
-            `Дата: ${new Date(order.createdAt).toLocaleString('ru-RU')}\n` +
-            `Товаров: ${order.items.length}\n` +
-            `Сумма: ${order.total.toLocaleString()} ₽\n` +
-            `Адрес доставки: ${order.customer?.address || 'Не указан'}\n` +
-            `Способ оплаты: ${getPaymentMethodText(order.payment)}`);
+        orderDetailsModal.open(order);
     }
 
     /**
@@ -84,20 +88,23 @@ function initOrderItem(itemElement, order) {
             return;
         }
 
+        try {
+            order.items.forEach(item => {
+                addToCart(item.productId, item.quantity);
+            });
 
-        order.items.forEach(item => {
-            addToCart(item.productId, item.quantity);
-        });
+            alert(`Товары из заказа #${order.orderNumber} добавлены в корзину!`);
 
-        alert(`Товары из заказа #${order.orderNumber} добавлены в корзину!`);
+            window.dispatchEvent(new CustomEvent('cart:update'));
 
-        // Обновляем счетчик корзины
-        window.dispatchEvent(new CustomEvent('cart:update'));
+            if (confirm('Перейти в корзину?')) {
+                window.history.pushState({}, '', '/cart');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+            }
 
-        // Можно предложить переход в корзину
-        if (confirm('Перейти в корзину?')) {
-            window.history.pushState({}, '', '/cart');
-            window.dispatchEvent(new PopStateEvent('popstate'));
+        } catch (error) {
+            console.error('Ошибка при повторении заказа:', error);
+            alert(`Не удалось добавить товары в корзину: ${error.message}\n\nПопробуйте еще раз или обратитесь в поддержку.`);
         }
     }
 

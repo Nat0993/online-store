@@ -1,12 +1,25 @@
 import { escapeHtml } from '../utils/security.js';
 import { getCurrentUser, updateCurrentUser } from '../data.js';
 
+// Для проверки на существование модалки в разметке (исключить повторных отрисовок) 
+let profileModalInstance = null;
+
 /**
  * Создает HTML-разметку модального окна редактирования профиля
  * @param {Object} userData - данные текущего пользователя
  * @returns {string} HTML-разметка
  */
-function createProfileModal(userData) {
+function createProfileModal(userData = {}) {
+    // Б>езопасные значения по умолчанию
+    const safeUserData = {
+        lastName: '',
+        firstName: '',
+        middleName: '',
+        phone: '',
+        email: '',
+        ...userData // userData перезаписывает значения по умолчанию
+    };
+    
     return `
     <div class="profile-modal">
         <div class="profile-modal__wrapper">
@@ -19,68 +32,68 @@ function createProfileModal(userData) {
             <h2 class="profile-modal__title">Редактирование профиля</h2>
             
             <form class="profile-modal__form" id="profile-form">
-                <!-- Фамилия -->
-                <div class="profile-modal__field">
-                    <label class="profile-modal__label" for="profile-last-name">Фамилия</label>
-                    <input type="text" 
-                           id="profile-last-name" 
-                           class="profile-modal__input" 
-                           value="${escapeHtml(userData.lastName || '')}"
-                           placeholder="Введите фамилию">
-                    <span class="profile-modal__error" id="last-name-error"></span>
+                <div class="profile-modal__form-inner">
+                    <!-- Фамилия -->
+                    <div class="profile-modal__field">
+                        <label class="profile-modal__label" for="profile-last-name">Фамилия</label>
+                        <input type="text" 
+                            id="profile-last-name" 
+                            class="profile-modal__input" 
+                            value="${escapeHtml(safeUserData.lastName)}"
+                            placeholder="Введите фамилию">
+                        <span class="profile-modal__error" id="last-name-error"></span>
+                    </div>
+                    
+                    <!-- Имя -->
+                    <div class="profile-modal__field">
+                        <label class="profile-modal__label" for="profile-first-name">Имя</label>
+                        <input type="text" 
+                            id="profile-first-name" 
+                            class="profile-modal__input" 
+                            value="${escapeHtml(safeUserData.firstName)}"
+                            placeholder="Введите имя">
+                        <span class="profile-modal__error" id="first-name-error"></span>
+                    </div>
+                    
+                    <!-- Отчество -->
+                    <div class="profile-modal__field">
+                        <label class="profile-modal__label" for="profile-middle-name">Отчество</label>
+                        <input type="text" 
+                            id="profile-middle-name" 
+                            class="profile-modal__input" 
+                            value="${escapeHtml(safeUserData.middleName)}"
+                            placeholder="Введите отчество (необязательно)">
+                        <span class="profile-modal__error" id="middle-name-error"></span>
+                    </div>
+                    
+                    <!-- Телефон -->
+                    <div class="profile-modal__field">
+                        <label class="profile-modal__label" for="profile-phone">Телефон</label>
+                        <input type="tel" 
+                            id="profile-phone" 
+                            class="profile-modal__input" 
+                            value="${escapeHtml(safeUserData.phone)}"
+                            placeholder="+7 (999) 999 99 99">
+                        <span class="profile-modal__error" id="phone-error"></span>
+                    </div>
+                    
+                    <!-- Email (только чтение) -->
+                    <div class="profile-modal__field">
+                        <label class="profile-modal__label" for="profile-email">Email (нельзя изменить)</label>
+                        <input type="email" 
+                            id="profile-email" 
+                            class="profile-modal__input profile-modal__input--readonly" 
+                            value="${escapeHtml(safeUserData.email)}"
+                            readonly
+                            disabled>
+                    </div>
                 </div>
-                
-                <!-- Имя -->
-                <div class="profile-modal__field">
-                    <label class="profile-modal__label" for="profile-first-name">Имя</label>
-                    <input type="text" 
-                           id="profile-first-name" 
-                           class="profile-modal__input" 
-                           value="${escapeHtml(userData.firstName || '')}"
-                           placeholder="Введите имя">
-                    <span class="profile-modal__error" id="first-name-error"></span>
-                </div>
-                
-                <!-- Отчество -->
-                <div class="profile-modal__field">
-                    <label class="profile-modal__label" for="profile-middle-name">Отчество</label>
-                    <input type="text" 
-                           id="profile-middle-name" 
-                           class="profile-modal__input" 
-                           value="${escapeHtml(userData.middleName || '')}"
-                           placeholder="Введите отчество (необязательно)">
-                    <span class="profile-modal__error" id="middle-name-error"></span>
-                </div>
-                
-                <!-- Телефон -->
-                <div class="profile-modal__field">
-                    <label class="profile-modal__label" for="profile-phone">Телефон</label>
-                    <input type="tel" 
-                           id="profile-phone" 
-                           class="profile-modal__input" 
-                           value="${escapeHtml(userData.phone || '')}"
-                           placeholder="+7 (999) 999 99 99">
-                    <span class="profile-modal__error" id="phone-error"></span>
-                </div>
-                
-                <!-- Email (только чтение) -->
-                <div class="profile-modal__field">
-                    <label class="profile-modal__label" for="profile-email">Email</label>
-                    <input type="email" 
-                           id="profile-email" 
-                           class="profile-modal__input profile-modal__input--readonly" 
-                           value="${escapeHtml(userData.email || '')}"
-                           readonly
-                           disabled>
-                    <span class="profile-modal__hint">Email нельзя изменить</span>
-                </div>
-                
                 <!-- Кнопки -->
                 <div class="profile-modal__buttons">
                     <button type="submit" class="profile-modal__save-btn btn">
                         Сохранить изменения
                     </button>
-                    <button type="button" class="profile-modal__cancel-btn">
+                    <button type="button" class="profile-modal__cancel-btn btn">
                         Отменить
                     </button>
                 </div>
@@ -132,6 +145,7 @@ function initProfileModal(modalContainer) {
     const phoneError = modalContainer.querySelector('#phone-error');
     
     let isSubmitting = false;
+    let originalData = {};
     
     /**
      * Показывает ошибку поля
@@ -266,6 +280,19 @@ function initProfileModal(modalContainer) {
     }
     
     /**
+     * Проверяет, есть ли изменения в форме
+     */
+    function hasFormChanges() {
+        const formData = getFormData();
+        return (
+            formData.lastName !== originalData.lastName ||
+            formData.firstName !== originalData.firstName ||
+            formData.middleName !== originalData.middleName ||
+            formData.phone !== normalizePhone(originalData.phone)
+        );
+    }
+    
+    /**
      * Обрабатывает отправку формы
      */
     async function handleSubmit(event) {
@@ -274,6 +301,13 @@ function initProfileModal(modalContainer) {
         if (isSubmitting) return;
         
         if (!validateForm()) {
+            return;
+        }
+        
+        // Проверяем, есть ли изменения
+        if (!hasFormChanges()) {
+            alert('Нет изменений для сохранения');
+            close();
             return;
         }
         
@@ -316,21 +350,26 @@ function initProfileModal(modalContainer) {
         // Загружаем актуальные данные пользователя
         const currentUser = getCurrentUser();
         if (currentUser) {
-            lastNameInput.value = currentUser.lastName || '';
-            firstNameInput.value = currentUser.firstName || '';
-            middleNameInput.value = currentUser.middleName || '';
-            phoneInput.value = currentUser.phone || '';
+            // Сохраняем исходные данные
+            originalData = {
+                lastName: currentUser.lastName || '',
+                firstName: currentUser.firstName || '',
+                middleName: currentUser.middleName || '',
+                phone: currentUser.phone || ''
+            };
+            
+            // Заполняем поля
+            lastNameInput.value = originalData.lastName;
+            firstNameInput.value = originalData.firstName;
+            middleNameInput.value = originalData.middleName;
+            phoneInput.value = originalData.phone;
             emailInput.value = currentUser.email || '';
         }
         
         clearAllErrors();
         modal.classList.add('profile-modal--active');
+        document.body.classList.add('modal-open');
         document.addEventListener('keydown', handleEscapePress);
-        
-        // Фокус на первое поле
-        setTimeout(() => {
-            lastNameInput.focus();
-        }, 100);
     }
     
     /**
@@ -338,6 +377,7 @@ function initProfileModal(modalContainer) {
      */
     function close() {
         modal.classList.remove('profile-modal--active');
+        document.body.classList.remove('modal-open');
         document.removeEventListener('keydown', handleEscapePress);
         clearAllErrors();
     }
@@ -349,6 +389,28 @@ function initProfileModal(modalContainer) {
         if (event.key === 'Escape') {
             close();
         }
+    }
+    
+    /**
+     * Обновляет данные пользователя в форме
+     * @param {Object} userData - данные пользователя
+     */
+    function updateUserData(userData) {
+        const currentUser = userData || {};
+        originalData = {
+            lastName: currentUser.lastName || '',
+            firstName: currentUser.firstName || '',
+            middleName: currentUser.middleName || '',
+            phone: currentUser.phone || ''
+        };
+        
+        if (lastNameInput) lastNameInput.value = originalData.lastName;
+        if (firstNameInput) firstNameInput.value = originalData.firstName;
+        if (middleNameInput) middleNameInput.value = originalData.middleName;
+        if (phoneInput) phoneInput.value = originalData.phone;
+        if (emailInput) emailInput.value = currentUser.email || '';
+        
+        clearAllErrors();
     }
     
     // Назначаем обработчики событий
@@ -394,7 +456,8 @@ function initProfileModal(modalContainer) {
     
     return {
         open,
-        close
+        close,
+        updateUserData
     };
 }
 
@@ -403,15 +466,26 @@ function initProfileModal(modalContainer) {
  * @returns {Object} Объект с методами управления модалкой
  */
 export function renderProfileModal() {
+    // Если модалка уже создана, возвращаем существующую
+    if (profileModalInstance) {
+        // Обновляем данные перед открытием
+        const currentUser = getCurrentUser() || {};
+        profileModalInstance.updateUserData(currentUser);
+        return profileModalInstance;
+    }
+    
     const modalContainer = document.createElement('div');
     const currentUser = getCurrentUser() || {};
     
     modalContainer.innerHTML = createProfileModal(currentUser);
-    const { open, close } = initProfileModal(modalContainer);
+    const { open, close, updateUserData } = initProfileModal(modalContainer);
     
-    return {
+    profileModalInstance = {
         container: modalContainer,
         open,
-        close
+        close,
+        updateUserData
     };
+    
+    return profileModalInstance;
 }
