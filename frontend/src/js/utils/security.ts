@@ -1,3 +1,5 @@
+import type { Product, Category } from '../types/index.js';
+
 /**
  * Экранирует HTML-символы для защиты от XSS-атак
  * @param {string} unsafe - небезопасная строка
@@ -22,14 +24,15 @@ export function escapeHtml(unsafe: string): string {
  * @returns {boolean} true если данные валидны
  */
 
-export function isValidCategory(category: any): boolean {
-    return category &&
-    category.id &&
-    typeof category.id === 'string' &&
-    category.name &&
-    typeof category.name === 'string' &&
-    category.image &&
-    typeof category.image === 'string';
+export function isValidCategory(category: unknown): category is Category {
+    return (
+        typeof category === 'object' &&
+        category !== null &&
+        'id' in category &&
+        typeof category.id === 'string' &&
+        'name' in category &&
+        typeof category.name === 'string'
+    );
 }
 
 /**
@@ -37,14 +40,19 @@ export function isValidCategory(category: any): boolean {
  * @param {Object} product - Объект продукта
  * @returns {boolean} true если данные валидны
  */
-export function isValidProduct(product: any): boolean {
-    return product && 
-           product.id && 
-           typeof product.id === 'string' &&
-           product.name && 
-           typeof product.name === 'string' &&
-           product.categoryId && 
-           typeof product.categoryId === 'string' &&
-           typeof product.price === 'number' &&
-           product.price >= 0;
+export function isValidProduct(product: unknown): product is Product {
+    return (
+        typeof product === 'object' &&
+        product !== null &&
+        'id' in product &&
+        typeof product.id === 'string' &&
+        'name' in product &&
+        typeof product.name === 'string' &&
+        'categoryId' in product &&
+        typeof product.categoryId === 'string' &&
+        'price' in product &&
+        typeof product.price === 'number' &&
+        'inStock' in product &&
+        typeof product.inStock === 'boolean'
+    );
 }

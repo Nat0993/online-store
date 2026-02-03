@@ -358,7 +358,6 @@ export const addOrder = (orderData) => {
         ...orderData,
         id: generateId('order'),
         orderNumber: orderNumber,
-        status: 'pending', // "pending", "processing", "shipped", "delivered", "cancelled"
         createdAt: new Date().toISOString(),
         userId: user?.id || null,
         isGuest: !user
