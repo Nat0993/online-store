@@ -4,7 +4,7 @@
  * @returns {string} безопасная строка с экранированными символами
  */
 
-export function escapeHtml(unsafe) {
+export function escapeHtml(unsafe: string): string {
     if (!unsafe) return '';
 
     return String(unsafe)
@@ -22,7 +22,7 @@ export function escapeHtml(unsafe) {
  * @returns {boolean} true если данные валидны
  */
 
-export function isValidCategory(category) {
+export function isValidCategory(category: any): boolean {
     return category &&
     category.id &&
     typeof category.id === 'string' &&
@@ -37,7 +37,7 @@ export function isValidCategory(category) {
  * @param {Object} product - Объект продукта
  * @returns {boolean} true если данные валидны
  */
-export function isValidProduct(product) {
+export function isValidProduct(product: any): boolean {
     return product && 
            product.id && 
            typeof product.id === 'string' &&

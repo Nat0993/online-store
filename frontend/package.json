@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "browser-sync start --server --files '**/*.html, **/*.js, **/*.css'",
     "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
     "compile": "tsc",
     "compile:watch": "tsc --watch"
   },
