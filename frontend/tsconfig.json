@@ -1,0 +1,56 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES6",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    
+    // Куда складывать скомпилированные .js файлы
+    "outDir": "./dist/js",
+    
+    // Откуда брать TypeScript файлы
+    "rootDir": "./src/js",
+    
+    // Безопасность (пока не строгий режим)
+    "strict": false,                 // ДЛЯ НАЧАЛА - false (меньше ошибок)
+    "noImplicitAny": false,    // ВРЕМЕННО отключаем
+    "strictNullChecks": false, // ВРЕМЕННО отключаем
+    "skipLibCheck": true,       // Пропускаем проверку библиотек
+    
+    // Разрешить .js файлы (чтобы мигрировать постепенно)
+    "allowJs": true,      // Разрешить .js файлы
+    "checkJs": true,      // Проверять типы в .js файлах
+    
+    // Настройки модулей
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    
+    // Дополнительные проверки
+    "noUnusedLocals": true,       // Предупреждать о неиспользуемых переменных
+    "noUnusedParameters": true,   // Предупреждать о неиспользуемых параметрах
+    
+    // Для отладки
+    "sourceMap": true,
+    
+    // Чтобы TypeScript не жаловался на импорты
+    "baseUrl": "./src/js",        // Базовый путь для импортов
+    "paths": {
+      "@/*": ["./*"]              // Можно использовать @/components/header
+    }
+  },
+  
+  // Какие файлы компилировать
+  "include": [
+    "src/js/**/*.ts",      // Все TS файлы в js папке
+    "src/js/**/*.js",      // Все JS файлы (чтобы TypeScript их проверял)
+    "src/js/**/*.d.ts"     // Файлы с описанием типов
+  ],
+  
+  // Что игнорировать
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/scss",           // Стили не проверяем
+    "src/assets"          // Картинки/шрифты не проверяем
+  ]
+}
