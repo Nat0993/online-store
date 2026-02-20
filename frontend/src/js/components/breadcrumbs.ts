@@ -1,16 +1,25 @@
 import { escapeHtml } from '../utils/security.js';
 
+interface BreadcrumbLink {
+    url?: string;
+    text: string;
+}
+
 /**
  * Создает HTML-разметку хлебных крошек
- * @param {Array} links - массив объектов ссылок {url, text}
- * @returns {string} HTML-разметка хлебных крошек
+ * @param links - массив объектов ссылок {url, text}
+ * @returns HTML-разметка хлебных крошек
  */
-function createBreadcrumbs(links) {
+function createBreadcrumbs(links: BreadcrumbLink[]): string {
     if (!Array.isArray(links) || links.length === 0) {
         return '';
     }
 
-    const validLinks = links.filter(link => link && typeof link.text === 'string');
+    const validLinks = links.filter((link): link is BreadcrumbLink => 
+        link !== null && 
+        link !== undefined && 
+        typeof link.text === 'string'
+    );
     
     if (validLinks.length === 0) {
         return '';
@@ -31,10 +40,10 @@ function createBreadcrumbs(links) {
 
 /**
  * Рендерит компонент хлебных крошек
- * @param {Array} links - Массив объектов ссылок
- * @returns {HTMLElement} DOM-элемент хлебных крошек
+ * @param links - Массив объектов ссылок
+ * @returns DOM-элемент хлебных крошек
  */
-export function renderBreadcrumbs (links) {
+export function renderBreadcrumbs (links: BreadcrumbLink[]): HTMLElement {
     const breadcrumbsContainer = document.createElement('div');
     breadcrumbsContainer.innerHTML = createBreadcrumbs(links);
 

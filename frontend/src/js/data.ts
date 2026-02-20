@@ -1,15 +1,38 @@
 import { isValidCategory, isValidProduct } from "./utils/security.js";
+import {
+    Product,
+    Category,
+    User,
+    CartItem,
+    FavoriteItem,
+    Order,
+} from './types/index';
+
+import type { OrderData, UserData } from './types/index';
+
+type StorageKey = 
+  | 'users' 
+  | `cart_${string}` 
+  | `favorites_${string}` 
+  | `orders_${string}` 
+  | 'currentUser'
+  | 'cart_guest' 
+  | 'favorites_guest' 
+  | 'orders_guest';
+
 
 /**
  * Генерирует уникальный ID с префиксом
  * @param {string} [prefix='item'] - префикс для ID
  * @returns {string} уникальный ID
  */
-function generateId(prefix = 'item') {
-    return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+function generateId(prefix: 'item' | 'cart' | 'fav' | 'order' | 'user' = 'item'): string {
+    const timestamp = Date.now().toString(36); // Более короткий timestamp
+    const random = Math.random().toString(36).slice(2, 7);
+    return `${prefix}_${timestamp}_${random}`;
 }
 
-export const categories = [
+export const categories: Category[] = [
     {
         id: 'chairs',
         name: "Стулья",
@@ -46,7 +69,7 @@ export const categories = [
     }
 ];
 
-export const products = [
+export const products: Product[] = [
     {
         id: 'prod_chair_1',
         name: "Стул 'Marco'",
@@ -130,7 +153,7 @@ export const products = [
     }
 ];
 
-export let users = loadFromLocalStorage('users') || [];
+export let users: User[] = loadFromLocalStorage('users' as StorageKey) || [];
 
 // Функции для работы с данными
 
@@ -139,7 +162,7 @@ export let users = loadFromLocalStorage('users') || [];
  * @param {string} categoryId - ID категории
  * @returns {Array} массив товаров категории
  */
-export const getProductsByCategory = (categoryId) => {
+export const getProductsByCategory = (categoryId: string): Product[] => {
     if (!categoryId || typeof categoryId !== 'string') {
         console.warn('Invalid categoryId:', categoryId);
         return [];
@@ -153,7 +176,7 @@ export const getProductsByCategory = (categoryId) => {
  * @param {string} id - ID товара
  * @returns {Object|null} объект товара или null
  */
-export const getProductById = (id) => {
+export const getProductById = (id: string): Product | null => {
     if (!id || typeof id !== 'string') {
         console.warn('Invalid product id:', id);
         return null;
@@ -168,7 +191,7 @@ export const getProductById = (id) => {
  * @param {string} id - ID категории
  * @returns {Object|null} объект категории или null
  */
-export const getCategoryById = (id) => {
+export const getCategoryById = (id: string): Category | null => {
     if (!id || typeof id !== 'string') {
         console.warn('Invalid category id:', id);
         return null;
@@ -184,20 +207,20 @@ export const getCategoryById = (id) => {
  * Получает корзину текущего пользователя
  * @returns {Array} массив товаров в корзине
  */
-export const getCurrentCart = () => {
+export const getCurrentCart = (): CartItem[] => {
     const user = getCurrentUser();
     const key = user ? `cart_${user.id}` : 'cart_guest';
-    return loadFromLocalStorage(key) || [];
+    return loadFromLocalStorage<CartItem[]>(key as StorageKey) || [];
 };
 
 /**
  * Сохраняет корзину текущего пользователя
  * @param {Array} cartData - данные корзины
  */
-export const saveCurrentCart = (cartData) => {
+export const saveCurrentCart = (cartData: CartItem[]): void => {
     const user = getCurrentUser();
     const key = user ? `cart_${user.id}` : 'cart_guest';
-    saveToLocalStorage(key, cartData);
+    saveToLocalStorage<CartItem[]>(key as StorageKey, cartData);
 };
 
 /**
@@ -206,7 +229,7 @@ export const saveCurrentCart = (cartData) => {
  * @param {number} [quantity=1] - количество
  * @returns {Array} обновленная корзина
  */
-export const addToCart = (productId, quantity = 1) => {
+export const addToCart = (productId: string, quantity: number = 1): CartItem[] => {
     const product = getProductById(productId);
     if (!product) return getCurrentCart();
 
@@ -233,7 +256,7 @@ export const addToCart = (productId, quantity = 1) => {
  * @param {string} cartItemId - ID товара в корзине
  * @returns {Array} обновленная корзина
  */
-export const removeFromCart = (cartItemId) => {
+export const removeFromCart = (cartItemId: string): CartItem[] => {
     const cart = getCurrentCart();
     const updatedCart = cart.filter(item => item.id !== cartItemId);
     saveCurrentCart(updatedCart);
@@ -244,7 +267,7 @@ export const removeFromCart = (cartItemId) => {
  * Получает элементы корзины с полной информацией о товарах
  * @returns {Array} массив элементов корзины с товарами
  */
-export const getCartItemsWithProducts = () => {
+export const getCartItemsWithProducts = (): CartItem[] => {
     const cart = getCurrentCart();
     return cart.map(item => {
         const product = getProductById(item.productId);
@@ -258,19 +281,21 @@ export const getCartItemsWithProducts = () => {
  * @param {number} newQuantity - новое количество товара
  * @returns {Array} обновленная корзина
  */
-export function updateCartQuantity(cartItemId, newQuantity) {
+export function updateCartQuantity(cartItemId: string, newQuantity: number): CartItem[] {
     const cart = getCurrentCart();
     const cartItem = cart.find(item => item.id === cartItemId);
     if (cartItem) {
         if (newQuantity > 0) {
             cartItem.quantity = newQuantity;
             saveCurrentCart(cart);
+            return cart;
         } else {
             removeFromCart(cartItemId);
         }
-
-        return cart;
     }
+
+    // Если элемент не найден, возвращаем текущую корзину
+    return cart;
 }
 
 // Избранное
@@ -279,20 +304,20 @@ export function updateCartQuantity(cartItemId, newQuantity) {
  * Получает избранное текущего пользователя
  * @returns {Array} массив избранных товаров
  */
-export const getCurrentFavorites = () => {
+export const getCurrentFavorites = (): FavoriteItem[] => {
     const user = getCurrentUser();
     const key = user ? `favorites_${user.id}` : 'favorites_guest';
-    return loadFromLocalStorage(key) || [];
+    return loadFromLocalStorage<FavoriteItem[]>(key as StorageKey) || [];
 };
 
 /**
  * Сохраняет избранное текущего пользователя
  * @param {Array} favoritesData - данные избранного
  */
-export const saveCurrentFavorites = (favoritesData) => {
+export const saveCurrentFavorites = (favoritesData: FavoriteItem[]): void => {
     const user = getCurrentUser();
     const key = user ? `favorites_${user.id}` : 'favorites_guest';
-    saveToLocalStorage(key, favoritesData);
+    saveToLocalStorage<FavoriteItem[]>(key as StorageKey, favoritesData);
 };
 
 /**
@@ -300,7 +325,7 @@ export const saveCurrentFavorites = (favoritesData) => {
  * @param {string} productId - ID товара
  * @returns {Array} обновленное избранное
  */
-export const toggleFavorite = (productId) => {
+export const toggleFavorite = (productId: string): FavoriteItem[] => {
     const favorites = getCurrentFavorites();
     const existingIndex = favorites.findIndex(fav => fav.productId === productId);
 
@@ -322,7 +347,7 @@ export const toggleFavorite = (productId) => {
  * Получает избранное с полной информацией о товарах
  * @returns {Array} массив избранного с товарами
  */
-export const getFavoritesWithProducts = () => {
+export const getFavoritesWithProducts = (): FavoriteItem[] => {
     const favorites = getCurrentFavorites();
     return favorites.map(fav => {
         const product = getProductById(fav.productId);
@@ -336,7 +361,7 @@ export const getFavoritesWithProducts = () => {
  * Генерирует уникальный номер заказа
  * @returns {string} номер заказа в формате "ORD-XXXXXXXX"
  */
-export function generateOrderNumber() {
+export function generateOrderNumber(): string {
     const timestamp = Date.now().toString();
     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
     return `ORD-${timestamp.slice(-8)}-${random}`;
@@ -347,12 +372,12 @@ export function generateOrderNumber() {
  * @param {Object} orderData - данные заказа
  * @returns {Object} созданный заказ с номером
  */
-export const addOrder = (orderData) => {
+export const addOrder = (orderData: OrderData): Order => {
     const user = getCurrentUser();
     const key = user ? `orders_${user.id}` : 'orders_guest';
-    
+
     const orders = getCurrentOrders();
-    
+
     const orderNumber = generateOrderNumber();
     const order = {
         ...orderData,
@@ -364,21 +389,21 @@ export const addOrder = (orderData) => {
     };
 
     orders.push(order);
-    saveToLocalStorage(key, orders);
-    
+    saveToLocalStorage<Order[]>(key as StorageKey, orders);
+
     console.log('Заказ сохранен:', { key, order });
     return order;
 };
 
 /**
  * Получает заказы текущего пользователя/гостя
- * (может понадобиться для истории заказов)
+ * (для истории заказов)
  * @returns {Array} массив заказов
  */
-export const getCurrentOrders = () => {
+export const getCurrentOrders = (): Order[] => {
     const user = getCurrentUser();
     const key = user ? `orders_${user.id}` : 'orders_guest';
-    return loadFromLocalStorage(key) || [];
+    return loadFromLocalStorage<Order[]>(key as StorageKey) || [];
 };
 
 /**
@@ -386,7 +411,7 @@ export const getCurrentOrders = () => {
  * @param {string} orderNumber - номер заказа
  * @returns {Object|null} заказ или null
  */
-export const getOrderByNumber = (orderNumber) => {
+export const getOrderByNumber = (orderNumber: string): Order | null => {
     const orders = getCurrentOrders();
     return orders.find(order => order.orderNumber === orderNumber) || null;
 };
@@ -395,19 +420,9 @@ export const getOrderByNumber = (orderNumber) => {
 // Хранение данных
 
 /**
- * Получает ключ для хранения данных
- * @param {string} dataType - тип данных
- * @returns {string} ключ
- */
-function getStorageKey(dataType) {
-    const user = getCurrentUser();
-    return user ? `${dataType}_${user.id}` : `${dataType}_guest`;
-}
-
-/**
  * Определяет, какое хранилище использовать для текуш пользователя 
  */
-function getCurrentStorage() {
+function getCurrentStorage(): Storage {
     return getCurrentUser() ? localStorage : sessionStorage;
 }
 
@@ -416,7 +431,7 @@ function getCurrentStorage() {
  * @param {string} key - ключ
  * @param {any} data - данные
  */
-export const saveToLocalStorage = (key, data) => {
+export const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
     try {
         // ОСОБЫЙ СЛУЧАЙ: пользователей всегда сохраняем в localStorage
         if (key === 'users') {
@@ -424,7 +439,7 @@ export const saveToLocalStorage = (key, data) => {
             console.log(`Пользователи сохранены в localStorage`);
             return;
         }
-        
+
         // Для остальных данных - в зависимости от пользователя
         const storage = getCurrentStorage();
         storage.setItem(key, JSON.stringify(data));
@@ -439,18 +454,18 @@ export const saveToLocalStorage = (key, data) => {
  * @param {string} key - ключ
  * @returns {any} данные или null
  */
-export function loadFromLocalStorage(key) {
+export function loadFromLocalStorage<T>(key: StorageKey): T | null {
     try {
         // ОСОБЫЙ СЛУЧАЙ: пользователей всегда загружаем из localStorage
         if (key === 'users') {
             const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : null;
+            return data ? JSON.parse(data) as T : null;
         }
-        
+
         // Для остальных данных - в зависимости от пользователя
         const storage = getCurrentStorage();
         const data = storage.getItem(key);
-        return data ? JSON.parse(data) : null;
+        return data ? JSON.parse(data) as T : null;
     } catch (error) {
         console.error(`Ошибка загрузки из ${key}:`, error);
         return null;
@@ -464,7 +479,7 @@ export function loadFromLocalStorage(key) {
  * @param {string} email - email пользователя
  * @returns {Object|null} объект пользователя или null
  */
-export const findUserByEmail = (email) => {
+export const findUserByEmail = (email: string): User | null => {
     return users.find(user => user.email === email);
 };
 
@@ -476,7 +491,7 @@ export const findUserByEmail = (email) => {
  * @returns {Object} созданный пользователь
  * @throws {Error} если пользователь с таким email уже существует
  */
-export const registerUser = (userData) => {
+export const registerUser = (userData: UserData): User => {
     if (findUserByEmail(userData.email)) {
         throw new Error('Пользователь с таким email уже существует');
     }
@@ -488,7 +503,7 @@ export const registerUser = (userData) => {
     };
 
     users.push(newUser);
-    saveToLocalStorage('users', users);
+    saveToLocalStorage<User[]>('users', users);
 
     // Мигрируем гостевые данные в новую учетку
     migrateGuestToUser(newUser.id);
@@ -505,7 +520,7 @@ export const registerUser = (userData) => {
  * @returns {Object} объект пользователя
  * @throws {Error} если неверный email или пароль
  */
-export const loginUser = (email, password) => {
+export const loginUser = (email: string, password: string): User => {
     const user = findUserByEmail(email);
 
     if (!user || user.password !== password) {
@@ -524,82 +539,87 @@ export const loginUser = (email, password) => {
  * Мигрирует гостевые данные в пользовательские (в рамках одной сессии)
  * @param {string} userId - ID пользователя
  */
-export function migrateGuestToUser(userId) {
+export function migrateGuestToUser(userId: string): void {
     console.log(`Миграция гостевых данных для пользователя ${userId}`);
-    
-    // Данные, которые нужно мигрировать
-    const dataTypes = ['cart', 'favorites', 'orders'];
-    
-    dataTypes.forEach(dataType => {
-        const guestKey = `${dataType}_guest`;
-        const userKey = `${dataType}_${userId}`;
-        
-        // 1. Получаем гостевые данные из sessionStorage
-        const guestData = sessionStorage.getItem(guestKey);
-        
-        if (guestData) {
-            try {
-                const parsedGuestData = JSON.parse(guestData);
-                
-                if (parsedGuestData && parsedGuestData.length > 0) {
-                    // 2. Получаем пользовательские данные из localStorage
-                    const userDataJson = localStorage.getItem(userKey);
-                    const userData = userDataJson ? JSON.parse(userDataJson) : [];
-                    
-                    // 3. Объединяем данные (логика зависит от типа)
-                    let mergedData;
-                    
-                    switch(dataType) {
-                        case 'cart':
-                            // Для корзины: объединяем количества
-                            mergedData = mergeCartData(userData, parsedGuestData);
-                            break;
-                            
-                        case 'favorites':
-                            // Для избранного: убираем дубликаты
-                            mergedData = mergeFavoritesData(userData, parsedGuestData);
-                            break;
-                            
-                        case 'orders':
-                            // Для заказов: просто добавляем
-                            mergedData = [...parsedGuestData, ...userData];
-                            break;
-                            
-                        default:
-                            mergedData = [...parsedGuestData, ...userData];
-                    }
-                    
-                    // 4. Сохраняем в localStorage пользователя
-                    localStorage.setItem(userKey, JSON.stringify(mergedData));
-                    
-                    // 5. Очищаем гостевые данные
-                    sessionStorage.removeItem(guestKey);
-                    
-                    console.log(`Мигрировано ${parsedGuestData.length} ${dataType}`);
-                }
-            } catch (error) {
-                console.error(`Ошибка миграции ${dataType}:`, error);
+
+    // Мигрируем корзину
+    const guestCart = sessionStorage.getItem('cart_guest');
+    if (guestCart) {
+        try {
+            const guestCartData: CartItem[] = JSON.parse(guestCart);
+            const userCartKey = `cart_${userId}`;
+            const userCartData = loadFromLocalStorage<CartItem[]>(userCartKey as StorageKey) || [];
+            
+            if (guestCartData.length > 0) {
+                const mergedCart = mergeCartData(userCartData, guestCartData);
+                localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
+                sessionStorage.removeItem('cart_guest');
+                console.log(`Мигрировано ${guestCartData.length} товаров в корзине`);
             }
+        } catch (error) {
+            console.error('Ошибка миграции корзины:', error);
         }
-    });
+    }
+
+    // Мигрируем избранное
+    const guestFavorites = sessionStorage.getItem('favorites_guest');
+    if (guestFavorites) {
+        try {
+            const guestFavData: FavoriteItem[] = JSON.parse(guestFavorites);
+            const userFavKey = `favorites_${userId}`;
+            const userFavData = loadFromLocalStorage<FavoriteItem[]>(userFavKey as StorageKey) || [];
+            
+            if (guestFavData.length > 0) {
+                const mergedFav = mergeFavoritesData(userFavData, guestFavData);
+                localStorage.setItem(userFavKey, JSON.stringify(mergedFav));
+                sessionStorage.removeItem('favorites_guest');
+                console.log(`Мигрировано ${guestFavData.length} избранных товаров`);
+            }
+        } catch (error) {
+            console.error('Ошибка миграции избранного:', error);
+        }
+    }
+
+    // Мигрируем заказы
+    const guestOrders = sessionStorage.getItem('orders_guest');
+    if (guestOrders) {
+        try {
+            const guestOrdersData: Order[] = JSON.parse(guestOrders);
+            const userOrdersKey = `orders_${userId}`;
+            const userOrdersData = loadFromLocalStorage<Order[]>(userOrdersKey as StorageKey) || [];
+            
+            if (guestOrdersData.length > 0) {
+                const mergedOrders = [...guestOrdersData, ...userOrdersData];
+                localStorage.setItem(userOrdersKey, JSON.stringify(mergedOrders));
+                sessionStorage.removeItem('orders_guest');
+                console.log(`Мигрировано ${guestOrdersData.length} заказов`);
+            }
+        } catch (error) {
+            console.error('Ошибка миграции заказов:', error);
+        }
+    }
 }
 
 /**
  * Объединяет данные корзины
  */
-function mergeCartData(userCart, guestCart) {
+function mergeCartData(userCart: CartItem[], guestCart: CartItem[]): CartItem[] {
     const merged = [...userCart];
-    const productMap = new Map();
-    
+    const productMap = new Map<string, CartItem>();
+
     // Создаем карту пользовательской корзины для быстрого доступа
     userCart.forEach(item => {
-        productMap.set(item.productId, item);
+        if (item && item.productId) {
+            productMap.set(item.productId, item);
+        }
     });
-    
+
     // Добавляем гостевые товары
     guestCart.forEach(guestItem => {
+        if (!guestItem || !guestItem.productId) return;
+
         const existingItem = productMap.get(guestItem.productId);
-        
+
         if (existingItem) {
             // Если товар уже есть - увеличиваем количество
             existingItem.quantity += guestItem.quantity;
@@ -609,19 +629,19 @@ function mergeCartData(userCart, guestCart) {
             productMap.set(guestItem.productId, guestItem);
         }
     });
-    
+
     return merged;
 }
 
 /**
  * Объединяет избранные товары
  */
-function mergeFavoritesData(userFavorites, guestFavorites) {
+function mergeFavoritesData(userFavorites: FavoriteItem[], guestFavorites: FavoriteItem[]): FavoriteItem[] {
     const productIds = new Set(userFavorites.map(fav => fav.productId));
-    const uniqueGuestFavorites = guestFavorites.filter(fav => 
+    const uniqueGuestFavorites = guestFavorites.filter(fav =>
         !productIds.has(fav.productId)
     );
-    
+
     return [...userFavorites, ...uniqueGuestFavorites];
 }
 
@@ -629,7 +649,7 @@ function mergeFavoritesData(userFavorites, guestFavorites) {
  * Устанавливает текущего пользователя в localStorage
  * @param {Object} user - объект пользователя
  */
-export const setCurrentUser = (user) => {
+export const setCurrentUser = (user: User): void => {
     localStorage.setItem('currentUser', JSON.stringify(user));
 };
 
@@ -637,39 +657,46 @@ export const setCurrentUser = (user) => {
  * Получает текущего пользователя из localStorage
  * @returns {Object|null} объект пользователя или null
  */
-export const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem('currentUser') || null);
+export const getCurrentUser = (): User | null => {
+    const userJson = localStorage.getItem('currentUser');
+    if (!userJson) return null;
+    
+    try {
+        return JSON.parse(userJson) as User;
+    } catch {
+        return null;
+    }
 };
 
 /**
  * Выполняет выход пользователя (удаляет из localStorage)
  */
-export const logoutUser = () => {
+export const logoutUser = (): void => {
     localStorage.removeItem('currentUser');
 }
 
 /**
  * Обновляет данные текущего пользователя
- * @param {Object} updates - объект с обновляемыми полями {name?, email?}
+ * @param {Object} updates - объект с обновляемыми полями {name?, phone?}
  * @returns {Object|null} обновленный пользователь или null
  */
-export const updateCurrentUser = (updates) => {
+export const updateCurrentUser = (updates: Partial<UserData>): User | null => {
     const user = getCurrentUser();
     if (!user) return null;
 
     // Обновляем поля
     const updatedUser = { ...user, ...updates };
-    
+
     // Сохраняем в общий список пользователей
     const userIndex = users.findIndex(u => u.id === user.id);
     if (userIndex !== -1) {
         users[userIndex] = updatedUser;
         saveToLocalStorage('users', users);
     }
-    
+
     // Обновляем текущего пользователя
     setCurrentUser(updatedUser);
-    
+
     console.log('Данные пользователя обновлены:', updatedUser);
     return updatedUser;
 };

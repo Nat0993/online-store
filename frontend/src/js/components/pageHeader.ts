@@ -7,7 +7,7 @@ import { escapeHtml } from "../utils/security.js";
  * @returns {string} Html-разметка заголовка
  */
 
-function createPageHeader (title, description) {
+function createPageHeader (title: string, description: string): string {
     return `
      <div class="page-header">
             <h1 class="page-header__title">${escapeHtml(title)}</h1>
@@ -22,9 +22,9 @@ function createPageHeader (title, description) {
  * @param {string} description - описание
  * @returns {HTMLElement} DOM-элемет заголовка
  */
-export function renderPageHeader (title, description) {
+export function renderPageHeader (title: string, description: string): HTMLElement {
     const headerContainer = document.createElement('div');
     headerContainer.innerHTML = createPageHeader(title, description);
 
-    return headerContainer.firstElementChild || headerContainer;
+    return headerContainer.firstElementChild as HTMLElement || headerContainer;
 }

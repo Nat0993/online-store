@@ -25,13 +25,16 @@ export function escapeHtml(unsafe: string): string {
  */
 
 export function isValidCategory(category: unknown): category is Category {
+    if (typeof category !== 'object' || category === null) {
+        return false;
+    }
+
+    const cat = category as Record<string, unknown>;
     return (
-        typeof category === 'object' &&
-        category !== null &&
-        'id' in category &&
-        typeof category.id === 'string' &&
-        'name' in category &&
-        typeof category.name === 'string'
+        'id' in cat &&
+        typeof cat.id === 'string' &&
+        'name' in cat &&
+        typeof cat.name === 'string'
     );
 }
 
@@ -41,18 +44,21 @@ export function isValidCategory(category: unknown): category is Category {
  * @returns {boolean} true если данные валидны
  */
 export function isValidProduct(product: unknown): product is Product {
+    if (typeof product !== 'object' || product === null) {
+        return false;
+    }
+    
+    const prod = product as Record<string, unknown>;
     return (
-        typeof product === 'object' &&
-        product !== null &&
-        'id' in product &&
-        typeof product.id === 'string' &&
-        'name' in product &&
-        typeof product.name === 'string' &&
-        'categoryId' in product &&
-        typeof product.categoryId === 'string' &&
-        'price' in product &&
-        typeof product.price === 'number' &&
-        'inStock' in product &&
-        typeof product.inStock === 'boolean'
+        'id' in prod &&
+        typeof prod.id === 'string' &&
+        'name' in prod &&
+        typeof prod.name === 'string' &&
+        'categoryId' in prod &&
+        typeof prod.categoryId === 'string' &&
+        'price' in prod &&
+        typeof prod.price === 'number' &&
+        'inStock' in prod &&
+        typeof prod.inStock === 'boolean'
     );
 }

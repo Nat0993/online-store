@@ -1,7 +1,6 @@
-/**
- * Основные интерфейсы 
- */
 
+
+//Интерфейсы
 
 //Товар
 export interface Product {
@@ -42,6 +41,7 @@ export interface CartItem {
     productId: string;
     quantity: number;
     product?: Product;    // расширенные данные
+    addedAt: string;
 }
 
 // Избранное
@@ -49,6 +49,7 @@ export interface FavoriteItem {
     id: string;
     productId: string;
     product?: Product;
+    addedAt: string;
 }
 
 // Заказ
@@ -57,7 +58,7 @@ export interface Order {
     orderNumber: string;
     items: OrderItem[];
     customer: OrderCustomer;
-    payment: 'card' | 'cash' | 'card_courier';
+    payment: PaymentMethod;
     subtotal: number;
     delivery: number;
     total: number;
@@ -86,3 +87,20 @@ export interface OrderCustomer {
     address: string;
     comment?: string;
 }
+
+//Данные навигационных ссылок
+export interface NavLink {
+    href: string;
+    label: string;
+}
+
+//Типы
+
+//Способ оплаты 
+export type PaymentMethod = 'card' | 'cash' | 'card_courier';
+
+//Данные для формирования заказа
+export type OrderData = Omit<Order, 'id' | 'orderNumber' | 'createdAt'>;
+
+//Данные для регистрации пользователя 
+export type UserData = Omit<User, 'id' | 'createdAt'>;

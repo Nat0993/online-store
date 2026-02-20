@@ -1,5 +1,5 @@
 //Отрисовка разметки
-function createIntro() {
+function createIntro(): string {
     return `
     <section class="intro">
             <div class="container">
@@ -25,10 +25,15 @@ function createIntro() {
  * Инициализирует логику интро-секции (навигация по кнопке)
  * @param {HTMLElement} introContainer - контейнер интро-секции
  */
-function initIntro (introContainer) {
-    const introBtn = introContainer.querySelector('.intro__btn-link');
+function initIntro (introContainer: HTMLElement): void {
+    const introBtn = introContainer.querySelector<HTMLButtonElement>('.intro__btn-link');
 
-    introBtn.addEventListener('click', (e) => {
+    if (!introBtn) {
+        console.warn('Кнопка интро не найдена');
+        return;
+    }
+
+    introBtn.addEventListener('click', (e: MouseEvent) => {
         e.preventDefault();
         console.log('Переход в каталог');
         
@@ -41,7 +46,7 @@ function initIntro (introContainer) {
  * Рендерит интро-секцию главной страницы
  * @returns {HTMLElement} DOM-элемент интро-секции
  */
-export function renderIntro () {
+export function renderIntro (): HTMLElement {
     const introContainer = document.createElement('div');
     introContainer.innerHTML = createIntro();
     initIntro(introContainer);

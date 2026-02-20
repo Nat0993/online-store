@@ -1,12 +1,13 @@
 /**
  * Инициализирует SPA-навигацию для всех внутренних ссылок
- * @returns {void}
  */
-export function initSPANavigation () {
+export function initSPANavigation (): void {
     //вешаем обработчик на весь документ
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (e: MouseEvent) => {
         //находим ближайшую ссылку по которой кликнули
-        const link = e.target.closest('a');
+        const link = (e.target instanceof Element) 
+            ? e.target.closest<HTMLAnchorElement>('a') 
+            : null;
 
         //если это не ссылка - игнор
         if(!link) return;
@@ -18,7 +19,9 @@ export function initSPANavigation () {
 
         const path = link.getAttribute('href');
 
-        goToPath(path);
+        if (path) {
+            goToPath(path);
+        }
     })
 
     console.log('SPA навигация включена');
@@ -26,10 +29,10 @@ export function initSPANavigation () {
 
 /**
  * Проверяет является ли ссылка внешней
- * @param {HTMLAnchorElement} link - элемент ссылки
- * @returns {boolean} true если ссылка внешняя
+ * @param link - элемент ссылки
+ * @returns true если ссылка внешняя
  */
-function isExternalLink(link) {
+function isExternalLink(link: HTMLAnchorElement): boolean {
     const href = link.href;
 
     //если ведет на др сайт
@@ -57,10 +60,9 @@ function isExternalLink(link) {
 
 /**
  * Выполняет переход по указанному пути в SPA-режиме
- * @param {string} path - путь для перехода
- * @returns {void}
+ * @param path - путь для перехода
  */
-function goToPath(path) {
+function goToPath(path: string): void {
     console.log('Переход на:', path);
 
     //смена url в адресной строке
