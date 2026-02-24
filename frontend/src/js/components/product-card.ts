@@ -1,3 +1,4 @@
+// ============ ИМПОРТЫ ============
 import {
     addToCart,
     removeFromCart,
@@ -10,16 +11,9 @@ import {
 import { escapeHtml, isValidProduct } from '../utils/security.js';
 import { CartItem, FavoriteItem, Product } from '../types/index.js';
 
-/**
- * Проверяет, находится ли товар в избранном
- * @param {string} productId - ID товара
- * @returns {boolean} true если товар в избранном
- */
-function getIsFavorite(productId: string): boolean {
-    const currentFavorites = getCurrentFavorites();
-    return currentFavorites.some((fav: FavoriteItem) => fav.productId === productId);
-}
+// ============ ТИПЫ ============
 
+/** Элементы DOM карточки товара */
 interface ProductCardElements {
     card: HTMLElement;
     cartControls: HTMLElement;
@@ -27,10 +21,20 @@ interface ProductCardElements {
     productId: string;
 }
 
+// ============ УТИЛИТЫ ============
+
+/**
+ * Проверяет, находится ли товар в избранном
+ */
+function getIsFavorite(productId: string): boolean {
+    const currentFavorites = getCurrentFavorites();
+    return currentFavorites.some((fav: FavoriteItem) => fav.productId === productId);
+}
+
+// ============ ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ============
+
 /**
  * Получает все необходимые элементы из DOM
- * @param container - контейнер карточки товара
- * @returns объект с элементами или null
  */
 function getProductCardElements(container: HTMLElement): ProductCardElements | null {
     const cartControls = container.querySelector<HTMLElement>('.product-card__cart-controls');
@@ -50,10 +54,10 @@ function getProductCardElements(container: HTMLElement): ProductCardElements | n
     }
 }
 
+// ============ РАЗМЕТКА ============
+
 /**
  * Создает HTML-разметку карточки товара
- * @param {Object} product - Объект товара
- * @returns {string} HTML-разметка карточки
  */
 function createProductCard(product: Product): string {
     const isFavorite = getIsFavorite(product.id);
@@ -81,9 +85,10 @@ function createProductCard(product: Product): string {
     `;
 }
 
+// ============ ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ============
+
 /**
  * Обновляет состояние кнопки избранного
- * @param - объект элементов карточки товара
  */
 function updateFavoriteState(elements: ProductCardElements): void {
     const isFavorite = getIsFavorite(elements.productId);
@@ -91,8 +96,35 @@ function updateFavoriteState(elements: ProductCardElements): void {
 }
 
 /**
+ * Рендерит счетчик количества в корзине
+ */
+function renderCartCounter(elements: ProductCardElements, quantity: number): void {
+    elements.cartControls.innerHTML = `
+                <button class="product-card__quantity-btn product-card__quantity-btn--minus" type="button" aria-label="Уменьшить количество">
+                    -
+                </button>
+                <span class="product-card__quantity">${quantity}</span>
+                <button class="product-card__quantity-btn product-card__quantity-btn--plus" type="button" aria-label="Увеличить количество">
+                    +
+                </button>
+            `;
+    elements.cartControls.classList.add('product-card__cart-controls--active');
+}
+
+/**
+ * Рендерит кнопку "В корзину"
+ */
+function renderAddToCardButton(elements: ProductCardElements): void {
+    elements.cartControls.innerHTML = `
+                <button class="product-card__cart-btn btn" type="button">
+                    В корзину
+                </button>
+            `;
+    elements.cartControls.classList.remove('product-card__cart-controls--active');
+}
+
+/**
  * Обновляет отображение корзины (кнопка или счетчик)
- * @param - объект элементов карточки товара
  */
 function updateCartButton(elements: ProductCardElements): void {
     const currentCart = getCurrentCart();
@@ -111,35 +143,7 @@ function updateCartButton(elements: ProductCardElements): void {
     }
 }
 
-/**
- * Рендерит счетчик количества в корзине
- * @param - объект элементов карточки товара, количество 
- */
-function renderCartCounter(elements: ProductCardElements, quantity: number): void {
-    elements.cartControls.innerHTML = `
-                <button class="product-card__quantity-btn product-card__quantity-btn--minus" type="button" aria-label="Уменьшить количество">
-                    -
-                </button>
-                <span class="product-card__quantity">${quantity}</span>
-                <button class="product-card__quantity-btn product-card__quantity-btn--plus" type="button" aria-label="Увеличить количество">
-                    +
-                </button>
-            `;
-    elements.cartControls.classList.add('product-card__cart-controls--active');
-}
-
-/**
- * Рендерит кнопку "В корзину"
- * @param - объект элементов карточки товара
- */
-function renderAddToCardButton(elements: ProductCardElements): void {
-    elements.cartControls.innerHTML = `
-                <button class="product-card__cart-btn btn" type="button">
-                    В корзину
-                </button>
-            `;
-    elements.cartControls.classList.remove('product-card__cart-controls--active');
-}
+// ============ ОБРАБОТЧИКИ СОБЫТИЙ ============
 
 /**
  * Обработчик добавления в избранное
@@ -182,6 +186,8 @@ function handleIncreaseQuantity(elements: ProductCardElements): void {
     window.dispatchEvent(new CustomEvent('cart:update'));
 }
 
+// ============ НАСТРОЙКА ОБРАБОТЧИКОВ ============
+
 /**
  * Настраивает обработчики для режима "счетчик"
  */
@@ -207,9 +213,10 @@ function setupAddToCartHandler(elements: ProductCardElements): void {
     cartBtn.addEventListener('click', () => handleAddToCart(elements));
 }
 
+// ============ ИНИЦИАЛИЗАЦИЯ ============
+
 /**
- * Инициализирует логику карточки товара (избранное, корзина, события)
- * @param - DOM-элемент карточки товара
+ * Инициализирует логику карточки товара
  */
 function initProductCard(cardElement: HTMLElement): void {
     const elements = getProductCardElements(cardElement);
@@ -225,14 +232,18 @@ function initProductCard(cardElement: HTMLElement): void {
         updateFavoriteState(elements);
     }) as EventListener);
 
+    // Первоначальное обновление
     updateCartButton(elements);
     updateFavoriteState(elements);
 }
 
+// ============ ПУБЛИЧНЫЙ API ============
+
 /**
  * Рендерит карточку товара
- * @param {Object} product - Объект товара
- * @returns {HTMLElement} DOM-элемент карточки товара
+ * 
+ * @param product - объект товара
+ * @returns DOM-элемент карточки товара
  */
 export function renderProductCard(product: Product): HTMLElement {
     if (!isValidProduct(product)) {

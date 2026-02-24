@@ -1,10 +1,14 @@
+// ============ ИМПОРТЫ ============
 import { escapeHtml } from "../utils/security.js";
 
+// ============ РАЗМЕТКА ============
+
 /**
- * Создает заголовок страницы с описанием
- * @param {string} title - заголовок страницы
- * @param {string} description - описание
- * @returns {string} Html-разметка заголовка
+ * Создает HTML-разметку заголовка страницы с описанием
+ * 
+ * @param title - заголовок страницы
+ * @param description - описание страницы
+ * @returns HTML-разметка заголовка
  */
 
 function createPageHeader (title: string, description: string): string {
@@ -16,11 +20,14 @@ function createPageHeader (title: string, description: string): string {
     `;
 }
 
+// ============ ПУБЛИЧНЫЙ API ============
+
 /**
  * Рендерит компонент заголовка страницы
- * @param {string} title - заголовок страницы
- * @param {string} description - описание
- * @returns {HTMLElement} DOM-элемет заголовка
+ * 
+ * @param title - заголовок страницы
+ * @param description - описание страницы
+ * @returns DOM-элемент заголовка страницы
  */
 export function renderPageHeader (title: string, description: string): HTMLElement {
     const headerContainer = document.createElement('div');

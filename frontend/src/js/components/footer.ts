@@ -1,4 +1,7 @@
+// ============ ИМПОРТЫ ============
 import { NavLink } from "../types/index";
+
+// ============ ТИПЫ ============
 
 interface SocialLink {
     href: string;
@@ -6,25 +9,39 @@ interface SocialLink {
     label: string;
 }
 
-const navLinks: NavLink[] = [
+// ============ КОНСТАНТЫ ============
+
+/** Навигационные ссылки */
+const NAV_LINKS: NavLink[] = [
     { href: '/catalog', label: 'Каталог' },
     { href: '/delivery', label: 'Доставка и оплата' },
     { href: '/sales', label: 'Акции' },
     { href: '/reviews', label: 'Отзывы' },
     { href: '/contacts', label: 'Контакты' }
-];
+] as const;
 
-const socialLinks: SocialLink[] = [
+/** Ссылки на социальные сети */
+const SOCIAL_LINKS: SocialLink[] = [
     { href: '#', icon: 'vk', label: 'VK' },
     { href: '#', icon: 'tg', label: 'Telegram' },
     { href: '#', icon: 'whatsapp', label: 'WhatsApp' },
     { href: '#', icon: 'email', label: 'Почта' }
-];
+] as const;
 
+/** Номер телефона компании (для отображения) */
 const COMPANY_PHONE = '8 (800) 88 00 80 00';
-const COMPANY_PHONE_CLEAN = '880088008000'; // для ссылки tel:
-const COMPANY_NAME = 'Ваша компания';
+
+/** Номер телефона компании (для ссылки tel:) */
+const COMPANY_PHONE_CLEAN = '880088008000'; 
+
+/** Название компании */
+const COMPANY_NAME = '"FURNITURE"';
+
+/** Текущий год */
 const CURRENT_YEAR = new Date().getFullYear();
+
+
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает HTML-разметку футера
@@ -32,13 +49,14 @@ const CURRENT_YEAR = new Date().getFullYear();
  */
 function createFooter(): string {
     //Собираем навигацию из данных
-    const navItemsHtml = navLinks.map(link => `
+    const navItemsHtml = NAV_LINKS.map(link => `
         <li class="footer__nav-item">
             <a class="footer__nav-link footer__text" href="${link.href}">${link.label}</a>
         </li>
         `).join('');
-
-    const socialItemsHtml = socialLinks.map(link => `
+    
+    // Собираем социальные иконки
+    const socialItemsHtml = SOCIAL_LINKS.map(link => `
         <li class="social__item">
             <a class="social__link" href="${link.href}" aria-label="${link.label}">
                 <svg width="30" height="30" aria-hidden="true">
@@ -87,6 +105,8 @@ function createFooter(): string {
     </footer>
     `
 };
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит компонент футера

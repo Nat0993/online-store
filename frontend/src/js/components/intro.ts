@@ -1,4 +1,8 @@
-//Отрисовка разметки
+// ============ РАЗМЕТКА ============
+
+/**
+ * Создает HTML-разметку интро-секции
+ */
 function createIntro(): string {
     return `
     <section class="intro">
@@ -20,10 +24,10 @@ function createIntro(): string {
     `
 };
 
+// ============ ИНИЦИАЛИЗАЦИЯ ============
 
 /**
- * Инициализирует логику интро-секции (навигация по кнопке)
- * @param {HTMLElement} introContainer - контейнер интро-секции
+ * Инициализирует логику интро-секции
  */
 function initIntro (introContainer: HTMLElement): void {
     const introBtn = introContainer.querySelector<HTMLButtonElement>('.intro__btn-link');
@@ -42,9 +46,12 @@ function initIntro (introContainer: HTMLElement): void {
     });
 };
 
+// ============ ПУБЛИЧНЫЙ API ============
+
 /**
  * Рендерит интро-секцию главной страницы
- * @returns {HTMLElement} DOM-элемент интро-секции
+ * 
+ * @returns DOM-элемент интро-секции
  */
 export function renderIntro (): HTMLElement {
     const introContainer = document.createElement('div');

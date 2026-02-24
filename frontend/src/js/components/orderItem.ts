@@ -1,9 +1,27 @@
+// ============ ИМПОРТЫ ============
 import { escapeHtml } from '../utils/security.js';
 import { addToCart } from '../data.js';
 import { renderOrderDetailsModal } from './orderDetailsModal.js';
-import { Order, PaymentMethod } from '../types/index.js';
+import { Order } from '../types/index.js';
 
-//Утилиты
+// ============ ТИПЫ ============
+
+/**
+ * Интерфейс модального окна с деталями заказа
+ */
+interface OrderDetailsModal {
+    container: HTMLElement;
+    open: (order: Order) => void;
+}
+
+// ============ СОСТОЯНИЕ ============
+
+/** Глобальная переменная для экземпляра модалки (синглтон) */
+let orderDetailsModal: OrderDetailsModal | null = null;
+
+
+// ============ УТИЛИТЫ ============
+
 /**
  * Форматирует дату заказа для отображения
  */
@@ -15,25 +33,10 @@ function formatOrderDate(dateString: string): string {
     });
 }
 
-//Типы
-/**
- * Интерфейс модального окна с деталями заказа
- */
-interface OrderDetailsModal {
-    container: HTMLElement;
-    open: (order: Order) => void;
-}
-
-//Состояние
-
-// Глобальная переменная для экземпляра модалки (синглтон)
-let orderDetailsModal: OrderDetailsModal | null = null;
-
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает HTML-разметку заказа в истории заказов
- * @param {Object} order - объект заказа в истории
- * @returns {string} HTML-разметка
  */
 function createOrderItem(order: Order): string {
     const formattedDate = formatOrderDate(order.createdAt);
@@ -70,10 +73,10 @@ function createOrderItem(order: Order): string {
     `;
 }
 
+// ============ ИНИЦИАЛИЗАЦИЯ ============
+
 /**
  * Инициализирует логику карточки заказа
- * @param {HTMLElement} itemElement - DOM-элемент заказа
- * @param {Object} order - объект заказа
  */
 function initOrderItem(itemElement: HTMLElement, order: Order): void {
     const detailsBtn = itemElement.querySelector<HTMLButtonElement>('#details-btn');
@@ -138,10 +141,12 @@ function initOrderItem(itemElement: HTMLElement, order: Order): void {
         }
     }
 
-    // Обработчики событий
+    // ===== НАСТРОЙКА ОБРАБОТЧИКОВ =====
     detailsBtn.addEventListener('click', handleShowDetails);
     repeatBtn.addEventListener('click', handleRepeatOrder);
 }
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит компонент заказа в истории

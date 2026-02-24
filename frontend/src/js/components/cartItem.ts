@@ -1,6 +1,9 @@
+// ============ ИМПОРТЫ ============
 import { escapeHtml } from '../utils/security.js';
 import { updateCartQuantity, removeFromCart, getCartItemsWithProducts } from '../data.js';
 import type { CartItemWithProduct } from '../types/index.js';
+
+// ============ ТИПЫ ============
 
 // Интерфейс для DOM-элементов
 interface CartItemElements {
@@ -11,6 +14,8 @@ interface CartItemElements {
     totalPriceEl: HTMLElement;
     cartItemId: string;
 }
+
+// ============ ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ============
 
 /**
  * Получает все необходимые элементы из DOM
@@ -37,6 +42,8 @@ function getCartItemElements(itemElement: HTMLElement): CartItemElements | null 
         cartItemId
     };
 }
+
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает HTML-разметку товара в корзине
@@ -83,6 +90,8 @@ function createCartItem(item: CartItemWithProduct): string {
     </li>
     `;
 }
+
+// ============ ИНИЦИАЛИЗАЦИЯ ============
 
 /**
  * Инициализирует логику товара в корзине
@@ -171,11 +180,13 @@ function initCartItem(itemElement: HTMLElement, item: CartItemWithProduct): void
         }
     }
 
-    // Назначаем обработчики событий
+    // ============ НАСТРОЙКА ОБРАБОТЧИКОВ ============
     minusBtn.addEventListener('click', handleDecreaseQuantity);
     plusBtn.addEventListener('click', handleIncreaseQuantity);
     removeBtn.addEventListener('click', handleRemoveItem);
 }
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит компонент товара в корзине

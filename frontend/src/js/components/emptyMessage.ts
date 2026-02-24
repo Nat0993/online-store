@@ -1,5 +1,8 @@
+// ============ ИМПОРТЫ ============
 import { escapeHtml } from "../utils/security.js";
 import { NavLink } from "../types/index";
+
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает сообщение о пустой странице
@@ -19,6 +22,8 @@ function createEmptyMessage(title: string, description: string, link: NavLink): 
     </div>
     `;
 }
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит сообщение о пустой странице

@@ -1,21 +1,12 @@
+// ============ ИМПОРТЫ ============
 import { getCurrentCart, getCurrentFavorites, getCurrentUser, logoutUser } from '../data.js';
 import { escapeHtml } from '../utils/security.js';
 import { NavLink, User } from "../types/index";
 
+// ============ ТИПЫ ============
+
 // Тип для функции открытия модалки
 type OpenModalFunction = () => void;
-
-//Константы
-const navLinks: NavLink[] = [
-    { href: '/catalog', label: 'Каталог' },
-    { href: '/delivery', label: 'Доставка и оплата' },
-    { href: '/sales', label: 'Акции' },
-    { href: '/reviews', label: 'Отзывы' },
-    { href: '/contacts', label: 'Контакты' }
-];
-
-const MAX_COUNTER = 99;
-const MAX_NAME_LENGTH = 15;
 
 /**
  * Интерфейс для DOM-элементов хедера
@@ -30,9 +21,30 @@ interface HeaderElements {
     cartCounter: HTMLElement;
 }
 
-//Функция, которая рисует хедер
+// ============ КОНСТАНТЫ ============
+
+/** Навигационные ссылки */
+const NAV_LINKS: NavLink[] = [
+    { href: '/catalog', label: 'Каталог' },
+    { href: '/delivery', label: 'Доставка и оплата' },
+    { href: '/sales', label: 'Акции' },
+    { href: '/reviews', label: 'Отзывы' },
+    { href: '/contacts', label: 'Контакты' }
+];
+
+/** Максимальное значение счетчика (99+) */
+const MAX_COUNTER = 99;
+
+/** Максимальная длина имени пользователя */
+const MAX_NAME_LENGTH = 15;
+
+// ============ РАЗМЕТКА ============
+
+/**
+ * Создает HTML-разметку хедера
+ */
 function createHeader(): string {
-    const navItemsHtml = navLinks.map(link => `
+    const navItemsHtml = NAV_LINKS.map(link => `
         <li class="main-nav__item">
             <a class="main-nav__link" href="${link.href}">${link.label}</a>
         </li>
@@ -94,6 +106,8 @@ function createHeader(): string {
     `
 };
 
+// ============ ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ============
+
 /**
  * Получает все необходимые элементы из DOM
  * @param container - контейнер хедера
@@ -123,6 +137,8 @@ function getHeaderElements (container: HTMLElement): HeaderElements | null {
         cartCounter
     };
 }
+
+// ============ УТИЛИТЫ ============
 
 /**
  * Форматирует имя пользователя для отображения
@@ -209,7 +225,7 @@ function updateHeaderUI(elements: HeaderElements): void {
     updateCounters(elements);
 }
 
-
+// ============ ИНИЦИАЛИЗАЦИЯ ============
 
 /**
  * Инициализирует логику хедера
@@ -222,14 +238,16 @@ function initHeader(headerContainer: HTMLElement, openModal: OpenModalFunction):
 
     const { btnLogin, btnLogout, btnBurger, nav, logoLink } = elements;
 
-    //Обработчк клика на логотип
-    logoLink.addEventListener('click', (event: MouseEvent):void => {
+    // ===== ОБРАБОТЧИКИ НАВИГАЦИИ =====
+
+    /** Обработчик клика на логотип */
+    function handleLogoClick(event: MouseEvent): void {
         event.preventDefault();
         window.history.pushState({}, '', '/');
         window.dispatchEvent(new PopStateEvent('popstate'));
-    })
+    }
 
-    //Функция для обработки клика на кнопку войти/личного кабинета (смена функционала)
+    /** Обработчик клика на кнопку входа/профиля */
     function handleLoginClick(): void {
         const currentUser = getCurrentUser();
 
@@ -241,53 +259,64 @@ function initHeader(headerContainer: HTMLElement, openModal: OpenModalFunction):
         }
     }
 
-    //Обработчик клика на кнопку "Войти"
-    btnLogin.addEventListener('click', handleLoginClick);
+    // ===== ОБРАБОТЧИКИ БУРГЕРА =====
 
-    //Обработчик бургера
-    btnBurger.addEventListener('click', ():void => {
+    /** Обработчик клика на бургер */
+    function handleBurgerClick(): void {
         btnBurger.classList.toggle('burger--active');
         nav.classList.toggle('main-nav--active');
-    });
+    }
 
-    document.addEventListener('click', (event: MouseEvent):void => {
+    /** Обработчик клика вне меню */
+    function handleDocumentClick(event: MouseEvent): void {
         const target = event.target as Node;
 
         if (!nav.contains(target) && !btnBurger.contains(target)) {
             nav.classList.remove('main-nav--active');
             btnBurger.classList.remove('burger--active');
         }
-    });
+    }
 
-    // Обработчик выхода
-    btnLogout.addEventListener('click', ():void => {
+    // ===== ОБРАБОТЧИК ВЫХОДА =====
+
+    /** Обработчик выхода из аккаунта */
+    function handleLogout(): void {
         logoutUser();
         updateHeaderUI(elements);
-        console.log('Пользователь вышел');
+        console.log('[Header] Пользователь вышел');
 
-        // Отправляем событие о выходе
         window.dispatchEvent(new CustomEvent('auth:change', {
             detail: { user: null, type: 'logout' }
         }));
-    });
+    }
 
-    // Слушаем события авторизации
-    window.addEventListener('auth:change', ():void => {
-        console.log('Получено событие auth:change');
+    // ===== НАСТРОЙКА ОБРАБОТЧИКОВ =====
+    logoLink.addEventListener('click', handleLogoClick);
+    btnLogin.addEventListener('click', handleLoginClick);
+    btnBurger.addEventListener('click', handleBurgerClick);
+    btnLogout.addEventListener('click', handleLogout);
+    
+    document.addEventListener('click', handleDocumentClick);
+
+    // ===== СЛУШАТЕЛИ СОБЫТИЙ =====
+    window.addEventListener('auth:change', () => {
+        console.log('[Header] Получено событие auth:change');
         updateHeaderUI(elements);
     });
 
-    //Слушаем события изменения корзины и избранного
-    window.addEventListener('cart:update', ():void => {
+    window.addEventListener('cart:update', () => {
         updateCounters(elements);
     });
 
-    window.addEventListener('favorites:update', ():void => {
+    window.addEventListener('favorites:update', () => {
         updateCounters(elements);
     });
 
+    // ===== ПЕРВОНАЧАЛЬНОЕ ОБНОВЛЕНИЕ =====
     updateHeaderUI(elements);
 };
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит компонент хедера

@@ -1,9 +1,14 @@
+// ============ ИМПОРТЫ ============
 import { escapeHtml } from '../utils/security.js';
+
+// ============ ТИПЫ ============
 
 interface BreadcrumbLink {
     url?: string;
     text: string;
 }
+
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает HTML-разметку хлебных крошек
@@ -37,6 +42,8 @@ function createBreadcrumbs(links: BreadcrumbLink[]): string {
         </nav>
     `;
 }
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит компонент хлебных крошек
