@@ -1,20 +1,50 @@
 import { escapeHtml } from '../utils/security.js';
 import { addToCart } from '../data.js';
-import { renderOrderDetailsModal } from '../components/orderDetailsModal.js';
+import { renderOrderDetailsModal } from './orderDetailsModal.js';
+import { Order, PaymentMethod } from '../types/index.js';
+
+//Утилиты
+/**
+ * Форматирует дату заказа для отображения
+ */
+function formatOrderDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
+//Типы
+/**
+ * Интерфейс модального окна с деталями заказа
+ */
+interface OrderDetailsModal {
+    container: HTMLElement;
+    open: (order: Order) => void;
+}
+
+//Состояние
+
+// Глобальная переменная для экземпляра модалки (синглтон)
+let orderDetailsModal: OrderDetailsModal | null = null;
+
 
 /**
  * Создает HTML-разметку заказа в истории заказов
- * @param {Object} item - объект заказа в истории
+ * @param {Object} order - объект заказа в истории
  * @returns {string} HTML-разметка
  */
-function createOrderItem(order) {
+function createOrderItem(order: Order): string {
+    const formattedDate = formatOrderDate(order.createdAt);
+
     return `
     <li class="order-item" data-order-id="${escapeHtml(order.id)}">
         <div class="order-item__info">
             <div class="order-item__header">
             <span class="order-item__text order-item__text--bold">Заказ #${escapeHtml(order.orderNumber)}</span>
             <span class="order-item__text">
-                ${new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                ${escapeHtml(formattedDate)}
             </span>
             </div>
             <div class="order-item__summary">
@@ -40,48 +70,43 @@ function createOrderItem(order) {
     `;
 }
 
-// Глобальная переменная для экземпляра модалки
-let orderDetailsModal = null;
-
 /**
  * Инициализирует логику карточки заказа
  * @param {HTMLElement} itemElement - DOM-элемент заказа
  * @param {Object} order - объект заказа
  */
-function initOrderItem(itemElement, order) {
-    const detailsBtn = itemElement.querySelector('#details-btn');
-    const repeatBtn = itemElement.querySelector('#repeat-btn');
+function initOrderItem(itemElement: HTMLElement, order: Order): void {
+    const detailsBtn = itemElement.querySelector<HTMLButtonElement>('#details-btn');
+    const repeatBtn = itemElement.querySelector<HTMLButtonElement>('#repeat-btn');
+
+    if (!detailsBtn || !repeatBtn) {
+        console.warn('Кнопки не найдены в элементе заказа');
+        return;
+    }
 
     // Инициализируем модалку при первом использовании
     if (!orderDetailsModal) {
-        orderDetailsModal = renderOrderDetailsModal();
-        document.body.appendChild(orderDetailsModal.container);
+        try {
+            orderDetailsModal = renderOrderDetailsModal() as OrderDetailsModal;
+            document.body.appendChild(orderDetailsModal.container);
+        } catch (error) {
+            console.error('Не удалось создать модалку заказа:', error);
+            return;
+        }
     }
 
     /**
      * Открывает модальное окно с деталями заказа
      */
-    function handleShowDetails() {
+    function handleShowDetails(): void {
         console.log('Детали заказа:', order.orderNumber);
-        orderDetailsModal.open(order);
-    }
-
-    /**
-     * Возвращает текст способа оплаты
-     */
-    function getPaymentMethodText(paymentMethod) {
-        const paymentMap = {
-            'card': 'Картой онлайн',
-            'cash': 'Наличными при получении',
-            'card_courier': 'Картой курьеру'
-        };
-        return paymentMap[paymentMethod] || 'Не указан';
+        orderDetailsModal?.open(order);
     }
 
     /**
      * Повторяет заказ (добавляет товары в корзину)
      */
-    function handleRepeatOrder() {
+    function handleRepeatOrder(): void {
         console.log('Повтор заказа:', order.orderNumber);
 
         if (!confirm('Добавить все товары из этого заказа в корзину?')) {
@@ -104,7 +129,12 @@ function initOrderItem(itemElement, order) {
 
         } catch (error) {
             console.error('Ошибка при повторении заказа:', error);
-            alert(`Не удалось добавить товары в корзину: ${error.message}\n\nПопробуйте еще раз или обратитесь в поддержку.`);
+            
+            const message = error instanceof Error 
+                ? error.message 
+                : 'Неизвестная ошибка';
+                
+            alert(`Не удалось добавить товары в корзину: ${message}\n\nПопробуйте еще раз или обратитесь в поддержку.`);
         }
     }
 
@@ -118,11 +148,19 @@ function initOrderItem(itemElement, order) {
  * @param {Object} order - объект заказа
  * @returns {HTMLElement} DOM-элемент заказа
  */
-export function renderOrderItem(order) {
+export function renderOrderItem(order: Order): HTMLElement {
+    if (!order) {
+        throw new Error('Требуется заказ');
+    }
+
     const itemContainer = document.createElement('div');
     itemContainer.innerHTML = createOrderItem(order);
 
-    const itemElement = itemContainer.firstElementChild;
+    const itemElement = itemContainer.firstElementChild as HTMLElement;
+    if (!itemElement) {
+        throw new Error('Не удалось создать элемент заказа');
+    }
+
     initOrderItem(itemElement, order);
 
     return itemElement;
