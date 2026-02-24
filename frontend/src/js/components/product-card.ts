@@ -246,7 +246,15 @@ export function renderProductCard(product: Product): HTMLElement {
     const cardContainer = document.createElement('div');
     cardContainer.innerHTML = createProductCard(product);
 
-    const cardElement = cardContainer.firstElementChild as HTMLElement;
+    const cardElement = cardContainer.firstElementChild as HTMLElement | null;
+
+    if (!cardElement) {
+        console.error('renderProductCard: не удалось создать элемент');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'product-card product-card--error';
+        errorDiv.textContent = 'Ошибка создания карточки товара';
+        return errorDiv;
+    }
 
     initProductCard(cardElement);
 
