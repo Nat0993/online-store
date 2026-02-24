@@ -58,7 +58,7 @@ class App {
     renderComponents() {
         //рендер компонентов
         this.components.modal = renderModal();
-        this.components.header = renderHeader(this.components.modal.functions) //функция открытия модалки идет аргументом для кнопки войти при рендере хедера
+        this.components.header = renderHeader(this.components.modal.open) //функция открытия модалки идет аргументом для кнопки войти при рендере хедера
         this.components.footer = renderFooter();
 
         document.querySelector('#header-component').appendChild(this.components.header);
