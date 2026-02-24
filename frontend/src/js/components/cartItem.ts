@@ -1,19 +1,58 @@
 import { escapeHtml } from '../utils/security.js';
 import { updateCartQuantity, removeFromCart, getCartItemsWithProducts } from '../data.js';
+import type { CartItemWithProduct } from '../types/index.js';
 
+// Интерфейс для DOM-элементов
+interface CartItemElements {
+    minusBtn: HTMLButtonElement;
+    plusBtn: HTMLButtonElement;
+    removeBtn: HTMLButtonElement;
+    quantityEl: HTMLElement;
+    totalPriceEl: HTMLElement;
+    cartItemId: string;
+}
+
+/**
+ * Получает все необходимые элементы из DOM
+ */
+function getCartItemElements(itemElement: HTMLElement): CartItemElements | null {
+    const minusBtn = itemElement.querySelector<HTMLButtonElement>('.cart-item__quantity-btn--minus');
+    const plusBtn = itemElement.querySelector<HTMLButtonElement>('.cart-item__quantity-btn--plus');
+    const removeBtn = itemElement.querySelector<HTMLButtonElement>('.cart-item__remove');
+    const quantityEl = itemElement.querySelector<HTMLElement>('.cart-item__quantity');
+    const totalPriceEl = itemElement.querySelector<HTMLElement>('.cart-item__total-price');
+    const cartItemId = itemElement.dataset.cartItemId;
+
+    if (!minusBtn || !plusBtn || !removeBtn || !quantityEl || !totalPriceEl || !cartItemId) {
+        console.warn('Не все элементы товара в корзине найдены');
+        return null;
+    }
+
+    return {
+        minusBtn,
+        plusBtn,
+        removeBtn,
+        quantityEl,
+        totalPriceEl,
+        cartItemId
+    };
+}
 
 /**
  * Создает HTML-разметку товара в корзине
- * @param {Object} item - объект товара в корзине
- * @returns {string} HTML-разметка
+ * 
+ * TODO (API): при подключении бэкенда:
+ * 1. Добавить проверку item.product (сейчас всегда есть из data.ts)
+ * 2. Создать отдельный рендер для товаров без product (удалены из каталога)
+ * 3. Добавить обработку состояния загрузки
  */
-function createCartItem(item) {
+function createCartItem(item: CartItemWithProduct): string {
     const totalPrice = item.product.price * item.quantity;
 
     return `
     <li class="cart-item" data-cart-item-id="${escapeHtml(item.id)}">
         <div class="cart-item__info">
-            <img class="cart-item__img" src="${escapeHtml(item.product.image)}" alt="${escapeHtml(item.product.name)}" loading="lazy">
+            <img class="cart-item__img" src="${escapeHtml(item.product.image || '')}" alt="${escapeHtml(item.product.name)}" loading="lazy">
             <div class="cart-item__inner">
                 <h3 class="cart-item__title">${escapeHtml(item.product.name)}</h3>
                 <span class="cart-item__price">${item.product.price.toLocaleString()} ₽</span>
@@ -47,35 +86,34 @@ function createCartItem(item) {
 
 /**
  * Инициализирует логику товара в корзине
- * @param {HTMLElement} itemElement - DOM-элемент товара
- * @param {Object} item - объект товара
+ * 
+ * TODO (API): добавить обработку случая, когда товар удален из каталога
+ * (сейчас все товары валидны, так как отфильтрованы в getCartItemsWithProducts)
  */
-function initCartItem(itemElement, item) {
-    const minusBtn = itemElement.querySelector('.cart-item__quantity-btn--minus');
-    const plusBtn = itemElement.querySelector('.cart-item__quantity-btn--plus');
-    const removeBtn = itemElement.querySelector('.cart-item__remove');
-    const quantityEl = itemElement.querySelector('.cart-item__quantity');
-    const totalPriceEl = itemElement.querySelector('.cart-item__total-price');
-    const cartItemId = itemElement.dataset.cartItemId;
+function initCartItem(itemElement: HTMLElement, item: CartItemWithProduct): void {
+    const elements = getCartItemElements(itemElement);
+    if (!elements) return;
+
+    const { minusBtn, plusBtn, removeBtn, quantityEl, totalPriceEl, cartItemId } = elements;
 
     /**
      * Обновляет отображение количества и суммы товара
-     * @param {number} quantity - новое количество
      */
-    function updateItemDisplay(quantity) {
+    function updateItemDisplay(quantity: number): void {
+        // TODO (API): добавить проверку item.product перед вычислением
         const totalPrice = item.product.price * quantity;
-        quantityEl.textContent = quantity;
+        quantityEl.textContent = quantity.toString();
         totalPriceEl.textContent = `${totalPrice.toLocaleString()} ₽`;
     }
 
     /**
      * Обрабатывает удаление товара из корзины
      */
-    function handleRemoveItem() {
-        if (!confirm('Удалить товар из корзины?')) return; 
+    function handleRemoveItem(): void {
+        if (!confirm('Удалить товар из корзины?')) return;
 
         //Находим все элементы после удаляемого
-        const allItems = Array.from(document.querySelectorAll('.cart-item'));
+        const allItems = Array.from(document.querySelectorAll<HTMLElement>('.cart-item'));
         const removedIndex = allItems.indexOf(itemElement);
         const itemsAfter = allItems.slice(removedIndex + 1);
 
@@ -90,12 +128,12 @@ function initCartItem(itemElement, item) {
         // Удаляем из данных и DOM после анимации
         setTimeout(() => {
             removeFromCart(cartItemId);
-            
+
             // Возвращаем остальные карточки на место
             itemsAfter.forEach(item => {
                 item.classList.remove('cart-item--sliding');
             });
-            
+
             // Обновляем глобальное состояние
             window.dispatchEvent(new CustomEvent('cart:update'));
         }, 300);
@@ -104,8 +142,8 @@ function initCartItem(itemElement, item) {
     /**
      * Обрабатывает уменьшение количества товара
      */
-    function handleDecreaseQuantity() {
-        const cartItems = getCartItemsWithProducts();
+    function handleDecreaseQuantity(): void {
+        const cartItems = getCartItemsWithProducts() as CartItemWithProduct[];
         const cartItem = cartItems.find(cartItem => cartItem.id === cartItemId);
 
         if (cartItem && cartItem.quantity > 1) {
@@ -121,8 +159,8 @@ function initCartItem(itemElement, item) {
     /**
      * Обрабатывает увеличение количества товара
      */
-    function handleIncreaseQuantity() {
-        const cartItems = getCartItemsWithProducts();
+    function handleIncreaseQuantity(): void {
+        const cartItems = getCartItemsWithProducts() as CartItemWithProduct[];
         const cartItem = cartItems.find(cartItem => cartItem.id === cartItemId);
 
         if (cartItem) {
@@ -141,14 +179,25 @@ function initCartItem(itemElement, item) {
 
 /**
  * Рендерит компонент товара в корзине
- * @param {Object} item - объект товара
- * @returns {HTMLElement} DOM-элемент товара
+ * 
+ * TODO (API):
+ * 1. Добавить проверку item.product
+ * 2. Для товаров без product рендерить специальную заглушку
+ * 3. Добавить состояние загрузки
  */
-export function renderCartItem(item) {
+export function renderCartItem(item: CartItemWithProduct): HTMLElement {
     const itemContainer = document.createElement('div');
     itemContainer.innerHTML = createCartItem(item);
 
-    const itemElement = itemContainer.firstElementChild;
+    const itemElement = itemContainer.firstElementChild as HTMLElement | null;
+
+    if (!itemElement) {
+        console.error('renderCartItem: не удалось создать элемент');
+        const errorDiv = document.createElement('div');
+        errorDiv.textContent = 'Ошибка загрузки товара';
+        return errorDiv;
+    }
+
     initCartItem(itemElement, item);
 
     return itemElement;

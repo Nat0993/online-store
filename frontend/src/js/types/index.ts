@@ -44,6 +44,12 @@ export interface CartItem {
     addedAt: string;
 }
 
+// Элемент корзины с гарантированным продуктом
+// TODO (API): использовать там, где product точно есть (после фильтрации)
+export interface CartItemWithProduct extends CartItem {
+    product: Product;  // обязательный
+}
+
 // Избранное
 export interface FavoriteItem {
     id: string;
