@@ -198,7 +198,7 @@ function initModal(container: HTMLElement): (() => void) | null {
         document.removeEventListener('keydown', handleEscapePress); // Убираем обработчик
         authForm.reset();
         clearAllErrors();
-    };
+    }
 
     /** Обработчик нажатия Escape */
     function handleEscapePress(event: KeyboardEvent): void {
@@ -231,7 +231,7 @@ function initModal(container: HTMLElement): (() => void) | null {
         };
 
         clearAllErrors();
-    };
+    }
 
     // ============ РАБОТА С ОШИБКАМИ ============
 

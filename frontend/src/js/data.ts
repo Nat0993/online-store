@@ -8,7 +8,7 @@ import {
     Order,
 } from './types/index';
 
-import type { OrderData, UserData } from './types/index';
+import type { CartItemWithProduct, OrderData, UserData } from './types/index';
 
 type StorageKey = 
   | 'users' 
@@ -267,7 +267,7 @@ export const removeFromCart = (cartItemId: string): CartItem[] => {
  * Получает элементы корзины с полной информацией о товарах
  * @returns {Array} массив элементов корзины с товарами
  */
-export const getCartItemsWithProducts = (): CartItem[] => {
+export const getCartItemsWithProducts = (): CartItemWithProduct[] => {
     const cart = getCurrentCart();
     return cart.map(item => {
         const product = getProductById(item.productId);

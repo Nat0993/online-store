@@ -114,7 +114,7 @@ function renderCartCounter(elements: ProductCardElements, quantity: number): voi
 /**
  * Рендерит кнопку "В корзину"
  */
-function renderAddToCardButton(elements: ProductCardElements): void {
+function renderAddToCartButton(elements: ProductCardElements): void {
     elements.cartControls.innerHTML = `
                 <button class="product-card__cart-btn btn" type="button">
                     В корзину
@@ -138,7 +138,7 @@ function updateCartButton(elements: ProductCardElements): void {
         setupCartHandlers(elements);
     } else {
         console.log('Товара нет в корзине, показываем кнопку');
-        renderAddToCardButton(elements);
+        renderAddToCartButton(elements);
         setupAddToCartHandler(elements);
     }
 }
@@ -220,7 +220,7 @@ function setupAddToCartHandler(elements: ProductCardElements): void {
  */
 function initProductCard(cardElement: HTMLElement): void {
     const elements = getProductCardElements(cardElement);
-    if(!elements) return;
+    if (!elements) return;
 
     // Обработчик кнопки избранного
     elements.favoriteBtn.addEventListener('click', () => handleFavoriteClick(elements));
