@@ -1,11 +1,63 @@
+// ============ ИМПОРТЫ ============
 import { escapeHtml } from '../utils/security.js';
 import { addToCart } from '../data.js';
+import type { Order, OrderItem, PaymentMethod } from '../types/index.js';
+
+// ============ ТИПЫ ============
+
+/** Элементы DOM модального окна деталей заказа */
+interface OrderDetailsModalElements {
+    modal: HTMLElement;
+    closeBtn: HTMLButtonElement;
+    modalWrapper: HTMLElement;
+    repeatBtn: HTMLButtonElement;
+    titleElement: HTMLElement | null;
+    dateElement: HTMLElement | null;
+    customerNameElement: HTMLElement | null;
+    customerPhoneElement: HTMLElement | null;
+    customerEmailElement: HTMLElement | null;
+    addressElement: HTMLElement | null;
+    commentTextElement: HTMLElement | null;
+    commentElement: HTMLElement | null;
+    paymentElement: HTMLElement | null;
+    itemsListElement: HTMLElement | null;
+    itemsCountElement: HTMLElement | null;
+    subtotalElement: HTMLElement | null;
+    deliveryElement: HTMLElement | null;
+    totalElement: HTMLElement | null;
+}
+
+/** Состояние модального окна */
+interface OrderDetailsModalState {
+    currentOrder: Order | null;
+    isOpening: boolean;
+    isDragging: boolean;
+    startX: number;
+    startY: number;
+}
+
+/** Внутреннее API модального окна (методы управления) */
+interface OrderDetailsModalApi {
+    open: (order: Order) => void;
+    close: () => void;
+}
+
+/** Внешнее API модального окна (контейнер + методы) */
+interface OrderDetailsModalReturn {
+    container: HTMLElement;
+    open: (order: Order) => void;
+    close: () => void;
+}
+
+// ============ УТИЛИТЫ ============
 
 /**
  * Преобразует способ оплаты в читаемый текст
+ * @param {PaymentMethod} paymentMethod - способ оплаты
+ * @returns {string} текстовое представление
  */
-function getPaymentMethodText(paymentMethod) {
-    const paymentMap = {
+function getPaymentMethodText(paymentMethod: PaymentMethod): string {
+    const paymentMap: Record<PaymentMethod, string> = {
         'card': 'Картой онлайн',
         'cash': 'Наличными при получении',
         'card_courier': 'Картой курьеру'
@@ -14,16 +66,32 @@ function getPaymentMethodText(paymentMethod) {
 }
 
 /**
+ * Форматирует дату заказа
+ * @param {string} dateString - дата в ISO формате
+ * @returns {string} отформатированная дата
+ */
+function formatOrderDate(dateString: string): string {
+    const orderDate = new Date(dateString);
+    return orderDate.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+}
+
+// ============ РАЗМЕТКА ============
+
+/**
  * Создает HTML-разметку товара в заказе для модалки
- * @param {Object} item - товар в заказе
+ * @param {OrderItem} item - товар в заказе
  * @returns {string} HTML-разметка
  */
-function createOrderItem(item) {
+function createOrderItem(item: OrderItem): string {
     const totalPrice = item.price * item.quantity;
     
     return `
     <li class="order-details-modal__item" data-product-id="${escapeHtml(item.productId)}">
-        <img class="order-details-modal__item-image" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.productName)}" loading="lazy">
+        <img class="order-details-modal__item-image" src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.productName)}" loading="lazy">
         <div class="order-details-modal__item-info">
             <h4 class="order-details-modal__item-title">${escapeHtml(item.productName)}</h4>
             <div class="order-details-modal__item-details">
@@ -37,9 +105,10 @@ function createOrderItem(item) {
 }
 
 /**
- * Создает HTML-разметку модального окна 
+ * Создает HTML-разметку модального окна деталей заказа
+ * @returns {string} HTML-разметка
  */
-function createOrderDetailsModal() {
+function createOrderDetailsModal(): string {
     return `
     <div class="order-details-modal">
         <div class="order-details-modal__wrapper">
@@ -149,50 +218,110 @@ function createOrderDetailsModal() {
     `;
 }
 
+// ============ ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ============
+
+/**
+ * Получает все необходимые элементы из DOM
+ * @param {HTMLElement} container - контейнер модалки
+ * @returns {OrderDetailsModalElements | null} объект с элементами или null
+ */
+function getModalElements(container: HTMLElement): OrderDetailsModalElements | null {
+    const modal = container.querySelector<HTMLElement>('.order-details-modal');
+    const closeBtn = container.querySelector<HTMLButtonElement>('.order-details-modal__close');
+    const modalWrapper = container.querySelector<HTMLElement>('.order-details-modal__wrapper');
+    const repeatBtn = container.querySelector<HTMLButtonElement>('.order-details-modal__repeat-btn');
+
+    if (!modal || !closeBtn || !modalWrapper || !repeatBtn) {
+        console.warn('[OrderDetailsModal] Не все основные элементы найдены');
+        return null;
+    }
+
+    return {
+        modal,
+        closeBtn,
+        modalWrapper,
+        repeatBtn,
+        titleElement: container.querySelector<HTMLElement>('.order-details-modal__title'),
+        dateElement: container.querySelector<HTMLElement>('.order-details-modal__date'),
+        customerNameElement: container.querySelector<HTMLElement>('#order-customer-name'),
+        customerPhoneElement: container.querySelector<HTMLElement>('#order-customer-phone'),
+        customerEmailElement: container.querySelector<HTMLElement>('#order-customer-email'),
+        addressElement: container.querySelector<HTMLElement>('#order-address'),
+        commentTextElement: container.querySelector<HTMLElement>('#order-comment-text'),
+        commentElement: container.querySelector<HTMLElement>('#order-comment'),
+        paymentElement: container.querySelector<HTMLElement>('#order-payment'),
+        itemsListElement: container.querySelector<HTMLElement>('#order-items-list'),
+        itemsCountElement: container.querySelector<HTMLElement>('#order-items-count'),
+        subtotalElement: container.querySelector<HTMLElement>('#order-subtotal'),
+        deliveryElement: container.querySelector<HTMLElement>('#order-delivery'),
+        totalElement: container.querySelector<HTMLElement>('#order-total')
+    };
+}
+
+// ============ ИНИЦИАЛИЗАЦИЯ ============
+
 /**
  * Инициализирует модальное окно деталей заказа
  * @param {HTMLElement} modalContainer - DOM-элемент модалки
- * @returns {Object} Объект с методами управления модалкой
+ * @returns {OrderDetailsModalReturn | null} Объект с методами управления модалкой
  */
-function initOrderDetailsModal(modalContainer) {
-    const modal = modalContainer.querySelector('.order-details-modal');
-    const closeBtn = modalContainer.querySelector('.order-details-modal__close');
-    const modalWrapper = modalContainer.querySelector('.order-details-modal__wrapper');
-    const repeatBtn = modalContainer.querySelector('.order-details-modal__repeat-btn');
-    
-    let currentOrder = null;
-    let isOpening = false;
-    
+function initOrderDetailsModal(modalContainer: HTMLElement): OrderDetailsModalApi | null {
+    const elements = getModalElements(modalContainer);
+    if (!elements) {
+        console.error('[OrderDetailsModal] Не удалось получить элементы модалки');
+        return null;
+    }
+
+    const {
+        modal,
+        closeBtn,
+        modalWrapper,
+        repeatBtn,
+        titleElement,
+        dateElement,
+        customerNameElement,
+        customerPhoneElement,
+        customerEmailElement,
+        addressElement,
+        commentTextElement,
+        commentElement,
+        paymentElement,
+        itemsListElement,
+        itemsCountElement,
+        subtotalElement,
+        deliveryElement,
+        totalElement
+    } = elements;
+
+    // Состояние модалки
+    const state: OrderDetailsModalState = {
+        currentOrder: null,
+        isOpening: false,
+        isDragging: false,
+        startX: 0,
+        startY: 0
+    };
+
+
+    // ============ ЗАПОЛНЕНИЕ ДАННЫМИ ============
+
     /**
      * Заполняет модалку данными заказа
-     * @param {Object} order - объект заказа
+     * @param {Order} order - объект заказа
      */
-    function populateOrderData(order) {
-        currentOrder = order;
+    function populateOrderData(order: Order): void {
+        state.currentOrder = order;
         
         // Заголовок и дата
-        const titleElement = modalContainer.querySelector('.order-details-modal__title');
-        const dateElement = modalContainer.querySelector('.order-details-modal__date');
-        
         if (titleElement) {
             titleElement.textContent = `Заказ #${order.orderNumber}`;
         }
         
         if (dateElement) {
-            const orderDate = new Date(order.createdAt);
-            const formattedDate = orderDate.toLocaleDateString('ru-RU', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-            });
-            dateElement.textContent = formattedDate;
+            dateElement.textContent = formatOrderDate(order.createdAt);
         }
         
         // Данные пользователя
-        const customerNameElement = modalContainer.querySelector('#order-customer-name');
-        const customerPhoneElement = modalContainer.querySelector('#order-customer-phone');
-        const customerEmailElement = modalContainer.querySelector('#order-customer-email');
-        
         if (customerNameElement) {
             customerNameElement.textContent = order.customer?.fullName || 
                                              `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim() || 
@@ -207,11 +336,7 @@ function initOrderDetailsModal(modalContainer) {
             customerEmailElement.textContent = order.customer?.email || 'Не указан';
         }
         
-        // Доставка
-        const addressElement = modalContainer.querySelector('#order-address');
-        const commentTextElement = modalContainer.querySelector('#order-comment-text');
-        const commentElement = modalContainer.querySelector('#order-comment');
-        
+        // Доставка 
         if (addressElement) {
             addressElement.textContent = order.customer?.address || 'Не указан';
         }
@@ -226,15 +351,11 @@ function initOrderDetailsModal(modalContainer) {
         }
         
         // Оплата
-        const paymentElement = modalContainer.querySelector('#order-payment');
         if (paymentElement) {
             paymentElement.textContent = getPaymentMethodText(order.payment);
         }
         
-        // Товары
-        const itemsListElement = modalContainer.querySelector('#order-items-list');
-        const itemsCountElement = modalContainer.querySelector('#order-items-count');
-        
+        // Товары 
         if (itemsListElement) {
             itemsListElement.innerHTML = '';
             
@@ -257,10 +378,6 @@ function initOrderDetailsModal(modalContainer) {
         }
         
         // Суммы
-        const subtotalElement = modalContainer.querySelector('#order-subtotal');
-        const deliveryElement = modalContainer.querySelector('#order-delivery');
-        const totalElement = modalContainer.querySelector('#order-total');
-        
         if (subtotalElement) {
             subtotalElement.textContent = `${(order.subtotal || 0).toLocaleString()} ₽`;
         }
@@ -274,17 +391,19 @@ function initOrderDetailsModal(modalContainer) {
         }
     }
     
+    // ============ УПРАВЛЕНИЕ МОДАЛКОЙ ============
+
     /**
      * Открывает модальное окно с данными заказа
-     * @param {Object} order - объект заказа
+     * @param {Order} order - объект заказа
      */
-    function open(order) {
+    function open(order: Order): void {
         if (!order) {
-            console.error('Не передан объект заказа');
+            console.error('[OrderDetailsModal] Не передан объект заказа');
             return;
         }
         
-        isOpening = true;
+        state.isOpening = true;
         populateOrderData(order);
         
         // Вставляем модалку в DOM если ее еще нет
@@ -300,14 +419,14 @@ function initOrderDetailsModal(modalContainer) {
         }, 10);
         
         setTimeout(() => {
-            isOpening = false;
+            state.isOpening = false;
         }, 100);
     }
     
     /**
      * Закрывает модальное окно
      */
-    function close() {
+    function close(): void {
         modal.classList.remove('order-details-modal--active');
         
         setTimeout(() => {
@@ -322,31 +441,34 @@ function initOrderDetailsModal(modalContainer) {
     
     /**
      * Обработчик клавиши Escape
+     * @param {KeyboardEvent} event - событие клавиатуры
      */
-    function handleEscapePress(event) {
+    function handleEscapePress(event: KeyboardEvent): void {
         if (event.key === 'Escape') {
             close();
         }
     }
     
+    // ============ ОБРАБОТЧИК ПОВТОРА ЗАКАЗА ============
+
     /**
      * Обрабатывает повтор заказа
      */
-    function handleRepeatOrder() {
-        if (!currentOrder) return;
+    function handleRepeatOrder(): void {
+        if (!state.currentOrder) return;
         
         if (!confirm('Добавить все товары из этого заказа в корзину?')) {
             return;
         }
         
         try {
-            currentOrder.items.forEach(item => {
+            state.currentOrder.items.forEach(item => {
                 addToCart(item.productId, item.quantity);
             });
             
             close();
             
-            alert(`Товары из заказа #${currentOrder.orderNumber} добавлены в корзину!`);
+            alert(`Товары из заказа #${state.currentOrder.orderNumber} добавлены в корзину!`);
             
             window.dispatchEvent(new CustomEvent('cart:update'));
             
@@ -356,38 +478,41 @@ function initOrderDetailsModal(modalContainer) {
             }
             
         } catch (error) {
-            console.error('Ошибка при повторении заказа:', error);
-            alert(`Не удалось добавить товары в корзину: ${error.message}\n\nПопробуйте еще раз или обратитесь в поддержку.`);
+            console.error('[OrderDetailsModal] Ошибка при повторении заказа:', error);
+            const message = error instanceof Error ? error.message : 'Неизвестная ошибка';
+            alert(`Не удалось добавить товары в корзину: ${message}\n\nПопробуйте еще раз или обратитесь в поддержку.`);
         }
     }
     
-    // Назначение обработчиков
+    // ============ НАСТРОЙКА ОБРАБОТЧИКОВ ============
+
+    // Закрытие по кнопке
     closeBtn.addEventListener('click', close);
+
+
+    // Повтор заказа
     repeatBtn.addEventListener('click', handleRepeatOrder);
     
-    // Закрытие по клику вне модалки
-    let isDragging = false;
-    let startX, startY;
-    
-    modalWrapper.addEventListener('mousedown', (e) => {
-        isDragging = false;
-        startX = e.clientX;
-        startY = e.clientY;
+    // Закрытие по клику вне модалки (с защитой от выделения текста)
+    modalWrapper.addEventListener('mousedown', (e: MouseEvent): void => {
+        state.isDragging = false;
+        state.startX = e.clientX;
+        state.startY = e.clientY;
     });
     
-    modalWrapper.addEventListener('mousemove', (e) => {
-        if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
-            isDragging = true;
+    modalWrapper.addEventListener('mousemove', (e: MouseEvent) => {
+        if (Math.abs(e.clientX - state.startX) > 5 || Math.abs(e.clientY - state.startY) > 5) {
+            state.isDragging = true;
         }
     });
     
-    modal.addEventListener('click', (e) => {
-        if (isOpening) return;
+    modal.addEventListener('click', (e: MouseEvent) => {
+        if (state.isOpening) return;
         
-        if (e.target === modal && !isDragging) {
+        if (e.target === modal && !state.isDragging) {
             close();
         }
-        isDragging = false;
+        state.isDragging = false;
     });
     
     return {
@@ -396,19 +521,31 @@ function initOrderDetailsModal(modalContainer) {
     };
 }
 
+// ============ ПУБЛИЧНЫЙ API ============
+
 /**
  * Рендерит модальное окно деталей заказа
- * @returns {Object} Объект с методами управления модалкой
+ * @returns {OrderDetailsModalReturn} Объект с контейнером и методами управления модалкой
  */
-export function renderOrderDetailsModal() {
+export function renderOrderDetailsModal(): OrderDetailsModalReturn {
     const modalContainer = document.createElement('div');
     modalContainer.innerHTML = createOrderDetailsModal();
     
-    const { open, close } = initOrderDetailsModal(modalContainer);
+    const modalApi = initOrderDetailsModal(modalContainer);
+
+    // Если не удалось инициализировать, возвращаем заглушку
+    if (!modalApi) {
+        console.error('[OrderDetailsModal] Не удалось инициализировать модалку');
+        return {
+            container: modalContainer,
+            open: () => console.warn('[OrderDetailsModal] Модалка не инициализирована'),
+            close: () => console.warn('[OrderDetailsModal] Модалка не инициализирована')
+        };
+    }
     
     return {
         container: modalContainer,
-        open,
-        close
+        open: modalApi.open,
+        close: modalApi.close
     };
 }
