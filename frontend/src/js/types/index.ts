@@ -32,7 +32,6 @@ export interface User {
     phone?: string;
     login?: string;
     createdAt: string;
-    name?: string;        // полное имя 
 }
 
 // Элемент корзины
