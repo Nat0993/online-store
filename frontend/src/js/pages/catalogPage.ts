@@ -1,15 +1,108 @@
+// ============ ИМПОРТЫ ============
 import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { getCategoryById, getProductsByCategory } from "../data.js";
 import { renderProductCard } from "../components/product-card.js";
-import { escapeHtml } from '../utils/security.js';
 import { renderEmptyMessage } from '../components/emptyMessage.js';
+import type { Category, Product } from '../types/index.js';
+
+// ============ ТИПЫ ============
+
+/** Тип сортировки товаров */
+type SortType = 'popular' | 'price-asc' | 'price-desc' | 'new';
+
+/** Фильтры товаров */
+interface ProductFilters {
+    minPrice: number | null;
+    maxPrice: number | null;
+    inStock: boolean;
+}
+
+/** Состояние модального окна фильтров */
+interface FiltersModalState {
+    isDragging: boolean;
+    startX: number;
+    startY: number;
+}
+
+/** Элементы DOM страницы каталога */
+interface CatalogPageElements {
+    // Основные элементы
+    productList: HTMLElement;
+    sortSelect: HTMLSelectElement;
+    
+    // Элементы фильтрации
+    filterBtn: HTMLButtonElement;
+    filtersModal: HTMLElement;
+    closeFilterBtn: HTMLButtonElement;
+    applyFilterBtn: HTMLButtonElement;
+    resetFilterBtn: HTMLButtonElement;
+    minPriceInput: HTMLInputElement;
+    maxPriceInput: HTMLInputElement;
+    inStockCheckbox: HTMLInputElement;
+    
+    // Вспомогательные
+    breadcrumbs?: HTMLElement;
+    pageHeader?: HTMLElement;
+    catalogControls?: HTMLElement;
+}
+
+// ============ ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ============
+
+/**
+ * Получает все необходимые элементы из DOM
+ * @param {HTMLElement} container - контейнер страницы
+ * @returns {CatalogPageElements | null} объект с элементами или null
+ */
+function getCatalogPageElements(container: HTMLElement): CatalogPageElements | null {
+    const productList = container.querySelector<HTMLElement>('.product-list');
+    const sortSelect = container.querySelector<HTMLSelectElement>('.catalog__sort-select');
+    const filterBtn = container.querySelector<HTMLButtonElement>('.catalog__filter-btn');
+    const filtersModal = container.querySelector<HTMLElement>('.filters-modal');
+    const closeFilterBtn = container.querySelector<HTMLButtonElement>('.filters-modal__close');
+    const applyFilterBtn = container.querySelector<HTMLButtonElement>('.filters-modal__apply');
+    const resetFilterBtn = container.querySelector<HTMLButtonElement>('.filters-modal__reset');
+    const minPriceInput = container.querySelector<HTMLInputElement>('#min-price');
+    const maxPriceInput = container.querySelector<HTMLInputElement>('#max-price');
+    const inStockCheckbox = container.querySelector<HTMLInputElement>('#in-stock');
+
+    
+    const breadcrumbs = container.querySelector<HTMLElement>('.breadcrumbs');
+    const pageHeader = container.querySelector<HTMLElement>('.page-header');
+    const catalogControls = container.querySelector<HTMLElement>('.catalog__controls');
+
+    
+    if (!productList || !sortSelect || !filterBtn || !filtersModal || !closeFilterBtn || 
+        !applyFilterBtn || !resetFilterBtn || !minPriceInput || !maxPriceInput || !inStockCheckbox) {
+        console.warn('[CatalogPage] Не все обязательные элементы найдены');
+        return null;
+    }
+
+    return {
+        productList,
+        sortSelect,
+        filterBtn,
+        filtersModal,
+        closeFilterBtn,
+        applyFilterBtn,
+        resetFilterBtn,
+        minPriceInput,
+        maxPriceInput,
+        inStockCheckbox,
+        breadcrumbs,
+        pageHeader,
+        catalogControls
+    };
+}
+
+
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает HTML-разметку страницы каталога
  * @param {string} categoryId - ID категории товаров
  * @returns {string} HTML-разметка страницы
  */
-function createCatalogPage(categoryId) {
+function createCatalogPage(categoryId: string): string {
     const category = getCategoryById(categoryId);
 
     if (!category) {
@@ -109,30 +202,49 @@ function createCatalogPage(categoryId) {
     `
 }
 
+// ============ ИНИЦИАЛИЗАЦИЯ ============
+
 /**
  * Инициализирует логику страницы каталога
  * @param {HTMLElement} pageContainer - контейнер страницы
  * @param {string} categoryId - id категории товаров
  */
-function initCatalogPage(pageContainer, categoryId) {
+function initCatalogPage(pageContainer: HTMLElement, categoryId: string): void {
     console.log('Инициализация каталога для категории:', categoryId);
 
-    const products = getProductsByCategory(categoryId);
-    const productList = pageContainer.querySelector('.product-list');
-    const sortSelect = pageContainer.querySelector('.catalog__sort-select');
+    const elements = getCatalogPageElements(pageContainer);
+    if (!elements) {
+        console.error('[CatalogPage] Не удалось получить элементы страницы');
+        return;
+    }
 
-    //Элементы фильрации
-    const filterBtn = pageContainer.querySelector('.catalog__filter-btn');
-    const filtersModal = pageContainer.querySelector('.filters-modal');
-    const closeFilterBtn = pageContainer.querySelector('.filters-modal__close');
-    const applyFilterBtn = pageContainer.querySelector('.filters-modal__apply');
-    const resetFilterBtn = pageContainer.querySelector('.filters-modal__reset');
-    const minPriceInput = pageContainer.querySelector('#min-price');
-    const maxPriceInput = pageContainer.querySelector('#max-price');
-    const inStockCheckbox = pageContainer.querySelector('#in-stock');
+    const {
+        productList,
+        sortSelect,
+        filterBtn,
+        filtersModal,
+        closeFilterBtn,
+        applyFilterBtn,
+        resetFilterBtn,
+        minPriceInput,
+        maxPriceInput,
+        inStockCheckbox,
+        breadcrumbs,
+        pageHeader,
+        catalogControls
+    } = elements;
+
+    // Состояние модалки фильтров
+    const state: FiltersModalState = {
+        isDragging: false,
+        startX: 0,
+        startY: 0
+    };
+
+    const products: Product[] = getProductsByCategory(categoryId);
 
     // Фильтры по умолчанию
-    let currentFilters = {
+    let currentFilters: ProductFilters = {
         minPrice: null,
         maxPrice: null,
         inStock: false
@@ -148,36 +260,53 @@ function initCatalogPage(pageContainer, categoryId) {
         productList.remove();
 
         //Удаляем заголовок, если есть
-        const pageHeader = pageContainer.querySelector('.page-header');
         if (pageHeader) {
             pageHeader.remove();
         };
 
         //Удаляем фильтры и сортировку
-        const catalogControls = pageContainer.querySelector('.catalog__controls');
         if (catalogControls) {
             catalogControls.remove();
         };
 
         // Используем emptyMessage для пустой категории
-        const emptyMessage = renderEmptyMessage('В данной категории пока нет товаров', 'Скоро мы добавим новые товары в эту категорию', { url: '/catalog', text: 'Вернуться в каталог' });
-        const breadcrumbs = pageContainer.querySelector('.breadcrumbs');
-        breadcrumbs.after(emptyMessage);
+        const emptyMessage = renderEmptyMessage('В данной категории пока нет товаров', 'Скоро мы добавим новые товары в эту категорию', { href: '/catalog', label: 'Вернуться в каталог' });
+        
+        if (breadcrumbs) {
+            breadcrumbs.after(emptyMessage);
+        }
+
         return;
     }
 
-    //Функция открытия модального окна
+    // ============ ФУНКЦИИ ============
+
+    /**
+     * Открывает модальное окно фильтров
+     */
     function openFiltersModal() {
         filtersModal.classList.add('filters-modal--active');
+
+        document.body.classList.add('modal-open');
     }
 
-    //Функция закрытия модального окна
+    /**
+     * Закрывает модальное окно фильтров
+     */
     function closeFiltersModal() {
         filtersModal.classList.remove('filters-modal--active');
+
+        document.body.classList.remove('modal-open');
+        state.isDragging = false;
     }
 
-    //Функция сортировки товаров
-    function sortProducts(sortType, productsToSort = products) {
+    /**
+     * Сортирует товары
+     * @param {SortType} sortType - тип сортировки
+     * @param {Product[]} productsToSort - массив товаров для сортировки
+     * @returns {Product[]} отсортированный массив
+     */
+    function sortProducts(sortType: SortType, productsToSort: Product[] = products): Product[] {
 
         //Дублируем массив
         const sortedProducts = [...productsToSort];
@@ -198,8 +327,13 @@ function initCatalogPage(pageContainer, categoryId) {
         }
     }
 
-    //Функция фильтрации товаров
-    function filterProducts(filters, productsToFilter = products) {
+    /**
+     * Фильтрует товары
+     * @param {ProductFilters} filters - объект с фильтрами
+     * @param {Product[]} productsToFilter - массив товаров для фильтрации
+     * @returns {Product[]} отфильтрованный массив
+     */
+    function filterProducts(filters: ProductFilters, productsToFilter: Product[] = products): Product[] {
         return productsToFilter.filter(product => {
             //по цене
             if (filters.minPrice !== null && product.price < filters.minPrice) {
@@ -219,17 +353,21 @@ function initCatalogPage(pageContainer, categoryId) {
         })
     }
 
-    //Функция применения фильтрации и сортировки 
-    function applyFiltersAndSort() {
+    /**
+     * Применяет фильтрацию и сортировку
+     */
+    function applyFiltersAndSort(): void {
         let filteredProducts = filterProducts(currentFilters);
-        const sortType = sortSelect.value;
+        const sortType = sortSelect.value as SortType;
         filteredProducts = sortProducts(sortType, filteredProducts)
         renderProducts(filteredProducts);
 
         closeFiltersModal();
     }
 
-    //Функция сброса фильтров
+    /**
+     * Сбрасывает фильтры
+     */
     function resetFilters() {
         currentFilters = {
             minPrice: null,
@@ -242,13 +380,16 @@ function initCatalogPage(pageContainer, categoryId) {
         inStockCheckbox.checked = false;
 
         let filteredProducts = filterProducts(currentFilters);
-        const sortType = sortSelect.value;
+        const sortType = sortSelect.value as SortType;
         filteredProducts = sortProducts(sortType, filteredProducts);
         renderProducts(filteredProducts);
     }
 
-    // Функция рендера товаров
-    function renderProducts(productsToRender) {
+    /**
+     * Рендерит товары в список
+     * @param {Product[]} productsToRender - массив товаров для отображения
+     */
+    function renderProducts(productsToRender: Product[]) {
 
         productList.innerHTML = '';
 
@@ -263,7 +404,7 @@ function initCatalogPage(pageContainer, categoryId) {
         });
     }
 
-    //Обработчики событий
+    // ============ НАСТРОЙКА ОБРАБОТЧИКОВ ============
 
     //Открытие окна фильтрации по кнопке
     filterBtn.addEventListener('click', openFiltersModal);
@@ -284,12 +425,26 @@ function initCatalogPage(pageContainer, categoryId) {
     //Сброс фильтров по кнопке
     resetFilterBtn.addEventListener('click', resetFilters);
 
-    //Закрытие по клику вне модалки
-    filtersModal.addEventListener('click', (e) => {
-        if (e.target === filtersModal) {
-            closeFiltersModal();
+    //Закрытие по клику вне модалки с защитой от выделения текста
+    filtersModal.addEventListener('mousedown', (e: MouseEvent) => {
+        state.isDragging = false;
+        state.startX = e.clientX;
+        state.startY = e.clientY;
+    });
+
+    filtersModal.addEventListener('mousemove', (e: MouseEvent): void => {
+        if (Math.abs(e.clientX - state.startX) > 5 || Math.abs(e.clientY - state.startY) > 5) {
+            state.isDragging = true; // пользователь выделяет текст
         }
-    })
+    });
+
+    filtersModal.addEventListener('click', (e: MouseEvent): void => {
+
+        if (e.target === filtersModal && !state.isDragging) {
+            closeFiltersModal(); // закрываем только если не было выделения
+        }
+    });
+
 
     //Закрытие по Escape
     document.addEventListener('keydown', (e) => {
@@ -297,18 +452,22 @@ function initCatalogPage(pageContainer, categoryId) {
             closeFiltersModal();
         }
     })
+
     // Обработчик изменения сортировки
     sortSelect.addEventListener('change', applyFiltersAndSort);
 
+    // Первоначальный рендер
     renderProducts(products);
 }
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит страницу каталога товаров
  * @param {string} categoryId - ID категории для отображения
  * @returns {HTMLElement} DOM-элемент страницы каталога
  */
-export function renderCatalogPage(categoryId) {
+export function renderCatalogPage(categoryId: string): HTMLElement {
     if (!categoryId || typeof categoryId !== 'string') {
         console.error('Invalid categoryId provided to renderCatalogPage');
         categoryId = '';
@@ -318,8 +477,9 @@ export function renderCatalogPage(categoryId) {
     pageContainer.innerHTML = createCatalogPage(categoryId);
 
     const category = getCategoryById(categoryId);
-    const container = pageContainer.querySelector('.container');
-    if (category) {
+    const container = pageContainer.querySelector<HTMLElement>('.container');
+
+    if (category && container) {
         const breadcrumbs = renderBreadcrumbs([
             { url: '/', text: 'Главная' },
             { url: '/catalog', text: 'Категории' },
@@ -327,7 +487,6 @@ export function renderCatalogPage(categoryId) {
         ]);
         container.prepend(breadcrumbs);
     }
-
 
     initCatalogPage(pageContainer, categoryId);
 
