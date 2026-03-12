@@ -1,3 +1,4 @@
+// ============ ИМПОРТЫ ============
 import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { renderPageHeader } from '../components/pageHeader.js';
 import { renderEmptyMessage } from '../components/emptyMessage.js';
@@ -5,12 +6,37 @@ import { renderOrderItem } from '../components/orderItem.js';
 import { renderProfileModal } from '../components/profileModal.js';
 import { getCurrentUser, getCurrentOrders } from '../data.js';
 import { escapeHtml } from '../utils/security.js';
+import type { User, Order } from '../types/index.js';
+
+// ============ ТИПЫ ============
+
+/** Элементы DOM страницы профиля */
+interface ProfilePageElements {
+    // Основные контейнеры
+    container: HTMLElement;
+    profileContent: HTMLElement;
+    breadcrumbs: HTMLElement;
+    pageHeader: HTMLElement;
+
+    // Элементы пользователя
+    firstNameEl: HTMLElement;
+    lastNameEl: HTMLElement;
+    middleNameEl: HTMLElement;
+    phoneEl: HTMLElement;
+    emailEl: HTMLElement;
+    editProfileBtn: HTMLButtonElement;
+
+    // Элементы заказов
+    ordersList: HTMLElement;
+}
+
+// ============ РАЗМЕТКА ============
 
 /**
  * Создает HTML-разметку страницы профиля
  * @returns {string} HTML-разметка страницы
  */
-function createProfilePage() {
+function createProfilePage(): string {
     return `
     <section class="profile">
         <div class="container">
@@ -73,69 +99,103 @@ function createProfilePage() {
     `;
 }
 
+// ============ ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ============
+
+/**
+ * Получает все необходимые элементы из DOM
+ * @param {HTMLElement} container - контейнер страницы
+ * @returns {ProfilePageElements | null} объект с элементами или null
+ */
+function getProfilePageElements(container: HTMLElement): ProfilePageElements | null {
+    const containerEl = container.querySelector<HTMLElement>('.profile');
+    const profileContent = container.querySelector<HTMLElement>('.profile__content');
+    const breadcrumbs = container.querySelector<HTMLElement>('.breadcrumbs');
+    const pageHeader = container.querySelector<HTMLElement>('.page-header');
+
+    // Элементы пользователя
+    const firstNameEl = container.querySelector<HTMLElement>('#profile-first-name');
+    const lastNameEl = container.querySelector<HTMLElement>('#profile-last-name');
+    const middleNameEl = container.querySelector<HTMLElement>('#profile-middle-name');
+    const phoneEl = container.querySelector<HTMLElement>('#profile-phone');
+    const emailEl = container.querySelector<HTMLElement>('#profile-email');
+    const editProfileBtn = container.querySelector<HTMLButtonElement>('.profile__edit-btn');
+
+    // Элементы заказов
+    const ordersList = container.querySelector<HTMLElement>('#orders-list');
+
+    if (!containerEl || !profileContent || !breadcrumbs || !pageHeader ||
+        !firstNameEl || !lastNameEl || !middleNameEl || !phoneEl || !emailEl ||
+        !editProfileBtn || !ordersList) {
+        console.warn('[ProfilePage] Не все элементы найдены');
+        return null;
+    }
+
+    return {
+        container: containerEl,
+        profileContent,
+        breadcrumbs,
+        pageHeader,
+        firstNameEl,
+        lastNameEl,
+        middleNameEl,
+        phoneEl,
+        emailEl,
+        editProfileBtn,
+        ordersList
+    };
+}
+
+// ============ ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ============
+
 /**
  * Обновляет информацию о пользователе в интерфейсе
- *  @param {HTMLElement} container - DOM-элемент
+ * @param {ProfilePageElements} elements - элементы страницы
  */
-function updateUserInfo(container) {
+function updateUserInfo(elements: ProfilePageElements): void {
     const user = getCurrentUser();
     if (!user) return;
 
-    const firstNameEl = container.querySelector('#profile-first-name');
-    const lastNameEl = container.querySelector('#profile-last-name');
-    const middleNameEl = container.querySelector('#profile-middle-name');
-    const phoneEl = container.querySelector('#profile-phone');
-    const emailEl = container.querySelector('#profile-email');
+    const { firstNameEl, lastNameEl, middleNameEl, phoneEl, emailEl } = elements;
 
-    if (firstNameEl) firstNameEl.textContent = escapeHtml(user.firstName || '—');
-    if (lastNameEl) lastNameEl.textContent = escapeHtml(user.lastName || '—');
-    if (middleNameEl) middleNameEl.textContent = escapeHtml(user.middleName || '—');
-    if (phoneEl) phoneEl.textContent = escapeHtml(user.phone || '—');
-    if (emailEl) emailEl.textContent = escapeHtml(user.email || '—');
+    firstNameEl.textContent = escapeHtml(user.firstName || '—');
+    lastNameEl.textContent = escapeHtml(user.lastName || '—');
+    middleNameEl.textContent = escapeHtml(user.middleName || '—');
+    phoneEl.textContent = escapeHtml(user.phone || '—');
+    emailEl.textContent = escapeHtml(user.email || '—');
 }
 
 /**
  * Обновляет заголовок страницы профиля
- * @param {HTMLElement} container - DOM-элемент страницы
+ * @param {ProfilePageElements} elements - элементы страницы
  */
-function updateProfileHeader(container) {
+function updateProfileHeader(elements: ProfilePageElements): void {
     const user = getCurrentUser();
-    
+    const { pageHeader } = elements;
+
+    const titleElement = pageHeader.querySelector('.page-header__title');
+    const descriptionElement = pageHeader.querySelector('.page-header__description');
     if (!user) {
         // Если пользователь вышел
-        const pageHeader = container.querySelector('.page-header');
-        if (pageHeader) {
-            const titleElement = pageHeader.querySelector('.page-header__title');
-            const descriptionElement = pageHeader.querySelector('.page-header__description');
-            
-            if (titleElement) titleElement.textContent = 'Личный кабинет';
-            if (descriptionElement) descriptionElement.textContent = 'Для просмотра требуется авторизация';
-        }
+        if (titleElement) titleElement.textContent = 'Личный кабинет';
+        if (descriptionElement) descriptionElement.textContent = 'Для просмотра требуется авторизация';
+
         return;
     }
-    
+
     const userName = user.firstName || user.login || 'Пользователь';
     const description = `Добро пожаловать, ${escapeHtml(userName)}!`;
-    
-    const pageHeader = container.querySelector('.page-header');
-    if (pageHeader) {
-        const titleElement = pageHeader.querySelector('.page-header__title');
-        const descriptionElement = pageHeader.querySelector('.page-header__description');
-        
-        if (titleElement) titleElement.textContent = 'Личный кабинет';
-        if (descriptionElement) descriptionElement.textContent = description;
-    }
+
+    if (titleElement) titleElement.textContent = 'Личный кабинет';
+    if (descriptionElement) descriptionElement.textContent = description;
 }
 
 /**
  * Обновляет список заказов
- *  @param {HTMLElement} container - DOM-элемент
+ * @param {ProfilePageElements} elements - элементы страницы
  */
-function updateOrdersList(container) {
-    const ordersList = container.querySelector('#orders-list');
+function updateOrdersList(elements: ProfilePageElements): void {
+    const { ordersList } = elements;
     const orders = getCurrentOrders();
-
-    if (!ordersList) return;
 
     ordersList.innerHTML = '';
 
@@ -152,8 +212,8 @@ function updateOrdersList(container) {
     }
 
     // Сортируем заказы по дате (новые сверху)
-    const sortedOrders = [...orders].sort((a, b) =>
-        new Date(b.createdAt) - new Date(a.createdAt)
+    const sortedOrders = [...orders].sort((a: Order, b: Order) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
     // Добавляем каждый заказ
@@ -164,33 +224,44 @@ function updateOrdersList(container) {
     });
 }
 
+// ============ ИНИЦИАЛИЗАЦИЯ ============
+
 /**
  * Инициализирует логику страницы личного кабинета
  * @param {HTMLElement} pageContainer - DOM-элемент страницы
  */
-function initProfilePage(pageContainer) {
+function initProfilePage(pageContainer: HTMLElement): void {
+    const elements = getProfilePageElements(pageContainer);
+    
+    if (!elements) {
+        console.error('[ProfilePage] Не удалось получить элементы страницы');
+        return;
+    }
+
+    const { breadcrumbs, pageHeader, profileContent, editProfileBtn } = elements;
+
     const user = getCurrentUser();
 
 
     // Если пользователь не авторизован - показываем сообщение
     if (!user) {
+        pageHeader.remove();
+        profileContent.remove();
+
         const emptyMessage = renderEmptyMessage(
             'Необходима авторизация',
             'Войдите в свой аккаунт, чтобы просматривать личный кабинет',
-            { url: '/', text: 'На главную' }
+            { href: '/', label: 'На главную' }
         );
 
-        const pageHeader = pageContainer.querySelector('.page-header');
-        if (pageHeader) pageHeader.remove();
-
-        const profileContent = pageContainer.querySelector('.profile__content');
-        if (profileContent) profileContent.remove();
-
-        const breadcrumbs = pageContainer.querySelector('.breadcrumbs');
         breadcrumbs.after(emptyMessage);
-
         return;
     }
+
+    // ===== ПЕРВОНАЧАЛЬНОЕ ОБНОВЛЕНИЕ UI =====
+    updateUserInfo(elements);        
+    updateProfileHeader(elements);   
+    updateOrdersList(elements);      
 
     // Инициализируем модалку редактирования профиля
     const profileModal = renderProfileModal();
@@ -200,14 +271,13 @@ function initProfilePage(pageContainer) {
         document.body.appendChild(profileModal.container);
     }
 
+    // ===== НАСТРОЙКА ОБРАБОТЧИКОВ =====
     // Кнопка редактирования профиля
-    const editProfileBtn = pageContainer.querySelector('.profile__edit-btn');
-    if (editProfileBtn) {
-        editProfileBtn.addEventListener('click', () => {
-            profileModal.open();
-        });
-    }
+    editProfileBtn.addEventListener('click', () => {
+        profileModal.open();
+    });
 
+    // ===== СЛУШАТЕЛИ СОБЫТИЙ =====
     // Обновляем данные при изменении пользователя
     window.addEventListener('auth:change', () => {
         // Если пользователь вышел - перезагружаем страницу
@@ -216,26 +286,34 @@ function initProfilePage(pageContainer) {
             window.dispatchEvent(new PopStateEvent('popstate'));
         } else {
             // Иначе просто обновляем UI
-            updateUserInfo(pageContainer);
-            updateProfileHeader(pageContainer);
-            updateOrdersList(pageContainer);
+            updateUserInfo(elements);
+            updateProfileHeader(elements);
+            updateOrdersList(elements);
         }
     });
 
     // Обновляем заказы при их изменении 
-    window.addEventListener('orders:update', () => updateOrdersList(pageContainer));
+    window.addEventListener('orders:update', () => updateOrdersList(elements));
 }
+
+// ============ ПУБЛИЧНЫЙ API ============
 
 /**
  * Рендерит страницу личного кабинета
  * @returns {HTMLElement} DOM-элемент страницы
  */
-export function renderProfilePage() {
+export function renderProfilePage(): HTMLElement {
     const pageContainer = document.createElement('div');
     pageContainer.innerHTML = createProfilePage();
 
     // Добавляем breadcrumbs
-    const container = pageContainer.querySelector('.container');
+    const container = pageContainer.querySelector<HTMLElement>('.container');
+
+    if (!container) {
+        console.error('[ProfilePage] Контейнер не найден');
+        return pageContainer;
+    }
+
     const breadcrumbs = renderBreadcrumbs([
         { url: '/', text: 'Главная' },
         { text: 'Личный кабинет' }
@@ -245,14 +323,9 @@ export function renderProfilePage() {
     // Добавляем заголовок страницы
     const user = getCurrentUser();
     const userName = user ? (user.firstName || user.login || 'Пользователь') : 'Личный кабинет';
-    const pageHeader = renderPageHeader('Личный кабинет', `Добро пожаловать, ${escapeHtml(userName)}!`);
+    const description = user ? `Добро пожаловать, ${escapeHtml(userName)}!` : 'Для просмотра требуется авторизация';
+    const pageHeader = renderPageHeader('Личный кабинет', description);
     breadcrumbs.after(pageHeader);
-
-    // Обновляем данные пользователя
-    updateUserInfo(pageContainer);
-
-    // Обновляем список заказов
-    updateOrdersList(pageContainer);
 
     // Инициализируем логику
     initProfilePage(pageContainer);
