@@ -24,11 +24,11 @@ function createCategoriesPage(): string {
                 <div class="categories__wrapper">
                     ${validCategories.map(category => `
                         <button class="category-card" data-category-id="${escapeHtml(category.id)}" type="button" aria-label="Перейти к категории ${escapeHtml(category.name)}">
-                            <img class="category-card__image" src="${escapeHtml(category.image)}" 
+                            <img class="category-card__image" src="${escapeHtml(category.image || '')}" 
                                  alt="${escapeHtml(category.name)}"/>
                             <div class="category-card__content">
                                 <h2 class="category-card__title">${escapeHtml(category.name)}</h2>
-                                <p class="category-card__description">${escapeHtml(category.description)}</p>
+                                <p class="category-card__description">${escapeHtml(category.description || '')}</p>
                             </div>
                         </button>       
                     `).join('')}

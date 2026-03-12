@@ -1,7 +1,6 @@
 // ============ ИМПОРТЫ ============
 import {
     addToCart,
-    removeFromCart,
     toggleFavorite,
     getCartItemsWithProducts,
     updateCartQuantity,
@@ -64,7 +63,7 @@ function createProductCard(product: Product): string {
 
     return `
     <div class="product-card" data-product-id="${escapeHtml(product.id)}">
-            <img class="product-card__image" src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy">
+            <img class="product-card__image" src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.name)}" loading="lazy">
             <button class="product-card__favorite ${isFavorite ? 'product-card__favorite--active' : ''}" 
                     type="button" aria-label="Добавить в избранное">
                 <svg class="product-card__favorite-icon" width="30" height="30">
@@ -129,10 +128,9 @@ function renderAddToCartButton(elements: ProductCardElements): void {
 function updateCartButton(elements: ProductCardElements): void {
     const currentCart = getCurrentCart();
     const cartItem = currentCart.find((item: CartItem) => item.productId === elements.productId);
-    const inCart = Boolean(cartItem);
-    const quantity = inCart ? cartItem.quantity : 0;
+    const quantity = cartItem? cartItem.quantity : 0;
 
-    if (inCart) {
+    if (cartItem) {
         console.log('Товар в корзине, показываем счетчик');
         renderCartCounter(elements, quantity);
         setupCartHandlers(elements);

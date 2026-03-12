@@ -6,7 +6,7 @@ import { renderOrderItem } from '../components/orderItem.js';
 import { renderProfileModal } from '../components/profileModal.js';
 import { getCurrentUser, getCurrentOrders } from '../data.js';
 import { escapeHtml } from '../utils/security.js';
-import type { User, Order } from '../types/index.js';
+import type { Order } from '../types/index.js';
 
 // ============ ТИПЫ ============
 

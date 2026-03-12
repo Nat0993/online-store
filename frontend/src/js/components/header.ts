@@ -113,7 +113,7 @@ function createHeader(): string {
  * @param container - контейнер хедера
  * @returns объект с элементами или null
  */
-function getHeaderElements (container: HTMLElement): HeaderElements | null {
+function getHeaderElements(container: HTMLElement): HeaderElements | null {
     const btnLogin = container.querySelector<HTMLButtonElement>('.header__login-btn');
     const btnLogout = container.querySelector<HTMLButtonElement>('.header__logout-btn');
     const btnBurger = container.querySelector<HTMLButtonElement>('.burger');
@@ -145,7 +145,7 @@ function getHeaderElements (container: HTMLElement): HeaderElements | null {
  * @param user - объект пользователя
  * @returns отформатированное имя
  */
-function formatUserName (user: User): string {
+function formatUserName(user: User): string {
     // Определяем, что показывать: firstName или login
     let displayName: string;
 
@@ -174,7 +174,7 @@ function updateCounters(elements: Pick<HeaderElements, 'favoritesCounter' | 'car
     const favorites = getCurrentFavorites();
 
     const totalCartItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-    
+
     // Обновляем счетчик корзины
     if (totalCartItems > 0) {
         elements.cartCounter.textContent = totalCartItems > MAX_COUNTER ? '99+' : totalCartItems.toString();
@@ -204,7 +204,7 @@ function updateHeaderUI(elements: HeaderElements): void {
 
     if (currentUser) {
         const displayName = formatUserName(currentUser);
-        
+
         elements.btnLogin.innerHTML = `
             <svg width="20" height="20" aria-hidden="true">
                 <use xlink:href="/src/assets/images/sprite.svg#icon-persone"></use>
@@ -282,7 +282,9 @@ function initHeader(headerContainer: HTMLElement, openModal: OpenModalFunction):
     /** Обработчик выхода из аккаунта */
     function handleLogout(): void {
         logoutUser();
-        updateHeaderUI(elements);
+        if (elements) {
+            updateHeaderUI(elements);
+        }
         console.log('[Header] Пользователь вышел');
 
         window.dispatchEvent(new CustomEvent('auth:change', {
@@ -295,7 +297,7 @@ function initHeader(headerContainer: HTMLElement, openModal: OpenModalFunction):
     btnLogin.addEventListener('click', handleLoginClick);
     btnBurger.addEventListener('click', handleBurgerClick);
     btnLogout.addEventListener('click', handleLogout);
-    
+
     document.addEventListener('click', handleDocumentClick);
 
     // ===== СЛУШАТЕЛИ СОБЫТИЙ =====

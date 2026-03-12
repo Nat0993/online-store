@@ -10,24 +10,31 @@
     // Откуда брать TypeScript файлы
     "rootDir": "./src/js",
     
-    // Безопасность (пока не строгий режим)
-    "strict": false,                 // ДЛЯ НАЧАЛА - false (меньше ошибок)
-    "noImplicitAny": false,    // ВРЕМЕННО отключаем
-    "strictNullChecks": false, // ВРЕМЕННО отключаем
+    // Безопасность 
+    "strict": true,            // Включаем все строгие проверки
+    "noImplicitAny": true,     // Запрещаем неявный any
+    "strictNullChecks": true,    // Проверяем null/undefined
+    "strictFunctionTypes": true,   // Строгая проверка функций
+    "strictBindCallApply": true,   // Строгая проверка bind/call/apply
+    "strictPropertyInitialization": true, // Строгая инициализация свойств
+    "noImplicitThis": true,                // Запрещаем неявный this
+    "alwaysStrict": true,                  // Всегда "use strict"
     "skipLibCheck": true,       // Пропускаем проверку библиотек
+
+    // Дополнительные проверки
+    "noUnusedLocals": true,               // Предупреждать о неиспользуемых переменных
+    "noUnusedParameters": true,            // Предупреждать о неиспользуемых параметрах
+    "noImplicitReturns": true,             // Проверять что все пути возвращают значение
+    "noFallthroughCasesInSwitch": true,    // Проверять switch на проваливания
     
     // Разрешить .js файлы (чтобы мигрировать постепенно)
-    "allowJs": true,      // Разрешить .js файлы
-    "checkJs": true,      // Проверять типы в .js файлах
+    "allowJs": false,                      // Меняем на false - весь проект теперь в TS
+    "checkJs": false,                       // Проверку JS тоже отключаем
     
     // Настройки модулей
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    
-    // Дополнительные проверки
-    "noUnusedLocals": true,       // Предупреждать о неиспользуемых переменных
-    "noUnusedParameters": true,   // Предупреждать о неиспользуемых параметрах
     
     // Для отладки
     "sourceMap": true,
@@ -41,8 +48,7 @@
   
   // Какие файлы компилировать
   "include": [
-    "src/js/**/*.ts",      // Все TS файлы в js папке
-    "src/js/**/*.js",      // Все JS файлы (чтобы TypeScript их проверял)
+    "src/js/**/*.ts",      // Только TS файлы (JS больше не включаем)
     "src/js/**/*.d.ts"     // Файлы с описанием типов
   ],
   

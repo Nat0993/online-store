@@ -272,7 +272,7 @@ export const getCartItemsWithProducts = (): CartItemWithProduct[] => {
     return cart.map(item => {
         const product = getProductById(item.productId);
         return { ...item, product };
-    }).filter(item => item.product); // убираем товары, которые не найдены
+    }).filter((item): item is CartItemWithProduct => item.product !== null); // убираем товары, которые не найдены
 };
 
 /**
@@ -352,7 +352,7 @@ export const getFavoritesWithProducts = (): FavoriteItem[] => {
     return favorites.map(fav => {
         const product = getProductById(fav.productId);
         return { ...fav, product };
-    }).filter(fav => fav.product);
+    }).filter((fav): fav is FavoriteItem & { product: Product } => fav.product !== null);
 };
 
 // Заказы
@@ -480,7 +480,8 @@ export function loadFromLocalStorage<T>(key: StorageKey): T | null {
  * @returns {Object|null} объект пользователя или null
  */
 export const findUserByEmail = (email: string): User | null => {
-    return users.find(user => user.email === email);
+    const user = users.find(user => user.email === email);
+    return user || null;  // undefined превращаем в null
 };
 
 /**

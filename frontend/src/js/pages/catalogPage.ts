@@ -3,7 +3,7 @@ import { renderBreadcrumbs } from '../components/breadcrumbs.js';
 import { getCategoryById, getProductsByCategory } from "../data.js";
 import { renderProductCard } from "../components/product-card.js";
 import { renderEmptyMessage } from '../components/emptyMessage.js';
-import type { Category, Product } from '../types/index.js';
+import type { Product } from '../types/index.js';
 
 // ============ ТИПЫ ============
 
@@ -64,15 +64,13 @@ function getCatalogPageElements(container: HTMLElement): CatalogPageElements | n
     const minPriceInput = container.querySelector<HTMLInputElement>('#min-price');
     const maxPriceInput = container.querySelector<HTMLInputElement>('#max-price');
     const inStockCheckbox = container.querySelector<HTMLInputElement>('#in-stock');
-
-    
     const breadcrumbs = container.querySelector<HTMLElement>('.breadcrumbs');
     const pageHeader = container.querySelector<HTMLElement>('.page-header');
     const catalogControls = container.querySelector<HTMLElement>('.catalog__controls');
 
     
     if (!productList || !sortSelect || !filterBtn || !filtersModal || !closeFilterBtn || 
-        !applyFilterBtn || !resetFilterBtn || !minPriceInput || !maxPriceInput || !inStockCheckbox) {
+        !applyFilterBtn || !resetFilterBtn || !minPriceInput || !maxPriceInput || !inStockCheckbox || !breadcrumbs || !pageHeader || !catalogControls) {
         console.warn('[CatalogPage] Не все обязательные элементы найдены');
         return null;
     }

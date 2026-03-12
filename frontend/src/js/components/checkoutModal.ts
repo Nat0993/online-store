@@ -9,14 +9,10 @@ import {
 } from '../data.js';
 
 import type {
-    Order,
     PaymentMethod,
     User,
     CartItem,
-    CartItemWithProduct,
-    OrderData,
-    OrderCustomer,
-    OrderItem
+    OrderData
 } from '../types/index.js';
 
 // ============ ТИПЫ ============
@@ -1111,7 +1107,6 @@ function initCheckoutModal(modalContainer: HTMLElement): { open: () => void; clo
         modalWrapper,
         closeBtn,
         confirmBtn,
-        container,
         lastNameInput, lastNameError,
         firstNameInput, firstNameError,
         middleNameInput, middleNameError,

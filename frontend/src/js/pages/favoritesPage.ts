@@ -4,7 +4,7 @@ import { renderEmptyMessage } from '../components/emptyMessage.js';
 import { renderPageHeader } from '../components/pageHeader.js';
 import { renderProductCard } from '../components/product-card.js';
 import { getFavoritesWithProducts, toggleFavorite } from '../data.js';
-import type { FavoriteItem } from '../types/index.js';
+import type { FavoriteItem, Product } from '../types/index.js';
 
 // ============ ТИПЫ ============
 
@@ -68,7 +68,7 @@ function updatePageHeader(description: HTMLElement, newCount: number): void {
     // Ждем немного для анимации и меняем текст
     setTimeout(() => {
         description.textContent = `${newCount} ${getProductsWord(newCount)}, которые Вам понравились`;
-        
+
         // Убираем класс для анимации появления
         description.classList.remove('page-header__description--updating');
     }, 250); // Половина времени анимации
@@ -82,7 +82,7 @@ function updatePageHeader(description: HTMLElement, newCount: number): void {
  * @param {string} productId - ID товара
  * @param {FavoritesPageElements} elements - элементы страницы для обратной связи
  */
-function replaceFavoriteButton(productCard: HTMLElement, productId: string, elements: FavoritesPageElements ): void {
+function replaceFavoriteButton(productCard: HTMLElement, productId: string, elements: FavoritesPageElements): void {
     const favoriteBtn = productCard.querySelector<HTMLButtonElement>('.product-card__favorite');
 
     if (!favoriteBtn) {
@@ -95,7 +95,7 @@ function replaceFavoriteButton(productCard: HTMLElement, productId: string, elem
 
     // Теперь работаем с новой кнопкой
     const cleanFavoriteBtn = newFavoriteBtn;
-    
+
     // Заменяем разметку
     cleanFavoriteBtn.innerHTML = `
         <svg class="product-card__favorite-icon product-card__favorite-icon--remove" aria-hidden="true">
@@ -110,7 +110,7 @@ function replaceFavoriteButton(productCard: HTMLElement, productId: string, elem
     cleanFavoriteBtn.addEventListener('click', (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const listItem = productCard.closest<HTMLElement>('.product-list__item');
         if (listItem) {
             removeFromFavorites(productId, listItem, elements);
@@ -158,7 +158,7 @@ function removeFromFavorites(productId: string, listItem: HTMLElement, elements:
         itemsAfter.forEach(item => {
             item.classList.remove('product-list__item--sliding');
         });
-        
+
         // Обновляем счетчики
         window.dispatchEvent(new CustomEvent('favorites:update'));
 
@@ -202,7 +202,11 @@ function initFavoritesPage(elements: FavoritesPageElements, favorites: FavoriteI
     }
 
     // Если есть товары - оставляем заголовок и добавляем товары
-    favorites.forEach(favItem => {
+    // Отфильтровываем только те, у которых есть product
+    const validFavorites = favorites.filter((fav): fav is FavoriteItem & { product: Product } =>
+        fav.product !== undefined
+    );
+    validFavorites.forEach(favItem => {
         const listItem = document.createElement('li');
         listItem.className = 'product-list__item';
 
@@ -210,7 +214,7 @@ function initFavoritesPage(elements: FavoritesPageElements, favorites: FavoriteI
 
         // Заменяем кнопку избранного на кнопку удаления
         replaceFavoriteButton(productCard, favItem.product.id, elements);
-        
+
         listItem.appendChild(productCard);
         favoritesList.appendChild(listItem);
     });
@@ -265,7 +269,7 @@ export function renderFavoritesPage(): HTMLElement {
 
     // 4. Получаем данные и создаем заголовок
     const favorites = getFavoritesWithProducts();
-    const descriptionText  = `${favorites.length} ${getProductsWord(favorites.length)}, которые Вам понравились`;
+    const descriptionText = `${favorites.length} ${getProductsWord(favorites.length)}, которые Вам понравились`;
     const pageHeader = renderPageHeader('Избранные товары', descriptionText);
     breadcrumbs.after(pageHeader);
 
