@@ -34,7 +34,7 @@ interface ModalElements {
 }
 
 /** Возвращаемый объект модалки */
-interface ModalReturn {
+export interface ModalReturn {
     container: HTMLElement;
     open: () => void;
 }
