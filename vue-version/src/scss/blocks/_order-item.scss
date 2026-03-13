@@ -1,0 +1,41 @@
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    border-bottom: 1px solid $color-charcoal;
+    padding: 15px;
+    transition: background-color ease-in 0.2s;
+
+    &:hover {
+        background-color: $color-ecru-20;
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    &__text {
+        font-size: 18px;
+        line-height: 22px;
+
+        &--bold {
+            font-weight: 700;
+        }
+    }
+
+    &__btn-inner {
+        display: flex;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+
+    &__btn {
+        font-size: 14px;
+        line-height: 20px;
+        padding: 12px;
+        font-weight: 400;
+    }
+}

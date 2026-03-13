@@ -1,0 +1,25 @@
+.page-header {
+    padding: 40px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0 40px;
+
+    &__title {
+        margin: 0 0 20px;
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    &__description {
+        font-size: 18px;
+        line-height: 22px;
+        margin: 0;
+        transition: all 0.5s ease-in;
+
+        &--updating {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+    }
+}

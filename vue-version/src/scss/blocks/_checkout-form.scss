@@ -1,0 +1,175 @@
+.checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-right: 1px solid $color-charcoal;
+    padding-right: 40px;
+
+    &__group-title {
+        font-size: 20px;
+        line-height: 32px;
+        margin: 0 0 15px;
+    }
+
+    &__group-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__input {
+        width: 100%;
+        padding: 10px 12px;
+        border: none;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        font-size: 16px;
+        line-height: 18px;
+        font-family: $ff-astra;
+        background-color: $color-ecru-10;
+        transition: border-color 0.2s ease-in, background-color 0.2s ease-in;
+
+        &::placeholder {
+            font-size: 16px;
+            line-height: 18px;
+            color: $color-charcoal;
+        }
+
+        &:hover {
+            border: 1px solid $color-charcoal;
+        }
+
+        &:focus-visible {
+            outline: none;
+            border: 1px solid $color-charcoal;
+            background-color: $color-ecru-20;
+        }
+
+        /* Стили для автозаполнения в Chrome, Safari, Edge */
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0px 1000px $color-ecru-10 inset !important;
+            box-shadow: 0 0 0px 1000px $color-ecru-10 inset !important;
+            -webkit-text-fill-color: $color-charcoal !important;
+            transition: background-color 5000s ease-in-out 0s;
+            border: 1px solid transparent;
+        }
+
+        /* Для Firefox */
+        &:-moz-autofill,
+        &:-moz-autofill:hover,
+        &:-moz-autofill:focus {
+            box-shadow: 0 0 0px 1000px $color-ecru-10 inset !important;
+            -webkit-text-fill-color: $color-charcoal !important;
+            background-color: $color-ecru-10 !important;
+        }
+
+        &--error {
+            border-color: $color-crimson-dark;
+            background-color: $color-crimson-dark-10;
+        }
+    }
+
+    &__error {
+        font-size: 12px;
+        line-height: 14px;
+        color: $color-crimson-dark;
+    }
+
+    &__textarea {
+        resize: none;
+    }
+
+    &__radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px 10px;
+    }
+
+    &__radio-label {
+        display: flex;
+        gap: 5px;
+        flex-wrap: nowrap;
+        align-items: center;
+        cursor: pointer;
+        transition: color 0.2s ease-in;
+
+        &:hover,
+        &:focus-visible {
+            color: $color-ecru;
+
+            .checkout-form__radio-custom {
+                outline: none;
+                border-color: $color-ecru;
+            }
+
+            .checkout-form__radio-text::before {
+                clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+            }
+        }
+    }
+
+    &__radio {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+         &:checked + .checkout-form__radio-custom {
+            &::before {
+                opacity: 1;
+            }
+        }
+    }
+
+    &__radio-custom {
+        display: block;
+        width: 15px;
+        height: 15px;
+        border: 1px solid $color-charcoal;
+        border-radius: 50%;
+        position: relative;
+        transition: border-color 0.2s ease-in;
+
+        &::before {
+            content: "";
+            width: 7.5px;
+            height: 7.5px;
+            border-radius: 50%;
+            background-color: $color-charcoal;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
+        }
+
+        
+    }
+
+    &__radio-text {
+        position: relative;
+        font-size: 16px;
+        line-height: 22px;
+
+        &::before {
+            content: "";
+            width: 100%;
+            height: 1px;
+            background-color: $color-ecru;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%);
+            transition: clip-path 0.2s ease-in;
+        }
+    }
+}
