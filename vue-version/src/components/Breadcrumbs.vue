@@ -11,7 +11,7 @@
             v-if="link.url"
             :href="link.url"
             class="breadcrumbs__link breadcrumbs__text"
-            @click.prevent="navigate">
+            >
             {{ link.text }}
             </a>
 
@@ -40,14 +40,4 @@ const validLinks = computed(() => {
         typeof link.text === 'string'
     })
 })
-
-const navigate = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLAnchorElement
-  const href = target.getAttribute('href')
-  
-  if (href) {
-    window.history.pushState({}, '', href)
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }
-}
 </script>

@@ -7,7 +7,6 @@
         <a 
             :href="link.href" 
             class="empty-message__btn btn"
-            @click.prevent="navigate"
         >
             {{ link.label }}
         </a>
@@ -23,8 +22,4 @@ description: string;
 link: NavLink;
 }>()
 
-const navigate = () => {
-    window.history.pushState({}, '', props.link.href);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-}
 </script>
