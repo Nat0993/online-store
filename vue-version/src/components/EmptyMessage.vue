@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import type { NavLink } from '../types/index.ts';
+import type { NavLink } from '../types/index';
 
 const props = defineProps<{
 title: string;
