@@ -99,10 +99,17 @@ export interface NavLink {
     label: string;
 }
 
-//Данные для хлебных крошек
+//Данные хлебных крошек
 export interface BreadcrumbLink {
     url?: string;
     text: string;
+}
+
+//Данные ссылок на соц.сети
+export interface SocialLink {
+    href: string;
+    icon: string;
+    label: string;
 }
 
 //Типы
