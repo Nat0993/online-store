@@ -99,6 +99,12 @@ export interface NavLink {
     label: string;
 }
 
+//Данные для хлебных крошек
+export interface BreadcrumbLink {
+    url?: string;
+    text: string;
+}
+
 //Типы
 
 //Способ оплаты 
