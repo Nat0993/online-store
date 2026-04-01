@@ -50,8 +50,7 @@ import {
     getCurrentFavorites,
     addToCart as addToCartData,
     updateCartQuantity,
-    toggleFavorite as toggleFavoriteData,
-    getFavoritesWithProducts
+    toggleFavorite as toggleFavoriteData
 } from '../data'
 
 // ============ ПРОПСЫ ============

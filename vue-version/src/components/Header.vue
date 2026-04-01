@@ -94,7 +94,7 @@ import {
   getCurrentFavorites,
   getCurrentUser,
   logoutUser
-} from '../data.js'
+} from '../data'
 import type { NavLink, User, CartItem, FavoriteItem } from '@/types/index';
 
 // ============ КОНСТАНТЫ ============
@@ -238,5 +238,6 @@ onUnmounted(() => {
   window.removeEventListener('auth:change', handleAuthChange)
   window.removeEventListener('cart:update', handleCartUpdate)
   window.removeEventListener('favorites:update', handleFavoritesUpdate)
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
