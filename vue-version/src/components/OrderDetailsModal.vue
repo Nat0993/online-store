@@ -119,7 +119,7 @@
 
 <script setup lang="ts">
 // ============ ИМПОРТЫ ============
-import { ref, nextTick, computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { Order, PaymentMethod } from '../types'
 import { addToCart } from '@/data'
 
@@ -172,12 +172,14 @@ function open(selectedOrder: Order) {
     order.value = selectedOrder
     isMounted.value = true // 1. Добавляем в DOM
 
-    nextTick(() => {
+    setTimeout(() => {
+        
         isOpen.value = true // 2. Добавляем класс --active, запускается анимация
-    })
-
-    document.body.classList.add('modal-open')
-    window.addEventListener('keydown', handleEscapePress)
+        
+        document.body.classList.add('modal-open')
+        
+        window.addEventListener('keydown', handleEscapePress)
+    }, 50) 
 }
 
 function close() {
