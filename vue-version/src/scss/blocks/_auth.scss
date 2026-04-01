@@ -118,7 +118,10 @@
         background-color: $color-white-70;
         border: 2px solid transparent;
         transition: border-color 0.3s ease;
-        
+
+        &--error {
+            border-color: $color-crimson-dark;
+        }
 
         &::placeholder {
             font-size: 16px;

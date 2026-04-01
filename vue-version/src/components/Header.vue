@@ -5,18 +5,13 @@
         <!-- Левая часть -->
         <div class="header__inner">
           <!-- Кнопка бургер -->
-          <button 
-            class="header__burger burger" 
-            :class="{ 'burger--active': isMenuOpen }"
-            aria-label="Открыть навигационное меню"
-            @click="toggleMenu"
-            type="button"
-          >
+          <button class="header__burger burger" :class="{ 'burger--active': isMenuOpen }"
+            aria-label="Открыть навигационное меню" @click="toggleMenu" type="button">
             <span class="burger__line burger__line--top"></span>
             <span class="burger__line burger__line--central"></span>
             <span class="burger__line burger__line--bottom"></span>
           </button>
-          
+
           <!-- Навигация -->
           <div class="main-nav" :class="{ 'main-nav--active': isMenuOpen }">
             <ul class="main-nav__list">
@@ -25,18 +20,18 @@
               </li>
             </ul>
           </div>
-          
+
           <!-- Погода (заглушка) -->
           <span class="header__weather">Погода</span>
         </div>
-        
+
         <!-- Логотип -->
         <a href="/" class="header__logo-link" aria-label="Логотип компании, переход на главную страницу">
           <svg width="70" height="70">
             <use xlink:href="/src/assets/images/sprite.svg#icon-logo"></use>
           </svg>
         </a>
-        
+
         <!-- Правая часть -->
         <div class="header__user-inner">
           <!-- Кнопки -->
@@ -59,9 +54,10 @@
             </button>
 
             <!-- Кнопка "Выйти" (показывается, если авторизован) -->
-            <button class="header__btn header__logout-btn" v-if="user" @click="handleLogout" type="button">Выйти</button>
+            <button class="header__btn header__logout-btn" v-if="user" @click="handleLogout"
+              type="button">Выйти</button>
           </div>
-          
+
           <!-- Иконки корзины и избранного -->
           <div class="header__links">
             <!-- Избранное -->
@@ -69,7 +65,8 @@
               <svg width="30" height="30">
                 <use xlink:href="/src/assets/images/sprite.svg#icon-favorite"></use>
               </svg>
-              <span v-if="favoritesCount > 0"  class="header__counter header__favorites-counter">{{ formattedFavoritesCount }}</span>
+              <span v-if="favoritesCount > 0" class="header__counter header__favorites-counter">{{
+                formattedFavoritesCount }}</span>
             </a>
 
             <!-- Корзина -->
@@ -77,13 +74,17 @@
               <svg width="30" height="30">
                 <use xlink:href="/src/assets/images/sprite.svg#icon-basket"></use>
               </svg>
-              <span v-if="cartTotalItems > 0" class="header__counter header__cart-counter">{{ formattedCartCount }}</span>
+              <span v-if="cartTotalItems > 0" class="header__counter header__cart-counter">{{ formattedCartCount
+                }}</span>
             </a>
           </div>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- Модалка авторизации -->
+  <AuthModal v-if="true" ref="authModalRef" />
 </template>
 
 <script setup lang="ts">
@@ -96,7 +97,7 @@ import {
   logoutUser
 } from '../data'
 import type { NavLink, User, CartItem, FavoriteItem } from '@/types/index';
-
+import AuthModal from './AuthModal.vue'
 // ============ КОНСТАНТЫ ============
 const navLinks: NavLink[] = [
   { href: '/catalog', label: 'Каталог' },
@@ -117,6 +118,7 @@ const user = ref<User | null>(null)
 const cartItems = ref<CartItem[]>([])
 const favorites = ref<FavoriteItem[]>([])
 
+const authModalRef = ref<InstanceType<typeof AuthModal> | null>(null)
 // ============ ВЫЧИСЛЕНИЯ ============
 
 // Вычисляем имя пользователя для отображения в хедере
@@ -125,7 +127,7 @@ const displayName = computed(() => {
 
   let name = user.value.firstName?.trim() || user.value.login || 'Пользователь'
 
-  if(name.length > MAX_NAME_LENGTH) {
+  if (name.length > MAX_NAME_LENGTH) {
     name = name.slice(0, MAX_NAME_LENGTH) + '...'
   }
 
@@ -156,22 +158,22 @@ const formattedFavoritesCount = computed(() => {
 
 // Переключает меню: открыто → закрыто, закрыто → открыто
 function toggleMenu() {
-    isMenuOpen.value = !isMenuOpen.value
+  isMenuOpen.value = !isMenuOpen.value
 }
 
 // Закрывает меню
 function closeMenu() {
-    isMenuOpen.value = false
+  isMenuOpen.value = false
 }
 
 // Обработчик клика вне меню
 function handleClickOutside(event: MouseEvent) {
   if (!isMenuOpen.value) return  // меню закрыто — ничего не делаем
-  
+
   const target = event.target as HTMLElement
   const burger = document.querySelector('.burger')
   const nav = document.querySelector('.main-nav')
-  
+
   // Если кликнули НЕ по бургеру и НЕ по меню — закрываем
   if (burger && nav && !burger.contains(target) && !nav.contains(target)) {
     isMenuOpen.value = false
@@ -188,16 +190,15 @@ function goToProfile() {
 
 // Открытие модалки авторизации
 function openAuthModal() {
-  // TODO: открыть модалку
-  console.log('[Header] Открыть модалку авторизации')
+   authModalRef.value?.open()
 }
 
 //Выход из аккаунта
 function handleLogout() {
   logoutUser()
   user.value = null
-  window.dispatchEvent(new CustomEvent('auth:change', { 
-    detail: { user: null, type: 'logout' } 
+  window.dispatchEvent(new CustomEvent('auth:change', {
+    detail: { user: null, type: 'logout' }
   }))
 }
 
@@ -225,7 +226,7 @@ onMounted(() => {
   // 1. Загружаем начальные данные
   user.value = getCurrentUser()
   loadCartAndFavorites()
-  
+
   // 2. Подписываемся на события
   window.addEventListener('auth:change', handleAuthChange)
   window.addEventListener('cart:update', handleCartUpdate)
