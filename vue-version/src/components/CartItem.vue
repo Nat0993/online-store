@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 // ============ ИМПОРТЫ ============
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { CartItemWithProduct } from '../types'
 import {
   getCurrentCart,
@@ -65,6 +65,16 @@ const formattedPrice = computed(() => props.item.product.price.toLocaleString())
 
 /** Итоговая сумма (цена × количество) */
 const totalPrice = computed(() => props.item.product.price * quantity.value)
+
+// ============ МЕТОДЫ СИНХРОНИЗАЦИИ ============
+/** Синхронизирует локальное количество с глобальным хранилищем */
+function syncQuantity() {
+  const cart = getCurrentCart()
+  const cartItem = cart.find(item => item.id === props.item.id)
+  if (cartItem) {
+    quantity.value = cartItem.quantity
+  }
+}
 
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ ============
 /** Увеличить количество товара */
@@ -91,11 +101,25 @@ function decreaseQuantity() {
 /** Удалить товар из корзины с анимацией */
 function removeItem() {
   if (!confirm('Удалить товар из корзины?')) return
-  
+
   // 1. Удаляем из хранилища
   removeFromCart(props.item.id)
-  
+
   // 2. Шлем глобальное событие (для Header, ProductCard, родителю для анимации)
   window.dispatchEvent(new CustomEvent('cart:update'))
 }
+
+// ============ ЖИЗНЕННЫЙ ЦИКЛ ============
+/** Обработчик обновления корзины */
+function handleCartUpdate() {
+  syncQuantity()
+}
+
+onMounted(() => {
+  window.addEventListener('cart:update', handleCartUpdate)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('cart:update', handleCartUpdate)
+})
 </script>
