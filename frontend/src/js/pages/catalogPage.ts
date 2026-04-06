@@ -29,7 +29,7 @@ interface CatalogPageElements {
     // Основные элементы
     productList: HTMLElement;
     sortSelect: HTMLSelectElement;
-    
+
     // Элементы фильтрации
     filterBtn: HTMLButtonElement;
     filtersModal: HTMLElement;
@@ -39,7 +39,7 @@ interface CatalogPageElements {
     minPriceInput: HTMLInputElement;
     maxPriceInput: HTMLInputElement;
     inStockCheckbox: HTMLInputElement;
-    
+
     // Вспомогательные
     breadcrumbs?: HTMLElement;
     pageHeader?: HTMLElement;
@@ -54,6 +54,7 @@ interface CatalogPageElements {
  * @returns {CatalogPageElements | null} объект с элементами или null
  */
 function getCatalogPageElements(container: HTMLElement): CatalogPageElements | null {
+
     const productList = container.querySelector<HTMLElement>('.product-list');
     const sortSelect = container.querySelector<HTMLSelectElement>('.catalog__sort-select');
     const filterBtn = container.querySelector<HTMLButtonElement>('.catalog__filter-btn');
@@ -65,12 +66,10 @@ function getCatalogPageElements(container: HTMLElement): CatalogPageElements | n
     const maxPriceInput = container.querySelector<HTMLInputElement>('#max-price');
     const inStockCheckbox = container.querySelector<HTMLInputElement>('#in-stock');
     const breadcrumbs = container.querySelector<HTMLElement>('.breadcrumbs');
-    const pageHeader = container.querySelector<HTMLElement>('.page-header');
     const catalogControls = container.querySelector<HTMLElement>('.catalog__controls');
 
-    
-    if (!productList || !sortSelect || !filterBtn || !filtersModal || !closeFilterBtn || 
-        !applyFilterBtn || !resetFilterBtn || !minPriceInput || !maxPriceInput || !inStockCheckbox || !breadcrumbs || !pageHeader || !catalogControls) {
+    if (!productList || !sortSelect || !filterBtn || !filtersModal || !closeFilterBtn ||
+        !applyFilterBtn || !resetFilterBtn || !minPriceInput || !maxPriceInput || !inStockCheckbox || !breadcrumbs || !catalogControls) {
         console.warn('[CatalogPage] Не все обязательные элементы найдены');
         return null;
     }
@@ -87,7 +86,6 @@ function getCatalogPageElements(container: HTMLElement): CatalogPageElements | n
         maxPriceInput,
         inStockCheckbox,
         breadcrumbs,
-        pageHeader,
         catalogControls
     };
 }
@@ -208,7 +206,6 @@ function createCatalogPage(categoryId: string): string {
  * @param {string} categoryId - id категории товаров
  */
 function initCatalogPage(pageContainer: HTMLElement, categoryId: string): void {
-    console.log('Инициализация каталога для категории:', categoryId);
 
     const elements = getCatalogPageElements(pageContainer);
     if (!elements) {
@@ -228,7 +225,6 @@ function initCatalogPage(pageContainer: HTMLElement, categoryId: string): void {
         maxPriceInput,
         inStockCheckbox,
         breadcrumbs,
-        pageHeader,
         catalogControls
     } = elements;
 
@@ -257,11 +253,6 @@ function initCatalogPage(pageContainer: HTMLElement, categoryId: string): void {
         //Удаляем список
         productList.remove();
 
-        //Удаляем заголовок, если есть
-        if (pageHeader) {
-            pageHeader.remove();
-        };
-
         //Удаляем фильтры и сортировку
         if (catalogControls) {
             catalogControls.remove();
@@ -269,7 +260,7 @@ function initCatalogPage(pageContainer: HTMLElement, categoryId: string): void {
 
         // Используем emptyMessage для пустой категории
         const emptyMessage = renderEmptyMessage('В данной категории пока нет товаров', 'Скоро мы добавим новые товары в эту категорию', { href: '/catalog', label: 'Вернуться в каталог' });
-        
+
         if (breadcrumbs) {
             breadcrumbs.after(emptyMessage);
         }
