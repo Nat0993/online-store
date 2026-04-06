@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div v-if="isMounted" class="auth" :class="[{ 'auth--active': isOpen }, modalClass]" @click.self="close">
+        <div v-if="isMounted" class="auth" :class="[{ 'auth--active': isOpen }, modalClass]">
             <div class="auth__wrapper">
                 <!-- ============ ШАПКА МОДАЛКИ ============ -->
                 <div class="auth__inner">
