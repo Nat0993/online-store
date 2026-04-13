@@ -17,6 +17,13 @@
         gap: 5px;
     }
 
+    &__header,
+    &__goods,
+    &__summ {
+        display: flex;
+        gap: 6px;
+    }
+
     &__text {
         font-size: 18px;
         line-height: 22px;
