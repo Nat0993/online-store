@@ -53,6 +53,10 @@ import { ref, computed } from 'vue'
 import type { Order } from '../types'
 import { addToCart } from '../data'
 import OrderDetailsModal from './OrderDetailsModal.vue'
+import { useRouter } from 'vue-router'
+
+// ============ РОУТЕР ============
+const router = useRouter() 
 
 // ============ ПРОПСЫ ============
 /** Данные заказа для отображения */
@@ -119,8 +123,7 @@ async function repeatOrder() {
 
         // 6. Предлагаем перейти в корзину
         if (confirm('Перейти в корзину?')) {
-            window.history.pushState({}, '', '/cart')
-            window.dispatchEvent(new PopStateEvent('popstate'))
+            router.push('/cart')
         }
     } catch (error) {
         // 7. Обработка ошибок

@@ -16,7 +16,7 @@
           <div class="main-nav" :class="{ 'main-nav--active': isMenuOpen }">
             <ul class="main-nav__list">
               <li v-for="link in navLinks" :key="link.href" class="main-nav__item">
-                <a :href="link.href" @click="closeMenu" class="main-nav__link">{{ link.label }}</a>
+                <router-link :to="link.href" @click="closeMenu" class="main-nav__link">{{ link.label }}</router-link>
               </li>
             </ul>
           </div>
@@ -26,11 +26,11 @@
         </div>
 
         <!-- Логотип -->
-        <a href="/" class="header__logo-link" aria-label="Логотип компании, переход на главную страницу">
+        <router-link to="/" class="header__logo-link" aria-label="Логотип компании, переход на главную страницу">
           <svg width="70" height="70">
             <use xlink:href="/src/assets/images/sprite.svg#icon-logo"></use>
           </svg>
-        </a>
+        </router-link>
 
         <!-- Правая часть -->
         <div class="header__user-inner">
@@ -61,22 +61,22 @@
           <!-- Иконки корзины и избранного -->
           <div class="header__links">
             <!-- Избранное -->
-            <a href="/favorites" class="header__user-link" aria-label="Избранные товары" @click="closeMenu">
+            <router-link to="/favorites" class="header__user-link" aria-label="Избранные товары" @click="closeMenu">
               <svg width="30" height="30">
                 <use xlink:href="/src/assets/images/sprite.svg#icon-favorite"></use>
               </svg>
               <span v-if="favoritesCount > 0" class="header__counter header__favorites-counter">{{
                 formattedFavoritesCount }}</span>
-            </a>
+            </router-link>
 
             <!-- Корзина -->
-            <a href="/cart" class="header__user-link" aria-label="Корзина" @click="closeMenu">
+            <router-link to="/cart" class="header__user-link" aria-label="Корзина" @click="closeMenu">
               <svg width="30" height="30">
                 <use xlink:href="/src/assets/images/sprite.svg#icon-basket"></use>
               </svg>
               <span v-if="cartTotalItems > 0" class="header__counter header__cart-counter">{{ formattedCartCount
                 }}</span>
-            </a>
+            </router-link>
           </div>
         </div>
       </div>
@@ -98,6 +98,11 @@ import {
 } from '../data'
 import type { NavLink, User, CartItem, FavoriteItem } from '@/types/index';
 import AuthModal from './AuthModal.vue'
+import { useRouter } from 'vue-router'
+
+// ============ РОУТЕР ============
+const router = useRouter() 
+
 // ============ КОНСТАНТЫ ============
 const navLinks: NavLink[] = [
   { href: '/catalog', label: 'Каталог' },
@@ -184,8 +189,7 @@ function handleClickOutside(event: MouseEvent) {
 //Переход в профиль
 function goToProfile() {
   closeMenu()
-  window.history.pushState({}, '', '/profile')
-  window.dispatchEvent(new PopStateEvent('popstate'))
+  router.push('/profile')
 }
 
 // Открытие модалки авторизации

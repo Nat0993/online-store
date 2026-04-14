@@ -11,23 +11,23 @@
                 :key="`nav-${link.href}`"
                 class="footer__nav-item"
               >
-                <a :href="link.href" class="footer__nav-link footer__text">
+                <router-link :to="link.href" class="footer__nav-link footer__text">
                   {{ link.label }}
-                </a>
+                </router-link>
               </li>
             </ul>
           </div>
 
           <!-- Логотип (центр) -->
-          <a 
+          <router-link 
             class="footer__logo-link" 
-            href="/"
+            to="/"
             aria-label="Логотип компании, переход на главную страницу"
           >
             <svg width="70" height="70" aria-hidden="true">
               <use xlink:href="/src/assets/images/sprite.svg#icon-logo"></use>
             </svg>
-          </a>
+          </router-link>
 
           <!-- Правая колонка: контакты и соцсети -->
           <div class="footer__right-col">

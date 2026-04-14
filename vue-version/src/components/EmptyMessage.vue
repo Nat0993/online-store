@@ -4,12 +4,12 @@
             <h3 class="page-header__title">{{ title }}</h3>
             <span class="page-header__description">{{ description }}</span>
         </div>
-        <a 
-            :href="link.href" 
+        <router-link 
+            to="link.href" 
             class="empty-message__btn btn"
         >
             {{ link.label }}
-        </a>
+        </router-link>
     </div>
 </template>
 

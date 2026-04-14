@@ -10,10 +10,8 @@
         </button>
 
         <!-- ============ ЭКРАН ФОРМЫ ============ -->
-        <div 
-        class="checkout-modal__content checkout-modal__content--form"
-        :class="{ 'checkout-modal__content--hidden': currentScreen === 'success' }"
-        >
+        <div class="checkout-modal__content checkout-modal__content--form"
+          :class="{ 'checkout-modal__content--hidden': currentScreen === 'success' }">
           <h2 class="checkout-modal__title">Оформление заказа</h2>
 
           <div class="checkout-modal__inner">
@@ -180,10 +178,8 @@
         </div>
 
         <!-- ============ ЭКРАН УСПЕХА ============ -->
-        <div 
-        class="checkout-modal__content checkout-modal__content--success"
-        :class="{ 'checkout-modal__content--active': currentScreen === 'success' }"
-        >
+        <div class="checkout-modal__content checkout-modal__content--success"
+          :class="{ 'checkout-modal__content--active': currentScreen === 'success' }">
           <div class="checkout-modal__success-wrap">
             <h2 class="checkout-modal__title checkout-modal__success-title">Спасибо за заказ!</h2>
             <p class="checkout-modal__message">
@@ -214,6 +210,10 @@ import {
   updateCurrentUser
 } from '@/data'
 import type { CartItemWithProduct, OrderData, User } from '@/types'
+import { useRouter } from 'vue-router'
+
+// ============ РОУТЕР ============
+const router = useRouter()
 
 // ============ ТИПЫ ============
 type PaymentMethod = 'card' | 'cash' | 'card_courier'
@@ -544,9 +544,7 @@ function handleEscapePress(e: KeyboardEvent): void {
  */
 function continueShopping(): void {
   close()
-  // Переход на главную или каталог
-  window.history.pushState({}, '', '/catalog')
-  window.dispatchEvent(new PopStateEvent('popstate'))
+  router.push('/catalog')
 }
 
 /**

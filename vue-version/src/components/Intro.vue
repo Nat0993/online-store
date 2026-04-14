@@ -22,12 +22,12 @@
         </h1>
       </div>
       <span class="intro__description">создаем ваш уют</span>
-      <a 
-        href="/catalog" 
+      <router-link   
+        to="/catalog" 
         class="intro__btn-link btn"
       >
         Перейти в каталог
-      </a>
+      </router-link>
     </div>
   </section>
 </template>

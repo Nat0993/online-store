@@ -122,6 +122,10 @@
 import { ref, computed } from 'vue'
 import type { Order, PaymentMethod } from '../types'
 import { addToCart } from '@/data'
+import { useRouter } from 'vue-router'
+
+// ============ РОУТЕР ============
+const router = useRouter() 
 
 // ============ КОНСТАНТЫ ============
 const spriteUrl = '/src/assets/images/sprite.svg'
@@ -219,8 +223,7 @@ function repeatOrder() {
     // Предлагаем перейти в корзину
     if (confirm('Перейти в корзину?')) {
       close()
-      window.history.pushState({}, '', '/cart')
-      window.dispatchEvent(new PopStateEvent('popstate'))
+      router.push('/cart')
     } else {
       close()
     }
