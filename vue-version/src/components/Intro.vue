@@ -34,5 +34,4 @@
 
 <script setup lang="ts">
 // Нет логики — только разметка
-// Навигация работает через глобальный initSPANavigation()
 </script>
