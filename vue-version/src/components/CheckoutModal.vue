@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
-    <div v-if="isMounted" class="checkout-modal" :class="{ 'checkout-modal--active': isOpen }">
-      <div class="checkout-modal__wrapper">
+    <div ref="modalRef" v-if="isMounted" class="checkout-modal" :class="{ 'checkout-modal--active': isOpen }">
+      <div ref="wrapperRef" class="checkout-modal__wrapper">
         <!-- Кнопка закрытия -->
         <button class="checkout-modal__close" @click="close" type="button">
           <svg width="20" height="20" aria-hidden="true">
@@ -211,6 +211,7 @@ import {
 } from '@/data'
 import type { CartItemWithProduct, OrderData, User } from '@/types'
 import { useRouter } from 'vue-router'
+import { useModalDrag } from '@/composables/useModalDrag'
 
 // ============ РОУТЕР ============
 const router = useRouter()
@@ -284,8 +285,12 @@ const isSubmitting = ref(false)
 /** Товары в корзине */
 const cartItems = ref<CartItemWithProduct[]>([])
 
-/** Стоимость доставки */
-const deliveryCost = ref(0)
+// ============ Refs для composable ============
+const modalRef = ref<HTMLElement | null>(null)
+const wrapperRef = ref<HTMLElement | null>(null)
+
+// ============ ПОДКЛЮЧАЕМ COMPOSABLE ============
+useModalDrag(isOpen, modalRef, wrapperRef, close)
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
 

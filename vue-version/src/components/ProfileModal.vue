@@ -1,7 +1,7 @@
 <template>
     <Teleport to="body">
-        <div v-if="isMounted" class="profile-modal" :class="{ 'profile-modal--active': isOpen }">
-            <div class="profile-modal__wrapper">
+        <div ref="modalRef" v-if="isMounted" class="profile-modal" :class="{ 'profile-modal--active': isOpen }">
+            <div ref="wrapperRef" class="profile-modal__wrapper">
                 <!-- Шапка -->
                 <div class="profile-modal__header">
                     <h2 class="profile-modal__title">{{ modalTitle }}</h2>
@@ -90,8 +90,9 @@
 
 <script setup lang="ts">
 // ============ ИМПОРТЫ ============
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import { getCurrentUser, updateCurrentUser } from '@/data'
+import { useModalDrag } from '@/composables/useModalDrag'
 
 // ============ ТИПЫ ============
 
@@ -113,6 +114,13 @@ const isOpen = ref(false)
 
 /** Блокировка повторной отправки формы */
 const isSubmitting = ref(false)
+
+// ============ Refs для composable ============
+const modalRef = ref<HTMLElement | null>(null)
+const wrapperRef = ref<HTMLElement | null>(null)
+
+// ============ ПОДКЛЮЧАЕМ COMPOSABLE ============
+useModalDrag(isOpen, modalRef, wrapperRef, close)
 
 // ============ ДАННЫЕ ФОРМЫ ============
 
@@ -143,13 +151,6 @@ const errors = ref({
     firstName: '',
     middleName: '',
     phone: ''
-})
-
-// ============ СОСТОЯНИЕ ДЛЯ ЗАКРЫТИЯ ПО КЛИКУ ВНЕ ============
-const dragState = ref({
-    isDragging: false,
-    startX: 0,
-    startY: 0
 })
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
@@ -380,32 +381,6 @@ async function handleSubmit(): Promise<void> {
     }
 }
 
-// ============ ОБРАБОТЧИКИ ДЛЯ ОТСЛЕЖИВАНИЯ ВЫДЕЛЕНИЯ ============
-
-/** Сбрасывает флаг выделения и запоминает координаты клика */
-function onWrapperMouseDown(e: MouseEvent): void {
-    dragState.value.isDragging = false
-    dragState.value.startX = e.clientX
-    dragState.value.startY = e.clientY
-}
-
-/** При движении мыши проверяем, выделяет ли пользователь текст */
-function onWrapperMouseMove(e: MouseEvent): void {
-    if (Math.abs(e.clientX - dragState.value.startX) > 5 || 
-        Math.abs(e.clientY - dragState.value.startY) > 5) {
-        dragState.value.isDragging = true
-    }
-}
-
-/** Закрывает модалку по клику на оверлей, если не было выделения текста */
-function onModalClick(e: MouseEvent): void {
-    const modal = document.querySelector('.profile-modal')
-    if (e.target === modal && !dragState.value.isDragging) {
-        close()
-    }
-    dragState.value.isDragging = false
-}
-
 // ============ УПРАВЛЕНИЕ МОДАЛКОЙ ============
 
 /**
@@ -431,19 +406,6 @@ function open(): void {
 
         // 7. Слушаем нажатие Escape
         window.addEventListener('keydown', handleEscapePress)
-
-        // Добавляем слушатели после того, как модалка отрендерилась
-        const modal = document.querySelector('.profile-modal')
-        const wrapper = document.querySelector('.profile-modal__wrapper')
-        
-        if (wrapper) {
-            wrapper.addEventListener('mousedown', onWrapperMouseDown as EventListener)
-            wrapper.addEventListener('mousemove', onWrapperMouseMove as EventListener)
-        }
-        
-        if (modal) {
-            modal.addEventListener('click', onModalClick as EventListener)
-        }
     }, 50)
 }
 
@@ -454,28 +416,15 @@ function close(): void {
     // 1. Убираем класс --active, запускается анимация закрытия
     isOpen.value = false
 
-    // 2. Удаляем слушатели
-    const modal = document.querySelector('.profile-modal')
-    const wrapper = document.querySelector('.profile-modal__wrapper')
-    
-    if (wrapper) {
-        wrapper.removeEventListener('mousedown', onWrapperMouseDown as EventListener)
-        wrapper.removeEventListener('mousemove', onWrapperMouseMove as EventListener)
-    }
-    
-    if (modal) {
-        modal.removeEventListener('click', onModalClick as EventListener)
-    }
-
-    // 3. Ждем завершения анимации (300ms)
+    // 2. Ждем завершения анимации (300ms)
     setTimeout(() => {
-        // 4. Удаляем модалку из DOM
+        // 3. Удаляем модалку из DOM
         isMounted.value = false
 
-        // 5. Возвращаем скролл странице
+        // 4. Возвращаем скролл странице
         document.body.classList.remove('modal-open')
 
-        // 6. Убираем слушатель Escape
+        // 5. Убираем слушатель Escape
         window.removeEventListener('keydown', handleEscapePress)
     }, 300)
 }

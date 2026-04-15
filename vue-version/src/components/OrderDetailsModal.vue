@@ -1,8 +1,8 @@
 <template>
     <Teleport to="body">
-        <div v-if="isMounted" class="order-details-modal" :class="{ 'order-details-modal--active': isOpen }"
-            @click.self="close">
-            <div class="order-details-modal__wrapper">
+        <div ref="modalRef" v-if="isMounted" class="order-details-modal"
+            :class="{ 'order-details-modal--active': isOpen }">
+            <div ref="wrapperRef" class="order-details-modal__wrapper">
                 <!-- Кнопка закрытия -->
                 <button class="order-details-modal__close" @click="close" type="button">
                     <svg width="20" height="20" aria-hidden="true">
@@ -123,9 +123,10 @@ import { ref, computed } from 'vue'
 import type { Order, PaymentMethod } from '../types'
 import { addToCart } from '@/data'
 import { useRouter } from 'vue-router'
+import { useModalDrag } from '@/composables/useModalDrag'
 
 // ============ РОУТЕР ============
-const router = useRouter() 
+const router = useRouter()
 
 // ============ КОНСТАНТЫ ============
 const spriteUrl = '/src/assets/images/sprite.svg'
@@ -134,6 +135,13 @@ const spriteUrl = '/src/assets/images/sprite.svg'
 const isOpen = ref(false)      // управляет классом --active
 const isMounted = ref(false)   // управляет наличием в DOM
 const order = ref<Order | null>(null)
+
+// ============ Refs для composable ============
+const modalRef = ref<HTMLElement | null>(null)
+const wrapperRef = ref<HTMLElement | null>(null)
+
+// ============ ПОДКЛЮЧАЕМ COMPOSABLE ============
+useModalDrag(isOpen, modalRef, wrapperRef, close)
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
 
@@ -177,13 +185,13 @@ function open(selectedOrder: Order) {
     isMounted.value = true // 1. Добавляем в DOM
 
     setTimeout(() => {
-        
+
         isOpen.value = true // 2. Добавляем класс --active, запускается анимация
-        
+
         document.body.classList.add('modal-open')
-        
+
         window.addEventListener('keydown', handleEscapePress)
-    }, 50) 
+    }, 50)
 }
 
 function close() {
@@ -205,33 +213,33 @@ function handleEscapePress(e: KeyboardEvent) {
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ ============
 /** Повторить заказ — добавить все товары в корзину */
 function repeatOrder() {
-  if (!order.value) return
-  
-  if (!confirm('Добавить все товары из этого заказа в корзину?')) return
-  
-  try {
-    // Добавляем каждый товар в корзину
-    order.value.items.forEach(item => {
-      addToCart(item.productId, item.quantity)
-    })
-    
-    alert(`Товары из заказа #${order.value.orderNumber} добавлены в корзину!`)
-    
-    // Уведомляем другие компоненты
-    window.dispatchEvent(new CustomEvent('cart:update'))
-    
-    // Предлагаем перейти в корзину
-    if (confirm('Перейти в корзину?')) {
-      close()
-      router.push('/cart')
-    } else {
-      close()
+    if (!order.value) return
+
+    if (!confirm('Добавить все товары из этого заказа в корзину?')) return
+
+    try {
+        // Добавляем каждый товар в корзину
+        order.value.items.forEach(item => {
+            addToCart(item.productId, item.quantity)
+        })
+
+        alert(`Товары из заказа #${order.value.orderNumber} добавлены в корзину!`)
+
+        // Уведомляем другие компоненты
+        window.dispatchEvent(new CustomEvent('cart:update'))
+
+        // Предлагаем перейти в корзину
+        if (confirm('Перейти в корзину?')) {
+            close()
+            router.push('/cart')
+        } else {
+            close()
+        }
+    } catch (error) {
+        console.error('[OrderDetailsModal] Ошибка при повторении заказа:', error)
+        const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
+        alert(`Не удалось добавить товары в корзину: ${message}`)
     }
-  } catch (error) {
-    console.error('[OrderDetailsModal] Ошибка при повторении заказа:', error)
-    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
-    alert(`Не удалось добавить товары в корзину: ${message}`)
-  }
 }
 
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============

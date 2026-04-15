@@ -1,7 +1,7 @@
 <template>
     <Teleport to="body">
-        <div v-if="isMounted" class="auth" :class="[{ 'auth--active': isOpen }, modalClass]">
-            <div class="auth__wrapper">
+        <div ref="modalRef" v-if="isMounted" class="auth" :class="[{ 'auth--active': isOpen }, modalClass]">
+            <div ref="wrapperRef" class="auth__wrapper">
                 <!-- ============ ШАПКА МОДАЛКИ ============ -->
                 <div class="auth__inner">
                     <!-- Заголовок: динамически меняется в зависимости от режима -->
@@ -125,9 +125,10 @@
 
 <script setup lang="ts">
 // ============ ИМПОРТЫ ============
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { registerUser, loginUser } from '@/data'
 import type { UserData } from '@/types'
+import { useModalDrag } from '@/composables/useModalDrag'
 
 // ============ ТИПЫ ============
 
@@ -154,6 +155,13 @@ const currentMode = ref<AuthMode>('login')
 /** Блокировка повторной отправки формы */
 const isSubmitting = ref(false)
 
+// ============ Refs для composable ============
+const modalRef = ref<HTMLElement | null>(null)
+const wrapperRef = ref<HTMLElement | null>(null)
+
+// ============ ПОДКЛЮЧАЕМ COMPOSABLE ============
+useModalDrag(isOpen, modalRef, wrapperRef, close)
+
 // ============ ДАННЫЕ ФОРМЫ ============
 
 /** Реактивные данные формы */
@@ -172,13 +180,6 @@ const errors = ref({
     email: '',
     password: '',
     confirm: ''
-})
-
-// ============ СОСТОЯНИЕ ДЛЯ ЗАКРЫТИЯ ПО КЛИКУ ВНЕ ============
-const dragState = ref({
-    isDragging: false,
-    startX: 0,
-    startY: 0
 })
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА (COMPUTED) ============
@@ -498,46 +499,6 @@ function handleEscapePress(event: KeyboardEvent): void {
         close()
     }
 }
-
-/**
- * Обработчик клика вне модалки (для закрытия)
- * @param {MouseEvent} event - событие клика
- */
-function handleOutsideClick(event: MouseEvent): void {
-    // Если модалка не открыта — ничего не делаем
-    if (!isOpen.value) return
-
-    // Находим элемент .auth__wrapper (внутренний контейнер модалки)
-    const wrapper = document.querySelector('.auth__wrapper')
-    const target = event.target as HTMLElement
-
-    // Если кликнули НЕ по wrapper'у и НЕ по его дочерним элементам
-    if (wrapper && !wrapper.contains(target)) {
-        // Проверяем, что не было выделения текста
-        if (!dragState.value.isDragging) {
-            close()
-        }
-    }
-}
-
-// ============ ЖИЗНЕННЫЙ ЦИКЛ ============
-
-/**
- * При монтировании компонента добавляем слушатель кликов для закрытия по оверлею
- */
-onMounted(() => {
-    // Добавляем слушатель для закрытия по клику на оверлей
-    document.addEventListener('click', handleOutsideClick)
-})
-
-/**
- * При размонтировании компонента удаляем слушатель
- */
-onUnmounted(() => {
-    document.removeEventListener('click', handleOutsideClick)
-    // Убираем блокировку скролла, если модалка осталась открытой
-    document.body.classList.remove('modal-open')
-})
 
 // ============ ЭКСПОРТ МЕТОДОВ ДЛЯ РОДИТЕЛЬСКОГО КОМПОНЕНТА ============
 
