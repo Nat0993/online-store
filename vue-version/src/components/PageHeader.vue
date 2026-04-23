@@ -1,7 +1,12 @@
 <template>
     <div class="page-header">
         <h1 class="page-header__title">{{ title }}</h1>
-        <span class="page-header__description">{{ description }}</span>
+        <span 
+            class="page-header__description" 
+            :class="{ 'page-header__description--updating': isUpdating }"
+        >
+            {{ description }}
+        </span>
     </div>
 </template>
 
@@ -9,5 +14,6 @@
 defineProps<{
     title: string;
     description: string;
+    isUpdating?: boolean;
 }>();
 </script>

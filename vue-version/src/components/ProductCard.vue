@@ -3,17 +3,35 @@
         <!--Изображение товара-->
         <img class="product-card__image" :src="product.image || ''" :alt="product.name" loading="lazy">
 
-        <!--Кнопка избранного-->
-        <button class="product-card__favorite" :class="{ 'product-card__favorite--active': isFavorite }"
-            @click="toggleFavorite" type="button">
-            <!-- Обычная иконка (видна когда не в избранном) -->
-            <svg class="product-card__favorite-icon" width="30" height="30">
+        <!-- ============ КНОПКА ИЗБРАННОГО — для каталога ============ -->
+        <button 
+            v-if="!isFavoriteRemovable"
+            class="product-card__favorite" 
+            :class="{ 'product-card__favorite--active': isFavorite }"
+            @click="toggleFavorite" 
+            type="button"
+            :aria-label="isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'"
+        >
+            <!-- Обычная иконка (пустое сердечко) -->
+            <svg class="product-card__favorite-icon" width="30" height="30" aria-hidden="true">
                 <use :xlink:href="`${spriteUrl}#icon-favorite-card`"></use>
             </svg>
-
-            <!-- Активная иконка (видна когда в избранном) -->
-            <svg class="product-card__favorite-icon product-card__favorite-icon--active">
+            <!-- Активная иконка (закрашенное сердечко) -->
+            <svg class="product-card__favorite-icon product-card__favorite-icon--active" aria-hidden="true">
                 <use :xlink:href="`${spriteUrl}#icon-favorite-card-active`"></use>
+            </svg>
+        </button>
+
+        <!-- ============ КНОПКА УДАЛЕНИЯ — для страницы избранного ============ -->
+        <button 
+            v-else
+            class="product-card__favorite product-card__favorite--remove"
+            @click="emit('remove')" 
+            type="button"
+            aria-label="Удалить из избранного"
+        >
+            <svg class="product-card__favorite-icon product-card__favorite-icon--remove" width="20" height="20" aria-hidden="true">
+                <use :xlink:href="`${spriteUrl}#icon-close`"></use>
             </svg>
         </button>
 
@@ -56,7 +74,14 @@ import {
 // ============ ПРОПСЫ ============
 const props = defineProps<{
     product: Product
+    isFavoriteRemovable?: boolean  // true = показываем крестик вместо сердечка
 }>()
+
+// ============ ЭМИТЫ ============
+const emit = defineEmits<{
+    (e: 'remove'): void   // говорим родителю, что нужно удалить
+}>()
+
 
 // ============ РЕАКТИВНЫЕ ПЕРЕМЕННЫЕ (СОСТОЯНИЕ) ============
 
