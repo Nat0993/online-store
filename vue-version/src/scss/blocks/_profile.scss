@@ -91,4 +91,21 @@
         margin: 0;
         list-style-type: none;
     }
+
+    &__orders-empty {
+       display: flex;
+       flex-direction: column;
+       align-self: flex-start;
+       gap: 20px;
+    }
+
+    &__orders-empty-text {
+        margin: 0;
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+    &__orders-empty-link {
+        width: 300px;
+    }
 }
