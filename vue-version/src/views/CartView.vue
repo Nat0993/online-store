@@ -24,13 +24,14 @@
                 <div v-else class="cart__main">
                     <!-- Список товаров -->
                     <ul class="cart__list">
-                        <li 
-                            v-for="item in cartItems" 
+                            <CartItem 
+                             v-for="item in cartItems" 
                             :key="item.id" 
-                            class="cart__item"
-                        >
-                            <CartItem :item="item" />
-                        </li>
+                            :item="item" 
+                            :is-removing="removingItemId === item.id"
+                            :is-sliding="slidingItemsIds.includes(item.id)"
+                            @remove="() => removeItemFromCart(item.id)"
+                            />
                     </ul>
 
                     <!-- Боковая панель с итогами -->
@@ -85,7 +86,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import EmptyMessage from '@/components/EmptyMessage.vue'
 import CartItem from '@/components/CartItem.vue'
 import CheckoutModal from '@/components/CheckoutModal.vue'
-import { getCartItemsWithProducts, saveCurrentCart } from '@/data'
+import { getCartItemsWithProducts, saveCurrentCart, removeFromCart } from '@/data'
 import type { CartItemWithProduct } from '@/types'
 
 // ============ КОНСТАНТЫ ============
@@ -95,6 +96,8 @@ const DELIVERY_COST = 500
 // ============ РЕАКТИВНЫЕ ПЕРЕМЕННЫЕ ============
 const cartItems = ref<CartItemWithProduct[]>([])
 const checkoutModalRef = ref<InstanceType<typeof CheckoutModal> | null>(null)
+const removingItemId = ref<string | null>(null)
+const slidingItemsIds = ref<string[]>([])
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
 
@@ -131,6 +134,32 @@ const totalPrice = computed(() => {
 /** Загружает данные корзины */
 function loadCart() {
     cartItems.value = getCartItemsWithProducts() as CartItemWithProduct[]
+}
+
+function removeItemFromCart(cartItemId: string) {
+    // Находим индекс удаляемого товара
+    const index = cartItems.value.findIndex(item => item.id === cartItemId)
+    if (index === -1) return
+
+    // Получаем ID товаров после удаляемого
+    const itemsAfter = cartItems.value.slice(index + 1).map(item => item.id)
+    
+    // Устанавливаем анимацию
+    removingItemId.value = cartItemId
+    slidingItemsIds.value = itemsAfter
+
+    // Ждём анимацию
+    setTimeout(() => {
+        // Удаляем из данных
+        removeFromCart(cartItemId)
+
+        // Сбрасываем анимацию
+        removingItemId.value = null
+        slidingItemsIds.value = []
+        
+        // Уведомляем другие компоненты
+        window.dispatchEvent(new CustomEvent('cart:update'))
+    }, 300)
 }
 
 /** Очищает всю корзину */

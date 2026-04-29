@@ -5,14 +5,17 @@
     align-items: center;
     border-bottom: 1px solid $color-charcoal;
     padding: 15px;
-    transition: background-color ease-in 0.2s, transform 0.3s ease-in, opacity 0.2s ease-in;
+    transition: background-color ease-in 0.2s;
 
     &--removing {
         opacity: 0;
         transform: scale(0.8) translateX(-50px);
+        transition: opacity 0.2s ease-in, transform 0.3s ease-in;
     }
 
     &--sliding {
+        transition: transform 0.3s ease-in;
+        transition-duration: 0.3s;
         transform: translateY(-100%);
     }
 

@@ -1,5 +1,12 @@
 <template>
-  <li class="cart-item" :data-cart-item-id="item.id">
+  <li 
+        class="cart-item" 
+        :data-cart-item-id="item.id"
+        :class="{ 
+            'cart-item--removing': isRemoving,
+            'cart-item--sliding': isSliding
+        }"
+  >
     <!-- Левая часть: изображение и информация о товаре -->
     <div class="cart-item__info">
       <img class="cart-item__img" :src="item.product.image || ''" :alt="item.product.name" loading="lazy">
@@ -29,7 +36,7 @@
       </div>
 
       <!-- Кнопка удаления -->
-      <button class="cart-item__remove" @click="removeItem" type="button" aria-label="Удалить товар">
+      <button class="cart-item__remove" @click="emit('remove')" type="button" aria-label="Удалить товар">
         <svg aria-hidden="true">
           <use :xlink:href="`${spriteUrl}#icon-close`"></use>
         </svg>
@@ -51,6 +58,13 @@ import {
 // ============ ПРОПСЫ ============
 const props = defineProps<{
   item: CartItemWithProduct
+  isRemoving?: boolean
+  isSliding?: boolean
+}>()
+
+// ============ ЭМИТЫ ============
+const emit = defineEmits<{
+    (e: 'remove'): void
 }>()
 
 // ============ КОНСТАНТЫ ============
@@ -89,24 +103,13 @@ function increaseQuantity() {
 function decreaseQuantity() {
   if (quantity.value === 1) {
     // Если остался 1 товар — удаляем
-    removeItem()
+    emit('remove')
   } else {
     const newQuantity = quantity.value - 1
     updateCartQuantity(props.item.id, newQuantity)
     quantity.value = newQuantity
     window.dispatchEvent(new CustomEvent('cart:update'))
   }
-}
-
-/** Удалить товар из корзины с анимацией */
-function removeItem() {
-  if (!confirm('Удалить товар из корзины?')) return
-
-  // 1. Удаляем из хранилища
-  removeFromCart(props.item.id)
-
-  // 2. Шлем глобальное событие (для Header, ProductCard, родителю для анимации)
-  window.dispatchEvent(new CustomEvent('cart:update'))
 }
 
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============
