@@ -84,7 +84,7 @@
   </header>
 
   <!-- Модалка авторизации -->
-  <AuthModal v-if="true" ref="authModalRef" />
+  <AuthModal ref="authModalRef" />
 </template>
 
 <script setup lang="ts">
