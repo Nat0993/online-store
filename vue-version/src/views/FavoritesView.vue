@@ -87,8 +87,8 @@ function getProductsWord(count: number): string {
 // ============ МЕТОДЫ ============
 
 /** Загружает избранные товары */
-function loadFavorites() {
-    favorites.value = getFavoritesWithProducts() as (FavoriteItem & { product: Product })[]
+async function loadFavorites() {
+    favorites.value = await getFavoritesWithProducts() as (FavoriteItem & { product: Product })[]
 }
 
 /**

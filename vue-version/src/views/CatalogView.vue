@@ -308,8 +308,8 @@ function resetFilters(): void {
 /**
  * Загружает товары текущей категории
  */
-function loadProducts(): void {
-    allProducts.value = getProductsByCategory(categoryId.value)
+async function loadProducts(): Promise<void> {
+    allProducts.value = await getProductsByCategory(categoryId.value)
 }
 
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============

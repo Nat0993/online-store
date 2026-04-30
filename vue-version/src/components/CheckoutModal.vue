@@ -443,8 +443,8 @@ function validateForm(): boolean {
 // ============ РАБОТА С ДАННЫМИ КОРЗИНЫ ==========
 
 /** Загружает актуальные данные корзины */
-function loadCart() {
-  cartItems.value = getCartItemsWithProducts()
+async function loadCart() {
+  cartItems.value = await getCartItemsWithProducts()
 }
 
 /** Склонение слова "товар" в зависимости от количества */

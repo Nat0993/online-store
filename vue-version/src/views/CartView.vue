@@ -132,8 +132,8 @@ const totalPrice = computed(() => {
 // ============ МЕТОДЫ ============
 
 /** Загружает данные корзины */
-function loadCart() {
-    cartItems.value = getCartItemsWithProducts() as CartItemWithProduct[]
+async function loadCart() {
+    cartItems.value = await getCartItemsWithProducts() as CartItemWithProduct[]
 }
 
 function removeItemFromCart(cartItemId: string) {

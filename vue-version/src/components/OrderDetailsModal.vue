@@ -212,16 +212,16 @@ function handleEscapePress(e: KeyboardEvent) {
 
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ ============
 /** Повторить заказ — добавить все товары в корзину */
-function repeatOrder() {
+async function repeatOrder() {
     if (!order.value) return
 
     if (!confirm('Добавить все товары из этого заказа в корзину?')) return
 
     try {
-        // Добавляем каждый товар в корзину
-        order.value.items.forEach(item => {
-            addToCart(item.productId, item.quantity)
-        })
+        // Добавляем каждый товар в корзину (последовательно)
+        for (const item of order.value.items) {
+            await addToCart(item.productId, item.quantity)
+        }
 
         alert(`Товары из заказа #${order.value.orderNumber} добавлены в корзину!`)
 

@@ -1,4 +1,5 @@
-import { isValidCategory, isValidProduct } from "./utils/security.js";
+import { isValidCategory, isValidProduct } from "./utils/security";
+import { fetchProductsFromAPI } from "./api/products";
 import type {
     Product,
     Category,
@@ -69,89 +70,89 @@ export const categories: Category[] = [
     }
 ];
 
-export const products: Product[] = [
-    {
-        id: 'prod_chair_1',
-        name: "Стул 'Marco'",
-        categoryId: 'chairs',
-        price: 9500,
-        image: "/src/assets/images/catalog/products/chairs/chair1.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_2',
-        name: "Стул 'Moose'",
-        categoryId: 'chairs',
-        price: 10300,
-        image: "/src/assets/images/catalog/products/chairs/chair2.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_3',
-        name: "Стул 'Cocktail'",
-        categoryId: 'chairs',
-        price: 8600,
-        image: "/src/assets/images/catalog/products/chairs/chair3.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_4',
-        name: "Стул 'Venice'",
-        categoryId: 'chairs',
-        price: 10950,
-        image: "/src/assets/images/catalog/products/chairs/chair4.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_5',
-        name: "Стул 'Nonton'",
-        categoryId: 'chairs',
-        price: 6980,
-        image: "/src/assets/images/catalog/products/chairs/chair5.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_6',
-        name: "Стул 'April'",
-        categoryId: 'chairs',
-        price: 16400,
-        image: "/src/assets/images/catalog/products/chairs/chair6.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_7',
-        name: "Стул 'Shado'",
-        categoryId: 'chairs',
-        price: 10360,
-        image: "/src/assets/images/catalog/products/chairs/chair7.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_chair_8',
-        name: "Стул 'Modena'",
-        categoryId: 'chairs',
-        price: 12600,
-        image: "/src/assets/images/catalog/products/chairs/chair8.jpg",
-        description: "",
-        inStock: true
-    },
-    {
-        id: 'prod_sofa_1',
-        name: "Диван 'Milano'",
-        categoryId: 'sofas',
-        price: 45500,
-        image: "/src/assets/images/catalog/products/sofas/sofa1.jpg",
-        description: "Просторный угловой диван",
-        inStock: true
-    }
-];
+// export const products: Product[] = [
+//     {
+//         id: 'prod_chair_1',
+//         name: "Стул 'Marco'",
+//         categoryId: 'chairs',
+//         price: 9500,
+//         image: "/src/assets/images/catalog/products/chairs/chair1.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_2',
+//         name: "Стул 'Moose'",
+//         categoryId: 'chairs',
+//         price: 10300,
+//         image: "/src/assets/images/catalog/products/chairs/chair2.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_3',
+//         name: "Стул 'Cocktail'",
+//         categoryId: 'chairs',
+//         price: 8600,
+//         image: "/src/assets/images/catalog/products/chairs/chair3.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_4',
+//         name: "Стул 'Venice'",
+//         categoryId: 'chairs',
+//         price: 10950,
+//         image: "/src/assets/images/catalog/products/chairs/chair4.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_5',
+//         name: "Стул 'Nonton'",
+//         categoryId: 'chairs',
+//         price: 6980,
+//         image: "/src/assets/images/catalog/products/chairs/chair5.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_6',
+//         name: "Стул 'April'",
+//         categoryId: 'chairs',
+//         price: 16400,
+//         image: "/src/assets/images/catalog/products/chairs/chair6.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_7',
+//         name: "Стул 'Shado'",
+//         categoryId: 'chairs',
+//         price: 10360,
+//         image: "/src/assets/images/catalog/products/chairs/chair7.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_chair_8',
+//         name: "Стул 'Modena'",
+//         categoryId: 'chairs',
+//         price: 12600,
+//         image: "/src/assets/images/catalog/products/chairs/chair8.jpg",
+//         description: "",
+//         inStock: true
+//     },
+//     {
+//         id: 'prod_sofa_1',
+//         name: "Диван 'Milano'",
+//         categoryId: 'sofas',
+//         price: 45500,
+//         image: "/src/assets/images/catalog/products/sofas/sofa1.jpg",
+//         description: "Просторный угловой диван",
+//         inStock: true
+//     }
+// ];
 
 export let users: User[] = loadFromLocalStorage('users' as StorageKey) || [];
 
@@ -162,13 +163,14 @@ export let users: User[] = loadFromLocalStorage('users' as StorageKey) || [];
  * @param {string} categoryId - ID категории
  * @returns {Array} массив товаров категории
  */
-export const getProductsByCategory = (categoryId: string): Product[] => {
+export const getProductsByCategory = async (categoryId: string): Promise<Product[]> => {
     if (!categoryId || typeof categoryId !== 'string') {
         console.warn('Invalid categoryId:', categoryId);
         return [];
     }
 
-    return products.filter(product => product.categoryId === categoryId && isValidProduct(product));
+    const allProducts = await fetchProductsFromAPI() as Product[];
+    return allProducts.filter(product => product.categoryId === categoryId && isValidProduct(product))
 };
 
 /**
@@ -176,13 +178,14 @@ export const getProductsByCategory = (categoryId: string): Product[] => {
  * @param {string} id - ID товара
  * @returns {Object|null} объект товара или null
  */
-export const getProductById = (id: string): Product | null => {
+export const getProductById = async (id: string): Promise<Product | null> => {
     if (!id || typeof id !== 'string') {
         console.warn('Invalid product id:', id);
         return null;
     }
 
-    const product = products.find(product => product.id === id);
+    const allProducts = await fetchProductsFromAPI() as Product[];
+    const product = allProducts.find(product => product.id === id);
     return isValidProduct(product) ? product : null;
 };
 
@@ -229,8 +232,8 @@ export const saveCurrentCart = (cartData: CartItem[]): void => {
  * @param {number} [quantity=1] - количество
  * @returns {Array} обновленная корзина
  */
-export const addToCart = (productId: string, quantity: number = 1): CartItem[] => {
-    const product = getProductById(productId);
+export const addToCart = async (productId: string, quantity: number = 1): Promise<CartItem[]> => {
+    const product = await getProductById(productId);
     if (!product) return getCurrentCart();
 
     const cart = getCurrentCart();
@@ -267,12 +270,18 @@ export const removeFromCart = (cartItemId: string): CartItem[] => {
  * Получает элементы корзины с полной информацией о товарах
  * @returns {Array} массив элементов корзины с товарами
  */
-export const getCartItemsWithProducts = (): CartItemWithProduct[] => {
+export const getCartItemsWithProducts = async (): Promise<CartItemWithProduct[]> => {
     const cart = getCurrentCart();
-    return cart.map(item => {
-        const product = getProductById(item.productId);
-        return { ...item, product };
-    }).filter((item): item is CartItemWithProduct => item.product !== null); // убираем товары, которые не найдены
+    
+    // Ждём загрузки всех товаров
+    const itemsWithProducts = await Promise.all(
+        cart.map(async (item) => {
+            const product = await getProductById(item.productId);
+            return { ...item, product };
+        })
+    );
+    
+    return itemsWithProducts.filter((item): item is CartItemWithProduct => item.product !== null);
 };
 
 /**
@@ -347,12 +356,16 @@ export const toggleFavorite = (productId: string): FavoriteItem[] => {
  * Получает избранное с полной информацией о товарах
  * @returns {Array} массив избранного с товарами
  */
-export const getFavoritesWithProducts = (): FavoriteItem[] => {
+export const getFavoritesWithProducts = async (): Promise<FavoriteItem[]> => {
     const favorites = getCurrentFavorites();
-    return favorites.map(fav => {
-        const product = getProductById(fav.productId);
-        return { ...fav, product };
-    }).filter((fav): fav is FavoriteItem & { product: Product } => fav.product !== null);
+
+    const favoritesWithProducts = await Promise.all(
+        favorites.map(async (fav) => {
+            const product = await getProductById(fav.productId);
+            return { ...fav, product };
+        })
+    )
+    return favoritesWithProducts.filter((fav): fav is FavoriteItem & { product: Product } => fav.product !== null);
 };
 
 // Заказы

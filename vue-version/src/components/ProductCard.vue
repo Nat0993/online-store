@@ -115,15 +115,15 @@ function updateFavoriteState() {
 
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ (ОБРАБОТЧИКИ) ============
 /** Добавление товара в корзину (кнопка "В корзину")*/
-function addToCart() {
-    addToCartData(props.product.id) // 1. Вызываем функцию из data.ts
+async function addToCart() {
+    await addToCartData(props.product.id) // 1. Вызываем функцию из data.ts
     updateCartState()
     window.dispatchEvent(new CustomEvent('cart:update')) // 3. Уведомляем другие компоненты (хедер)
 }
 
 /** Увеличение количества товара (кнопка "+" в счётчике) */
-function increaseQuantity() {
-    addToCartData(props.product.id, 1)
+async function increaseQuantity() {
+    await addToCartData(props.product.id, 1)
     updateCartState()
     window.dispatchEvent(new CustomEvent('cart:update')) // 3. Уведомляем другие компоненты (хедер)
 }

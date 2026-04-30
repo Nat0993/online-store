@@ -110,10 +110,10 @@ async function repeatOrder() {
     isRepeating.value = true
 
     try {
-        // 3. Добавляем товары
-        props.order.items.forEach(item => {
-            addToCart(item.productId, item.quantity)
-        })
+        // 3. Добавляем товары последовательно
+        for (const item of props.order.items) {
+            await addToCart(item.productId, item.quantity)
+        }
 
         // 4. Сообщение об успехе
         alert(`Товары из заказа #${props.order.orderNumber} добавлены в корзину!`)
