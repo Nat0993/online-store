@@ -112,6 +112,18 @@ export interface SocialLink {
     label: string;
 }
 
+// API types (ответы от бэкенда)
+export interface ApiProduct {
+    id: string;
+    name: string;
+    price: number;
+    category_id: string; // snake_case, как в БД
+    in_stock: number; //MySQL возвращает 1(true) или 0(false)
+    image: string;
+    description: string;
+}
+
+
 //Типы
 
 //Способ оплаты 
