@@ -19,7 +19,7 @@ export const fetchProductsFromAPI = async () => {
         return data.map((p: ApiProduct) => ({
             id: p.id,
             name: p.name,
-            price: p.price,
+            price: Number(p.price),
             categoryId: p.category_id,
             inStock: (p.in_stock === 1),
             image: p.image,
