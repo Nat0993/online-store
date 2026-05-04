@@ -1,5 +1,5 @@
 // ============ ИМПОРТЫ ============
-import type { ApiProduct } from '@/types';
+import type { ApiProduct, Product } from '@/types';
 
 // ============ КОНСТАНТЫ ============
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -7,7 +7,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
 // ============ ФУНКЦИИ ДЛЯ ПОЛУЧЕНИЯ ТОВАРОВ ============
 
 //получение всех товаров
-export const fetchProductsFromAPI = async () => {
+export const fetchProductsFromAPI = async (): Promise<Product[]> => {
     try {
         const response = await fetch(`${API_BASE_URL}/products`);
         if (!response.ok) {
