@@ -30,6 +30,20 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- ============================================
+-- Таблица: users (пользователи)
+-- ============================================
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(50) PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    middle_name VARCHAR(100),
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
 -- Записываем данные: categories
 -- ============================================
 INSERT INTO categories (id, name, image, description) VALUES 
