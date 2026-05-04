@@ -1,6 +1,6 @@
 import { isValidCategory, isValidProduct } from "./utils/security";
-import { fetchProductsFromAPI } from "./api/products";
-import { fetchCategoriesFromApi } from "./api/categories";
+import { fetchProductsFromAPI, fetchProductByIdFromApi } from "./api/products";
+import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categories";
 import type {
     Product,
     Category,
@@ -170,8 +170,8 @@ export const getProductsByCategory = async (categoryId: string): Promise<Product
         return [];
     }
 
-    const allProducts = await fetchProductsFromAPI() as Product[];
-    return allProducts.filter(product => product.categoryId === categoryId && isValidProduct(product))
+    const products = await fetchProductsFromAPI(categoryId);
+    return products.filter(p => isValidProduct(p));
 };
 
 /**
@@ -185,8 +185,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
         return null;
     }
 
-    const allProducts = await fetchProductsFromAPI() as Product[];
-    const product = allProducts.find(product => product.id === id);
+    const product = await fetchProductByIdFromApi(id);
     return isValidProduct(product) ? product : null;
 };
 
@@ -195,7 +194,8 @@ export const getProductById = async (id: string): Promise<Product | null> => {
  * @returns {Promise<Category[]>} массив категорий
  */
 export const fetchCategories = async (): Promise<Category[]> => {
-    return await fetchCategoriesFromApi();
+    const categories = await fetchCategoriesFromApi();
+    return categories.filter(cat => isValidCategory(cat));
 };
 
 /**
@@ -209,8 +209,7 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
         return null;
     }
 
-    const allCategories = await fetchCategories();
-    const category = allCategories.find(category => category.id === id)
+    const category = await fetchCategoryByIdFromApi(id);
     return isValidCategory(category) ? category : null;
 };
 

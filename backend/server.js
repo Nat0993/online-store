@@ -60,7 +60,7 @@ console.log('Подключено к MySQL');
 // МАРШРУТЫ ДЛЯ КАТЕГОРИЙ
 // ============================================================
 
-//получить все категории
+//GET /api/categories — получить все категории
 app.get('/api/categories', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM categories');
@@ -71,20 +71,64 @@ app.get('/api/categories', async (req, res) => {
     }
 })
 
+// GET /api/categories/:id — получить одну категорию по ID
+app.get('/api/categories/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await db.execute('SELECT * FROM categories WHERE id = ?', [id]);
+
+        if(rows.length === 0) {
+            return res.status(404).json({error: 'Категория не найдена'});
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.log('Ошибка при получении категории товаров:', error);
+        res.status(500).json({ error: 'Ошибка сервера'});
+    }
+})
+
 // ============================================================
 // МАРШРУТЫ ДЛЯ ТОВАРОВ
 // ============================================================
 
-//получить все товары
+//GET /api/products/ - получить товары (с фильтрацией по категории)
 app.get('/api/products', async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT * FROM products');
+        const { categoryId } = req.query;
+
+        let query = 'SELECT * FROM products';
+        const param = [];
+
+        if(categoryId) {
+            query += ' WHERE category_id = ?';
+            param.push(categoryId);
+        }
+
+        const [rows] = await db.execute(query, param);
         res.json(rows);
     } catch (error) {
         console.error('Ошибка при получении товаров:', error);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+
+// GET /api/products/:id — получить один товар по ID
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await db.execute('SELECT * FROM products WHERE id = ?', [id]);
+
+        if(rows.length === 0) {
+            return res.status(404).json({ error: 'Товар не найден' });
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Ошибка при получении товара:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+})
 
 // ============================================================
 // ЗАПУСК СЕРВЕРА
