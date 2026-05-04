@@ -57,22 +57,25 @@ const db = await mysql.createConnection({
 console.log('Подключено к MySQL');
 
 // ============================================================
-// МАРШРУТЫ (ROUTES / ENDPOINTS)
+// МАРШРУТЫ ДЛЯ КАТЕГОРИЙ
 // ============================================================
 
-// тест запрос
-app.get('/api/health', (req, res) => {
-    // req — объект запроса (содержит данные от клиента: заголовки, параметры, тело)
-    // res — объект ответа (через него отправляем данные обратно клиенту)
-    
-    // res.json() — отправляет ответ в формате JSON и автоматически ставит заголовок Content-Type: application/json
-    res.json({ 
-        status: 'ok',      // статус: ok — значит сервер жив
-        message: 'API работает'   // сообщение для проверки
-    });
-});
+//получить все категории
+app.get('/api/categories', async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM categories');
+        res.json(rows);
+    } catch (error) {
+        console.log('Ошибка при получении категорий товаров:', error);
+        res.status(500).json({ error: 'Ошибка сервера'});
+    }
+})
 
-//Маршруты для работы с товарами
+// ============================================================
+// МАРШРУТЫ ДЛЯ ТОВАРОВ
+// ============================================================
+
+//получить все товары
 app.get('/api/products', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM products');
@@ -90,5 +93,4 @@ app.get('/api/products', async (req, res) => {
 // Функция, переданная вторым аргументом, выполнится после успешного запуска
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
-    console.log(`Проверка API: http://localhost:${PORT}/api/health`);
 });
