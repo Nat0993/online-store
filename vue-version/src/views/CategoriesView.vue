@@ -34,11 +34,14 @@
 
 <script setup lang="ts">
 // ============ ИМПОРТЫ ============
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { categories } from '@/data'
+import { fetchCategories } from '@/data'
 import { isValidCategory } from '@/utils/security'
 import type { Category } from '@/types'
+
+// ============ РЕАКТИВНЫЕ ПЕРЕМЕННЫЕ ============
+const categories = ref<Category[]>([])
 
 // ============ КОМПОНЕНТЫ ============
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
@@ -49,10 +52,10 @@ import CategoryCard from '@/components/CategoryCard.vue'
 // ============ РОУТЕР ============
 const router = useRouter()
 
-// ============ ДАННЫЕ ============
+// ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
 /** Отфильтрованные валидные категории */
-const validCategories = computed<Category[]>(() => {
-    return categories.filter(isValidCategory)
+const validCategories = computed(() => {
+    return categories.value.filter(isValidCategory)
 })
 
 /** Данные для хлебных крошек */
@@ -67,4 +70,9 @@ function navigateToCategory(categoryId: string) {
     console.log('Переход к категории:', categoryId)
     router.push(`/catalog/${categoryId}`)
 }
+
+// ============ ЖИЗНЕННЫЙ ЦИКЛ ============
+onMounted(async () => {
+    categories.value = await fetchCategories()
+})
 </script>

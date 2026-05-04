@@ -1,5 +1,6 @@
 import { isValidCategory, isValidProduct } from "./utils/security";
 import { fetchProductsFromAPI } from "./api/products";
+import { fetchCategoriesFromApi } from "./api/categories";
 import type {
     Product,
     Category,
@@ -33,42 +34,42 @@ function generateId(prefix: 'item' | 'cart' | 'fav' | 'order' | 'user' = 'item')
     return `${prefix}_${timestamp}_${random}`;
 }
 
-export const categories: Category[] = [
-    {
-        id: 'chairs',
-        name: "Стулья",
-        image: "/src/assets/images/catalog/categories/chairs.jpg",
-        description: "Эргономичные стулья для дома и офиса. От классических деревянных моделей до современных дизайнерских решений с регулируемой высотой и ортопедическими спинками.",
-    },
-    {
-        id: 'tables',
-        name: "Столы",
-        image: "/src/assets/images/catalog/categories/tables.jpg",
-        description: "Письменные, обеденные и кофейные столы из натурального дерева, стекла и металла. Практичные решения для любой комнаты с раздвижными механизмами и стильным дизайном.",
+// export const categories: Category[] = [
+//     {
+//         id: 'chairs',
+//         name: "Стулья",
+//         image: "/src/assets/images/catalog/categories/chairs.jpg",
+//         description: "Эргономичные стулья для дома и офиса. От классических деревянных моделей до современных дизайнерских решений с регулируемой высотой и ортопедическими спинками.",
+//     },
+//     {
+//         id: 'tables',
+//         name: "Столы",
+//         image: "/src/assets/images/catalog/categories/tables.jpg",
+//         description: "Письменные, обеденные и кофейные столы из натурального дерева, стекла и металла. Практичные решения для любой комнаты с раздвижными механизмами и стильным дизайном.",
 
-    },
-    {
-        id: 'sofas',
-        name: "Диваны",
-        image: "/src/assets/images/catalog/categories/sofas.jpg",
-        description: "Угловые, прямые и модульные диваны для просторных гостиных. Мягкие модели с ортопедическими основаниями, раскладными механизмами и съемными чехлами для легкой чистки.",
+//     },
+//     {
+//         id: 'sofas',
+//         name: "Диваны",
+//         image: "/src/assets/images/catalog/categories/sofas.jpg",
+//         description: "Угловые, прямые и модульные диваны для просторных гостиных. Мягкие модели с ортопедическими основаниями, раскладными механизмами и съемными чехлами для легкой чистки.",
 
-    },
-    {
-        id: 'wardrobes',
-        name: "Шкафы",
-        image: "/src/assets/images/catalog/categories/wardrobes.jpg",
-        description: "Вместительные шкафы и гардеробные системы для оптимальной организации пространства. Распашные и купейные модели с зеркальными дверями и системами хранения.",
+//     },
+//     {
+//         id: 'wardrobes',
+//         name: "Шкафы",
+//         image: "/src/assets/images/catalog/categories/wardrobes.jpg",
+//         description: "Вместительные шкафы и гардеробные системы для оптимальной организации пространства. Распашные и купейные модели с зеркальными дверями и системами хранения.",
 
-    },
-    {
-        id: 'beds',
-        name: "Кровати",
-        image: "/src/assets/images/catalog/categories/beds.jpg",
-        description: "Односпальные и двуспальные кровати с ортопедическими матрасами. Модели с подъемными механизмами, встроенными ящиками и регулируемыми основаниями для здорового сна.",
+//     },
+//     {
+//         id: 'beds',
+//         name: "Кровати",
+//         image: "/src/assets/images/catalog/categories/beds.jpg",
+//         description: "Односпальные и двуспальные кровати с ортопедическими матрасами. Модели с подъемными механизмами, встроенными ящиками и регулируемыми основаниями для здорового сна.",
 
-    }
-];
+//     }
+// ];
 
 // export const products: Product[] = [
 //     {
@@ -190,17 +191,26 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 };
 
 /**
+ * Получает все категории
+ * @returns {Promise<Category[]>} массив категорий
+ */
+export const fetchCategories = async (): Promise<Category[]> => {
+    return await fetchCategoriesFromApi();
+};
+
+/**
  * Находит категорию по ID
  * @param {string} id - ID категории
  * @returns {Object|null} объект категории или null
  */
-export const getCategoryById = (id: string): Category | null => {
+export const getCategoryById = async (id: string): Promise<Category | null> => {
     if (!id || typeof id !== 'string') {
         console.warn('Invalid category id:', id);
         return null;
     }
 
-    const category = categories.find(category => category.id === id)
+    const allCategories = await fetchCategories();
+    const category = allCategories.find(category => category.id === id)
     return isValidCategory(category) ? category : null;
 };
 
