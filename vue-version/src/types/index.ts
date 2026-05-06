@@ -25,7 +25,7 @@ export interface Category {
 export interface User {
     id: string;
     email: string;
-    password?: string;     // только для регистрации/логина
+    password?: string;
     firstName?: string;
     lastName?: string;
     middleName?: string;
@@ -123,7 +123,10 @@ export interface ApiProduct {
     description: string;
 }
 
-
+export interface ApiAuthUser {
+    token: string;
+    user: User;
+}
 
 
 //Типы
@@ -135,4 +138,4 @@ export type PaymentMethod = 'card' | 'cash' | 'card_courier';
 export type OrderData = Omit<Order, 'id' | 'orderNumber' | 'createdAt'>;
 
 //Данные для регистрации пользователя 
-export type UserData = Omit<User, 'id' | 'createdAt'>;
+export type UserData = Omit<User, 'id' | 'createdAt' | 'login'>;

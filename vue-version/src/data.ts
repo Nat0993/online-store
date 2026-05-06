@@ -1,6 +1,7 @@
 import { isValidCategory, isValidProduct } from "./utils/security";
 import { fetchProductsFromAPI, fetchProductByIdFromApi } from "./api/products";
 import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categories";
+import { registerUserApi, loginUserApi, getCurrentUserApi } from "./api/auth";
 import type {
     Product,
     Category,
@@ -13,7 +14,6 @@ import type {
 import type { CartItemWithProduct, OrderData, UserData } from './types/index';
 
 type StorageKey = 
-  | 'users' 
   | `cart_${string}` 
   | `favorites_${string}` 
   | `orders_${string}` 
@@ -155,7 +155,6 @@ function generateId(prefix: 'item' | 'cart' | 'fav' | 'order' | 'user' = 'item')
 //     }
 // ];
 
-export let users: User[] = loadFromLocalStorage('users' as StorageKey) || [];
 
 // Функции для работы с данными
 
@@ -497,43 +496,30 @@ export function loadFromLocalStorage<T>(key: StorageKey): T | null {
 // Пользователи
 
 /**
- * Находит пользователя по email
- * @param {string} email - email пользователя
- * @returns {Object|null} объект пользователя или null
- */
-export const findUserByEmail = (email: string): User | null => {
-    const user = users.find(user => user.email === email);
-    return user || null;  // undefined превращаем в null
-};
-
-/**
  * Регистрирует нового пользователя
  * @param {Object} userData - данные пользователя
- * @param {string} userData.email - email пользователя
- * @param {string} userData.password - пароль пользователя
  * @returns {Object} созданный пользователь
- * @throws {Error} если пользователь с таким email уже существует
  */
-export const registerUser = (userData: UserData): User => {
-    if (findUserByEmail(userData.email)) {
-        throw new Error('Пользователь с таким email уже существует');
-    }
+export const registerUser = async (userData: UserData): Promise<User | null> => {
 
-    const newUser = {
-        id: generateId('user'),
-        ...userData,
-        createdAt: new Date().toISOString(),
-    };
+    // 1. Отправляем запрос на сервер
+    const {token, user} = await registerUserApi(userData);
 
-    users.push(newUser);
-    saveToLocalStorage<User[]>('users', users);
+    // 2. Сохраняем токен
+    localStorage.setItem('auth_token', token);
 
-    // Мигрируем гостевые данные в новую учетку
-    migrateGuestToUser(newUser.id);
+    // 3. Сохраняем пользователя
+    setCurrentUser(user);
 
-    setCurrentUser(newUser);
+    // 4. Мигрируем гостевые данные
+    migrateGuestToUser(user.id);
 
-    return newUser;
+    //5. Отправляем событие
+    window.dispatchEvent(new CustomEvent('auth:change', {
+        detail: { user, type: 'register' }
+    }));
+
+    return user;
 };
 
 /**
@@ -543,18 +529,17 @@ export const registerUser = (userData: UserData): User => {
  * @returns {Object} объект пользователя
  * @throws {Error} если неверный email или пароль
  */
-export const loginUser = (email: string, password: string): User => {
-    const user = findUserByEmail(email);
+export const loginUser = async (email: string, password: string): Promise<User | null> => {
+    
+    const {token, user} = await loginUserApi({email, password});
 
-    if (!user || user.password !== password) {
-        throw new Error('Неверный email или пароль');
-    }
-
-    // Мигрируем данные из гостевой учетки в пользовательскую
+    localStorage.setItem('auth_token', token);
+    setCurrentUser(user);
     migrateGuestToUser(user.id);
 
-    setCurrentUser(user);
-
+    window.dispatchEvent(new CustomEvent('auth:change', {
+        detail: { user, type: 'register' }
+    }));
     return user;
 };
 
@@ -695,6 +680,7 @@ export const getCurrentUser = (): User | null => {
  * Выполняет выход пользователя (удаляет из localStorage)
  */
 export const logoutUser = (): void => {
+    localStorage.removeItem('auth_token');
     localStorage.removeItem('currentUser');
 }
 
@@ -704,22 +690,25 @@ export const logoutUser = (): void => {
  * @returns {Object|null} обновленный пользователь или null
  */
 export const updateCurrentUser = (updates: Partial<UserData>): User | null => {
-    const user = getCurrentUser();
-    if (!user) return null;
+    // TODO: переделать на API-запрос
+    console.warn('updateCurrentUser пока не работает через API');
+    return null;
+    // const user = getCurrentUser();
+    // if (!user) return null;
 
-    // Обновляем поля
-    const updatedUser = { ...user, ...updates };
+    // // Обновляем поля
+    // const updatedUser = { ...user, ...updates };
 
-    // Сохраняем в общий список пользователей
-    const userIndex = users.findIndex(u => u.id === user.id);
-    if (userIndex !== -1) {
-        users[userIndex] = updatedUser;
-        saveToLocalStorage('users', users);
-    }
+    // // Сохраняем в общий список пользователей
+    // const userIndex = users.findIndex(u => u.id === user.id);
+    // if (userIndex !== -1) {
+    //     users[userIndex] = updatedUser;
+    //     saveToLocalStorage('users', users);
+    // }
 
-    // Обновляем текущего пользователя
-    setCurrentUser(updatedUser);
+    // // Обновляем текущего пользователя
+    // setCurrentUser(updatedUser);
 
-    console.log('Данные пользователя обновлены:', updatedUser);
-    return updatedUser;
+    // console.log('Данные пользователя обновлены:', updatedUser);
+    // return updatedUser;
 };
