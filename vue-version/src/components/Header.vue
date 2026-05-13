@@ -130,8 +130,18 @@ const authModalRef = ref<InstanceType<typeof AuthModal> | null>(null)
 const displayName = computed(() => {
   if (!user.value) return ''
 
-  let name = user.value.firstName?.trim() || user.value.login || 'Пользователь'
+  //пробуем взять имя
+  let name = user.value.firstName?.trim() 
 
+  //если имени нет, берем из email
+  if(!name && user.value.email) {
+    name = user.value.email.split('@')[0];
+  }
+
+  //если ничего нет - "Пользователь"
+  if (!name) name = 'Пользователь'
+
+  // обрезаем, если слишком длинное
   if (name.length > MAX_NAME_LENGTH) {
     name = name.slice(0, MAX_NAME_LENGTH) + '...'
   }

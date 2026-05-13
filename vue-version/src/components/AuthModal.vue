@@ -367,7 +367,6 @@ async function handleRegistration(data: AuthFormData): Promise<void> {
         const userData: UserData = {
             email: data.email,
             password: data.password,
-            login: data.email.split('@')[0],
             firstName: '',
             lastName: '',
             middleName: '',
