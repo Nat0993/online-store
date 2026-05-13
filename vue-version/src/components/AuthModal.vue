@@ -333,9 +333,9 @@ function resetForm(): void {
  * Обработчик входа пользователя
  * @param {AuthFormData} data - данные формы (email, password)
  */
-function handleLogin(data: AuthFormData): void {
+ async function handleLogin(data: AuthFormData): Promise<void> {
     try {
-        const user = loginUser(data.email, data.password)
+        const user = await loginUser(data.email, data.password)
 
         // Закрываем модалку
         close()
@@ -362,7 +362,7 @@ function handleLogin(data: AuthFormData): void {
  * Обработчик регистрации пользователя
  * @param {AuthFormData} data - данные формы (email, password)
  */
-function handleRegistration(data: AuthFormData): void {
+async function handleRegistration(data: AuthFormData): Promise<void> {
     try {
         const userData: UserData = {
             email: data.email,
@@ -374,7 +374,7 @@ function handleRegistration(data: AuthFormData): void {
             phone: '',
         }
 
-        const user = registerUser(userData)
+        const user = await registerUser(userData)
 
         // Закрываем модалку
         close()
