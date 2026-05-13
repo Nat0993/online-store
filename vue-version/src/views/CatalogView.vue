@@ -119,7 +119,7 @@ import ProductCard from '@/components/ProductCard.vue'
 import EmptyMessage from '@/components/EmptyMessage.vue'
 import { getProductsByCategory, getCategoryById } from '@/data'
 import { useModalDrag } from '@/composables/useModalDrag'
-import type { Product, BreadcrumbLink } from '@/types'
+import type { Product, Category, BreadcrumbLink } from '@/types'
 
 // ============ ТИПЫ ============
 
@@ -143,6 +143,9 @@ const categoryId = computed(() => route.params.categoryId as string)
 
 /** Все товары категории (без фильтрации и сортировки) */
 const allProducts = ref<Product[]>([])
+
+/** Текущая категория (загружается асинхронно) */
+const currentCategory = ref<Category | null>(null)
 
 /** Текущий тип сортировки */
 const sortType = ref<SortType>('popular')
@@ -173,10 +176,11 @@ useModalDrag(isFiltersModalOpen, modalRef, wrapperRef, closeFiltersModal)
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
 
-/** Данные текущей категории */
-const currentCategory = computed(() => getCategoryById(categoryId.value))
-
-/** Хлебные крошки (как в оригинале) */
+/** 
+ * Хлебные крошки 
+ * используем имя категории, если она загружена,
+ * иначе показываем ID категории
+ */
 const breadcrumbLinks = computed<BreadcrumbLink[]>(() => {
     const links: BreadcrumbLink[] = [
         { url: '/', text: 'Главная' },
@@ -185,6 +189,9 @@ const breadcrumbLinks = computed<BreadcrumbLink[]>(() => {
 
     if (currentCategory.value) {
         links.push({ text: currentCategory.value.name })
+    } else if (categoryId.value) {
+        // fallback: показываем ID категории, пока загружается название
+        links.push({ text: categoryId.value })
     }
 
     return links
@@ -312,17 +319,34 @@ async function loadProducts(): Promise<void> {
     allProducts.value = await getProductsByCategory(categoryId.value)
 }
 
+/**
+ * Загружает данные текущей категории
+ */
+async function loadCurrentCategory(): Promise<void> {
+    currentCategory.value = await getCategoryById(categoryId.value)
+}
+
+/**
+ * Загружает все данные страницы
+ */
+async function loadPageData(): Promise<void> {
+    await Promise.all([
+        loadProducts(),
+        loadCurrentCategory()
+    ])
+}
+
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============
 
 /** При монтировании компонента — загружаем товары */
 onMounted(() => {
-    loadProducts()
+    loadPageData()
 })
 
 /** Следим за изменением категории в URL */
 watch(categoryId, () => {
     // 1. Загружаем товары новой категории
-    loadProducts()
+    loadPageData()
 
     // 2. Сбрасываем фильтры
     resetFilters()
