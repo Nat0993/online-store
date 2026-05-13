@@ -280,6 +280,92 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
     }
 });
 
+// ------------------------------------------------------------
+// 5. ОБНОВИТЬ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ (PUT /api/auth/me)
+// ------------------------------------------------------------
+
+app.put('/api/auth/me', authenticateToken, async (req, res) => {
+    try {
+        // достаём из тела запроса данные, которые прислал фронт
+        const { firstName, lastName, middleName, phone } = req.body;
+        
+        // достаём ID пользователя из токена (authenticateToken положил его в req.user)
+        const userId = req.user.userId;
+
+        // создаём пустые массивы для SQL-запроса
+        const updates = [];  // сюда пойдут части запроса
+        const params = [];   // сюда - значения
+
+        // проверяем каждое поле — прислал ли его фронт?
+        
+        if (firstName !== undefined) {
+            updates.push('first_name = ?');   // пушим часть запроса
+            params.push(firstName || null);   // пушим значение (или null, если пустая строка)
+        }
+        
+        if (lastName !== undefined) {
+            updates.push('last_name = ?');
+            params.push(lastName || null);
+        }
+        
+        if (middleName !== undefined) {
+            updates.push('middle_name = ?');
+            params.push(middleName || null);
+        }
+        
+        if (phone !== undefined) {
+            updates.push('phone = ?');
+            params.push(phone || null);
+        }
+
+        // если фронт не прислал ниодного поля — возвращаем ошибку
+        if (updates.length === 0) {
+            return res.status(400).json({ message: 'Нет данных для обновления' });
+        }
+
+        // добавляем userId в конец массива params
+        // встанет в последний плейсхолдер (WHERE id = ?)
+        params.push(userId);
+
+        // SQL-запрос на обновление
+        await db.execute(
+            `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+            params
+        );
+
+        // получаем обновлённые данные из БД
+        const [users] = await db.execute(
+            `SELECT id, email, first_name, last_name, middle_name, phone, created_at 
+             FROM users 
+             WHERE id = ?`,
+            [userId]  
+        );
+
+        // проверяем, нашёлся ли пользователь (на всякий случай)
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        // берём первого (и единственного) пользователя
+        const user = users[0];
+
+        // отправляем ответ фронту (snake_case в camelCase)
+        res.json({
+            id: user.id,
+            email: user.email,
+            firstName: user.first_name || '',     // если null — пустая строка
+            lastName: user.last_name || '',
+            middleName: user.middle_name || '',
+            phone: user.phone || '',
+            createdAt: user.created_at
+        });
+
+    } catch (error) {
+        console.error('Ошибка обновления пользователя:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 // ============================================================
 // МАРШРУТЫ ДЛЯ КАТЕГОРИЙ
 // ============================================================

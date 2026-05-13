@@ -356,7 +356,7 @@ async function handleSubmit(): Promise<void> {
         }
 
         // 6. Сохраняем через data.ts
-        const updatedUser = updateCurrentUser(updatedData)
+        const updatedUser = await updateCurrentUser(updatedData)
 
         // 7. Отправляем событие об обновлении
         window.dispatchEvent(new CustomEvent('auth:change', {

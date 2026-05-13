@@ -57,3 +57,27 @@ export async function getCurrentUserApi (token: string) {
     })
     return handleResponse(response);
 }
+
+//обновление данных пользователя
+export async function updateCurrentUserApi(
+    token: string, 
+    updates: {
+        firstName?: string;
+        lastName?: string;
+        middleName?: string;
+        phone?: string;
+    }
+) {
+    const url = `${API_BASE_URL}/auth/me`;
+
+    const response = await fetch(url, {
+        method: 'PUT',                          
+        headers: {
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}`, 
+        },
+        body: JSON.stringify(updates),          
+    });
+
+    return handleResponse(response);
+}

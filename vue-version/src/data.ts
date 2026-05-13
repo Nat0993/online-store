@@ -1,7 +1,7 @@
 import { isValidCategory, isValidProduct } from "./utils/security";
 import { fetchProductsFromAPI, fetchProductByIdFromApi } from "./api/products";
 import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categories";
-import { registerUserApi, loginUserApi, getCurrentUserApi } from "./api/auth";
+import { registerUserApi, loginUserApi, getCurrentUserApi, updateCurrentUserApi } from "./api/auth";
 import type {
     Product,
     Category,
@@ -686,29 +686,26 @@ export const logoutUser = (): void => {
 
 /**
  * Обновляет данные текущего пользователя
- * @param {Object} updates - объект с обновляемыми полями {name?, phone?}
+ * @param {Object} updates - объект с обновляемыми полями {firstName?, lastName?, middleName?, phone?}
  * @returns {Object|null} обновленный пользователь или null
  */
-export const updateCurrentUser = (updates: Partial<UserData>): User | null => {
-    // TODO: переделать на API-запрос
-    console.warn('updateCurrentUser пока не работает через API');
-    return null;
-    // const user = getCurrentUser();
-    // if (!user) return null;
+export const updateCurrentUser = async (updates: Partial<UserData>): Promise<User | null> => {
+    
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+        console.error('Нет токена авторизации');
+        return null;
+    }
 
-    // // Обновляем поля
-    // const updatedUser = { ...user, ...updates };
-
-    // // Сохраняем в общий список пользователей
-    // const userIndex = users.findIndex(u => u.id === user.id);
-    // if (userIndex !== -1) {
-    //     users[userIndex] = updatedUser;
-    //     saveToLocalStorage('users', users);
-    // }
-
-    // // Обновляем текущего пользователя
-    // setCurrentUser(updatedUser);
-
-    // console.log('Данные пользователя обновлены:', updatedUser);
-    // return updatedUser;
+    try {
+        const updatedUser = await updateCurrentUserApi(token, updates);
+        
+        setCurrentUser(updatedUser);
+        
+        return updatedUser;
+    } catch (error) {
+        console.error('Ошибка обновления пользователя:', error);
+        throw error;  // пробрасываем ошибку дальше (в ProfileModal)
+    }
 };
