@@ -2,6 +2,7 @@ import { isValidCategory, isValidProduct } from "./utils/security";
 import { fetchProductsFromAPI, fetchProductByIdFromApi } from "./api/products";
 import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categories";
 import { registerUserApi, loginUserApi, getCurrentUserApi, updateCurrentUserApi } from "./api/auth";
+import { fetchCartFromApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi } from './api/cart';
 import type {
     Product,
     Category,
@@ -215,23 +216,40 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
 // Работа с корзиной
 
 /**
- * Получает корзину текущего пользователя
+ * Получает корзину гостевого пользователя
  * @returns {Array} массив товаров в корзине
  */
 export const getCurrentCart = (): CartItem[] => {
     const user = getCurrentUser();
-    const key = user ? `cart_${user.id}` : 'cart_guest';
-    return loadFromLocalStorage<CartItem[]>(key as StorageKey) || [];
+
+    // Если пользователь авторизован — корзина в БД, но эта функция синхронная,
+    // поэтому для авторизованных лучше использовать getCartItemsWithProducts
+    // А эта функция пусть работает только для гостей
+    if (user) {
+        // Для авторизованных эта функция не должна использоваться
+        console.warn('getCurrentCart не предназначен для авторизованных пользователей');
+        return [];
+    }
+
+    // Гость — берём из sessionStorage
+    return loadFromLocalStorage<CartItem[]>('cart_guest') || [];
 };
 
 /**
- * Сохраняет корзину текущего пользователя
+ * Сохраняет корзину гостя 
  * @param {Array} cartData - данные корзины
  */
 export const saveCurrentCart = (cartData: CartItem[]): void => {
     const user = getCurrentUser();
-    const key = user ? `cart_${user.id}` : 'cart_guest';
-    saveToLocalStorage<CartItem[]>(key as StorageKey, cartData);
+    
+    if (user) {
+        // Авторизованным не сохраняем в localStorage, только через API
+        console.warn('saveCurrentCart не предназначен для авторизованных пользователей');
+        return;
+    }
+    
+    // Гость — сохраняем в sessionStorage
+    saveToLocalStorage<CartItem[]>('cart_guest', cartData);
 };
 
 /**
@@ -240,26 +258,9 @@ export const saveCurrentCart = (cartData: CartItem[]): void => {
  * @param {number} [quantity=1] - количество
  * @returns {Array} обновленная корзина
  */
-export const addToCart = async (productId: string, quantity: number = 1): Promise<CartItem[]> => {
-    const product = await getProductById(productId);
-    if (!product) return getCurrentCart();
-
-    const cart = getCurrentCart();
-    const existingItem = cart.find(item => item.productId === productId);
-
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            id: generateId('cart'),
-            productId: productId,
-            quantity: quantity,
-            addedAt: new Date().toISOString()
-        });
-    }
-
-    saveCurrentCart(cart);
-    return cart;
+export const addToCart = async (productId: string, quantity: number = 1): Promise<CartItemWithProduct[]> => {
+    const updatedCart = await addToCartApi(productId, quantity);
+    return updatedCart;
 };
 
 /**
@@ -267,10 +268,8 @@ export const addToCart = async (productId: string, quantity: number = 1): Promis
  * @param {string} cartItemId - ID товара в корзине
  * @returns {Array} обновленная корзина
  */
-export const removeFromCart = (cartItemId: string): CartItem[] => {
-    const cart = getCurrentCart();
-    const updatedCart = cart.filter(item => item.id !== cartItemId);
-    saveCurrentCart(updatedCart);
+export const removeFromCart = async (cartItemId: string): Promise<CartItemWithProduct[]> => {
+    const updatedCart = await removeFromCartApi(cartItemId);
     return updatedCart;
 };
 
@@ -279,17 +278,8 @@ export const removeFromCart = (cartItemId: string): CartItem[] => {
  * @returns {Array} массив элементов корзины с товарами
  */
 export const getCartItemsWithProducts = async (): Promise<CartItemWithProduct[]> => {
-    const cart = getCurrentCart();
-    
-    // Ждём загрузки всех товаров
-    const itemsWithProducts = await Promise.all(
-        cart.map(async (item) => {
-            const product = await getProductById(item.productId);
-            return { ...item, product };
-        })
-    );
-    
-    return itemsWithProducts.filter((item): item is CartItemWithProduct => item.product !== null);
+    const cart = await fetchCartFromApi();
+    return cart;
 };
 
 /**
@@ -298,22 +288,22 @@ export const getCartItemsWithProducts = async (): Promise<CartItemWithProduct[]>
  * @param {number} newQuantity - новое количество товара
  * @returns {Array} обновленная корзина
  */
-export function updateCartQuantity(cartItemId: string, newQuantity: number): CartItem[] {
-    const cart = getCurrentCart();
-    const cartItem = cart.find(item => item.id === cartItemId);
-    if (cartItem) {
-        if (newQuantity > 0) {
-            cartItem.quantity = newQuantity;
-            saveCurrentCart(cart);
-            return cart;
-        } else {
-            removeFromCart(cartItemId);
-        }
+export async function updateCartQuantity(cartItemId: string, newQuantity: number): Promise<CartItemWithProduct[]> {
+    if (newQuantity <= 0) {
+        // Если количество 0 или меньше — удаляем товар
+        return await removeFromCartApi(cartItemId);
     }
-
-    // Если элемент не найден, возвращаем текущую корзину
-    return cart;
+    const updatedCart = await updateCartQuantityApi(cartItemId, newQuantity);
+    return updatedCart;
 }
+
+/**
+ * Ощичает корзину пользователя
+ */
+export const clearCart = async (): Promise<CartItemWithProduct[] | void> => {
+    const emptyCart = await clearCartApi();
+    return emptyCart;
+};
 
 // Избранное
 
@@ -454,12 +444,6 @@ function getCurrentStorage(): Storage {
  */
 export const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
     try {
-        // ОСОБЫЙ СЛУЧАЙ: пользователей всегда сохраняем в localStorage
-        if (key === 'users') {
-            localStorage.setItem(key, JSON.stringify(data));
-            console.log(`Пользователи сохранены в localStorage`);
-            return;
-        }
 
         // Для остальных данных - в зависимости от пользователя
         const storage = getCurrentStorage();
@@ -477,11 +461,6 @@ export const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
  */
 export function loadFromLocalStorage<T>(key: StorageKey): T | null {
     try {
-        // ОСОБЫЙ СЛУЧАЙ: пользователей всегда загружаем из localStorage
-        if (key === 'users') {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) as T : null;
-        }
 
         // Для остальных данных - в зависимости от пользователя
         const storage = getCurrentStorage();
@@ -547,6 +526,7 @@ export const loginUser = async (email: string, password: string): Promise<User |
  * Мигрирует гостевые данные в пользовательские (в рамках одной сессии)
  * @param {string} userId - ID пользователя
  */
+//TODO: сделать миграцию из гостевых в БД
 export function migrateGuestToUser(userId: string): void {
     console.log(`Миграция гостевых данных для пользователя ${userId}`);
 
