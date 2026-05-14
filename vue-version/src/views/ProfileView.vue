@@ -121,7 +121,7 @@ const breadcrumbLinks = computed(() => [
 /** Динамическое описание в заголовке */
 const headerDescription = computed(() => {
   if (!user.value) return 'Для просмотра требуется авторизация'
-  const userName = user.value.firstName || user.value.login || 'Пользователь'
+  const userName = user.value.firstName || user.value.email?.split('@')[0] || 'Пользователь'
   return `Добро пожаловать, ${userName}!`
 })
 
