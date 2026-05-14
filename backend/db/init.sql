@@ -44,6 +44,21 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- ============================================
+-- Таблица: cart_items (корзины пользователей)
+-- ============================================
+CREATE TABLE IF NOT EXISTS cart_items (
+    id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, --временная метка изменений товара (количество)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, --при удалении аккаунта пользователя, его корзина очищается
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE, -- при удалении товара из каталога - товар удаляется из корзин
+    UNIQUE KEY unique_user_product (user_id, product_id) -- уникальный ключ, чтобы не было дубликатов товара в корзине (менять кол-во)
+);
+
+-- ============================================
 -- Записываем данные: categories
 -- ============================================
 INSERT INTO categories (id, name, image, description) VALUES 
