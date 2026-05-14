@@ -43,8 +43,7 @@ export interface CartItem {
     addedAt: string;
 }
 
-// Элемент корзины с гарантированным продуктом
-// TODO (API): использовать там, где product точно есть (после фильтрации)
+//Элемент корзины с гарантированным продуктом (приходит с бэкенда после JOIN)
 export interface CartItemWithProduct extends CartItem {
     product: Product;  // обязательный
 }
@@ -113,6 +112,8 @@ export interface SocialLink {
 }
 
 // API types (ответы от бэкенда)
+
+//товары
 export interface ApiProduct {
     id: string;
     name: string;
@@ -123,9 +124,24 @@ export interface ApiProduct {
     description: string;
 }
 
+//авторизация
 export interface ApiAuthUser {
     token: string;
     user: User;
+}
+
+//корзина
+export interface ApiCartItem {
+    id: string;
+    quantity: number;
+    product_id: string;
+    created_at: string;
+    name: string;
+    price: number;
+    image: string;
+    in_stock: number;
+    category_id: string;
+    description: string;
 }
 
 

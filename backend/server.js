@@ -80,15 +80,15 @@ const authenticateToken = async (req, res, next) => {
     try {
         // Берём заголовок authorization из запроса
         const authHeader = req.headers['authorization'];
-    
+
         // Если заголовок есть - разбиваем его по пробелу и берём вторую часть
         const token = authHeader && authHeader.split(' ')[1];
-    
+
         // Если токена нет - возвращаем ошибку 401 (Unauthorized - не авторизован)
         if (!token) {
             return res.status(401).json({ message: 'Требуется авторизация' });
         }
-    
+
         // Проверяем (расшифровываем) токен с помощью секретного ключа
         // jwt.verify - проверяет, что токен не подделан и не просрочен
         const user = await jwt.verify(token, process.env.JWT_SECRET); //данные, которые идут в токен при логине/регистрации
@@ -288,7 +288,7 @@ app.put('/api/auth/me', authenticateToken, async (req, res) => {
     try {
         // достаём из тела запроса данные, которые прислал фронт
         const { firstName, lastName, middleName, phone } = req.body;
-        
+
         // достаём ID пользователя из токена (authenticateToken положил его в req.user)
         const userId = req.user.userId;
 
@@ -297,22 +297,22 @@ app.put('/api/auth/me', authenticateToken, async (req, res) => {
         const params = [];   // сюда - значения
 
         // проверяем каждое поле — прислал ли его фронт?
-        
+
         if (firstName !== undefined) {
             updates.push('first_name = ?');   // пушим часть запроса
             params.push(firstName || null);   // пушим значение (или null, если пустая строка)
         }
-        
+
         if (lastName !== undefined) {
             updates.push('last_name = ?');
             params.push(lastName || null);
         }
-        
+
         if (middleName !== undefined) {
             updates.push('middle_name = ?');
             params.push(middleName || null);
         }
-        
+
         if (phone !== undefined) {
             updates.push('phone = ?');
             params.push(phone || null);
@@ -338,7 +338,7 @@ app.put('/api/auth/me', authenticateToken, async (req, res) => {
             `SELECT id, email, first_name, last_name, middle_name, phone, created_at 
              FROM users 
              WHERE id = ?`,
-            [userId]  
+            [userId]
         );
 
         // проверяем, нашёлся ли пользователь (на всякий случай)
@@ -377,7 +377,7 @@ app.get('/api/categories', async (req, res) => {
         res.json(rows);
     } catch (error) {
         console.log('Ошибка при получении категорий товаров:', error);
-        res.status(500).json({ error: 'Ошибка сервера'});
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 })
 
@@ -387,14 +387,14 @@ app.get('/api/categories/:id', async (req, res) => {
         const { id } = req.params;
         const [rows] = await db.execute('SELECT * FROM categories WHERE id = ?', [id]);
 
-        if(rows.length === 0) {
-            return res.status(404).json({error: 'Категория не найдена'});
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Категория не найдена' });
         }
 
         res.json(rows[0]);
     } catch (error) {
         console.log('Ошибка при получении категории товаров:', error);
-        res.status(500).json({ error: 'Ошибка сервера'});
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 })
 
@@ -410,7 +410,7 @@ app.get('/api/products', async (req, res) => {
         let query = 'SELECT * FROM products';
         const param = [];
 
-        if(categoryId) {
+        if (categoryId) {
             query += ' WHERE category_id = ?';
             param.push(categoryId);
         }
@@ -429,7 +429,7 @@ app.get('/api/products/:id', async (req, res) => {
         const { id } = req.params;
         const [rows] = await db.execute('SELECT * FROM products WHERE id = ?', [id]);
 
-        if(rows.length === 0) {
+        if (rows.length === 0) {
             return res.status(404).json({ error: 'Товар не найден' });
         }
 
@@ -459,7 +459,9 @@ app.get('/api/cart', authenticateToken, async (req, res) => {
                 p.name,
                 p.price,
                 p.image,
-                p.in_stock
+                p.in_stock,
+                p.category_id,
+                p.description
              FROM cart_items ci
              JOIN products p ON ci.product_id = p.id
              WHERE ci.user_id = ?`,
@@ -521,7 +523,9 @@ app.post('/api/cart', authenticateToken, async (req, res) => {
                 p.name,
                 p.price,
                 p.image,
-                p.in_stock
+                p.in_stock,
+                p.category_id,
+                p.description
              FROM cart_items ci
              JOIN products p ON ci.product_id = p.id
              WHERE ci.user_id = ?`,
@@ -573,7 +577,9 @@ app.put('/api/cart/:itemId', authenticateToken, async (req, res) => {
                 p.name,
                 p.price,
                 p.image,
-                p.in_stock
+                p.in_stock,
+                p.category_id,
+                p.description
              FROM cart_items ci
              JOIN products p ON ci.product_id = p.id
              WHERE ci.user_id = ?`,
@@ -619,7 +625,9 @@ app.delete('/api/cart/:itemId', authenticateToken, async (req, res) => {
                 p.name,
                 p.price,
                 p.image,
-                p.in_stock
+                p.in_stock,
+                p.category_id,
+                p.description
              FROM cart_items ci
              JOIN products p ON ci.product_id = p.id
              WHERE ci.user_id = ?`,
