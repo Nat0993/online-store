@@ -47,12 +47,10 @@
 
 <script setup lang="ts">
 // ============ ИМПОРТЫ ============
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import type { CartItemWithProduct } from '../types'
 import {
-  getCurrentCart,
   updateCartQuantity,
-  removeFromCart
 } from '../data'
 
 // ============ ПРОПСЫ ============
@@ -80,49 +78,25 @@ const formattedPrice = computed(() => props.item.product.price.toLocaleString())
 /** Итоговая сумма (цена × количество) */
 const totalPrice = computed(() => props.item.product.price * quantity.value)
 
-// ============ МЕТОДЫ СИНХРОНИЗАЦИИ ============
-/** Синхронизирует локальное количество с глобальным хранилищем */
-function syncQuantity() {
-  const cart = getCurrentCart()
-  const cartItem = cart.find(item => item.id === props.item.id)
-  if (cartItem) {
-    quantity.value = cartItem.quantity
-  }
-}
-
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ ============
 /** Увеличить количество товара */
-function increaseQuantity() {
+async function increaseQuantity() {
   const newQuantity = quantity.value + 1
-  updateCartQuantity(props.item.id, newQuantity)
+  await updateCartQuantity(props.item.id, newQuantity)
   quantity.value = newQuantity
   window.dispatchEvent(new CustomEvent('cart:update'))
 }
 
 /** Уменьшить количество товара */
-function decreaseQuantity() {
+async function decreaseQuantity() {
   if (quantity.value === 1) {
     // Если остался 1 товар — удаляем
     emit('remove')
   } else {
     const newQuantity = quantity.value - 1
-    updateCartQuantity(props.item.id, newQuantity)
+    await updateCartQuantity(props.item.id, newQuantity)
     quantity.value = newQuantity
     window.dispatchEvent(new CustomEvent('cart:update'))
   }
 }
-
-// ============ ЖИЗНЕННЫЙ ЦИКЛ ============
-/** Обработчик обновления корзины */
-function handleCartUpdate() {
-  syncQuantity()
-}
-
-onMounted(() => {
-  window.addEventListener('cart:update', handleCartUpdate)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('cart:update', handleCartUpdate)
-})
 </script>

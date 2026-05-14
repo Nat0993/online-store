@@ -86,7 +86,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import EmptyMessage from '@/components/EmptyMessage.vue'
 import CartItem from '@/components/CartItem.vue'
 import CheckoutModal from '@/components/CheckoutModal.vue'
-import { getCartItemsWithProducts, saveCurrentCart, removeFromCart } from '@/data'
+import { getCartItemsWithProducts, saveCurrentCart, removeFromCart, getCurrentUser, clearCart } from '@/data'
 import type { CartItemWithProduct } from '@/types'
 
 // ============ КОНСТАНТЫ ============
@@ -136,7 +136,7 @@ async function loadCart() {
     cartItems.value = await getCartItemsWithProducts() as CartItemWithProduct[]
 }
 
-function removeItemFromCart(cartItemId: string) {
+async function removeItemFromCart(cartItemId: string) {
     // Находим индекс удаляемого товара
     const index = cartItems.value.findIndex(item => item.id === cartItemId)
     if (index === -1) return
@@ -149,9 +149,9 @@ function removeItemFromCart(cartItemId: string) {
     slidingItemsIds.value = itemsAfter
 
     // Ждём анимацию
-    setTimeout(() => {
+    setTimeout(async () => {
         // Удаляем из данных
-        removeFromCart(cartItemId)
+        await removeFromCart(cartItemId)
 
         // Сбрасываем анимацию
         removingItemId.value = null
@@ -163,11 +163,23 @@ function removeItemFromCart(cartItemId: string) {
 }
 
 /** Очищает всю корзину */
-function handleClearCart() {
+async function handleClearCart() {
+    
     if (cartItems.value.length === 0) return
     
     if (confirm('Очистить всю корзину?')) {
-        saveCurrentCart([])
+        const user = getCurrentUser()
+        
+        if (user) {
+            // Авторизованный — через API
+            await clearCart()
+        } else {
+            // Гость — очищаем sessionStorage
+            saveCurrentCart([])
+        }
+        
+        // Перезагружаем корзину
+        await loadCart()
         window.dispatchEvent(new CustomEvent('cart:update'))
     }
 }

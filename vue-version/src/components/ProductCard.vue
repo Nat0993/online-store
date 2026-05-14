@@ -68,7 +68,9 @@ import {
     getCurrentFavorites,
     addToCart as addToCartData,
     updateCartQuantity,
-    toggleFavorite as toggleFavoriteData
+    toggleFavorite as toggleFavoriteData,
+    getCartItemsWithProducts,
+    removeFromCart
 } from '../data'
 
 // ============ ПРОПСЫ ============
@@ -94,52 +96,77 @@ const isFavorite = ref(false)
 /** Путь к спрайту с иконками (обычная переменная, не реактивная — не меняется) */
 const spriteUrl = '/src/assets/images/sprite.svg'
 
+const cartItemId = ref<string | null>(null)
+
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
 
 /** Отформатированная цена с пробелами */
 const formattedPrice = computed(() => props.product.price.toLocaleString())
 
 // ============ ФУНКЦИИ ОБНОВЛЕНИЯ СОСТОЯНИЯ ============
-/** Обновляет количество товара в корзине */
-function updateCartState() {
-    const cart = getCurrentCart() // получаем корзину из data.ts
-    const item = cart.find(item => item.productId === props.product.id) // ищем наш товар
-    quantity.value = item?.quantity || 0 // обновляем реактивную переменную
+/** Обновляет количество для авторизованных */
+async function updateCartStateForAuth() {
+    const cart = await getCartItemsWithProducts()
+    const item = cart.find(item => item.productId === props.product.id)
+    quantity.value = item?.quantity || 0
+    cartItemId.value = item?.id || null
 }
 
-/** Обновляет статус избранного */
+/** Обновляет количество для гостей */
+function updateCartStateForGuest() {
+    const cart = getCurrentCart()
+    const item = cart.find(item => item.productId === props.product.id)
+    quantity.value = item?.quantity || 0
+    cartItemId.value = item?.id || null
+}
+
+/** Обновляет количество в зависимости от пользователя */
+async function updateCartState() {
+    const user = localStorage.getItem('currentUser')
+    if (user) {
+        await updateCartStateForAuth()
+    } else {
+        updateCartStateForGuest()
+    }
+}
+
 function updateFavoriteState() {
-    const favorites = getCurrentFavorites() // получаем избранное из data.ts
-    isFavorite.value = favorites.some(fav => fav.productId === props.product.id) // обновляем
+    const favorites = getCurrentFavorites()
+    isFavorite.value = favorites.some(fav => fav.productId === props.product.id)
 }
 
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ (ОБРАБОТЧИКИ) ============
-/** Добавление товара в корзину (кнопка "В корзину")*/
 async function addToCart() {
-    await addToCartData(props.product.id) // 1. Вызываем функцию из data.ts
-    updateCartState()
-    window.dispatchEvent(new CustomEvent('cart:update')) // 3. Уведомляем другие компоненты (хедер)
+    await addToCartData(props.product.id)
+    await updateCartState()
+    window.dispatchEvent(new CustomEvent('cart:update'))
 }
 
-/** Увеличение количества товара (кнопка "+" в счётчике) */
 async function increaseQuantity() {
-    await addToCartData(props.product.id, 1)
-    updateCartState()
-    window.dispatchEvent(new CustomEvent('cart:update')) // 3. Уведомляем другие компоненты (хедер)
+    if (cartItemId.value) {
+        const newQuantity = quantity.value + 1
+        await updateCartQuantity(cartItemId.value, newQuantity)
+        quantity.value = newQuantity
+    } else {
+        await addToCartData(props.product.id, 1)
+        await updateCartState()
+    }
+    window.dispatchEvent(new CustomEvent('cart:update'))
 }
 
-/** Уменьшение количества товара (кнопка "-" в счётчике) */
-function decreaseQuantity() {
-    const cart = getCurrentCart() // 1. Получаем корзину
-    const item = cart.find(item => item.productId === props.product.id) // 2. Ищем наш товар
+async function decreaseQuantity() {
+    if (!cartItemId.value) return
 
-    if (item) {
-        updateCartQuantity(item.id, item.quantity - 1) // 3. Уменьшаем количество в хранилище
-
-        updateCartState() // 4. Обновляем локальное состояние
-
-        window.dispatchEvent(new CustomEvent('cart:update')) // 5. Уведомляем другие компоненты
+    if (quantity.value === 1) {
+        await removeFromCart(cartItemId.value)
+        cartItemId.value = null
+        quantity.value = 0
+    } else {
+        const newQuantity = quantity.value - 1
+        await updateCartQuantity(cartItemId.value, newQuantity)
+        quantity.value = newQuantity
     }
+    window.dispatchEvent(new CustomEvent('cart:update'))
 }
 
 /** Переключение избранного (добавить/удалить) */
