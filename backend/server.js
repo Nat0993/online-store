@@ -441,6 +441,218 @@ app.get('/api/products/:id', async (req, res) => {
 })
 
 // ============================================================
+// МАРШРУТЫ ДЛЯ КОРЗИНЫ
+// ============================================================
+
+// получение корзины текущ пользователя
+app.get('/api/cart', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Получаем товары в корзине с данными о товарах (через JOIN)
+        const [cartItems] = await db.execute(
+            `SELECT 
+                ci.id,
+                ci.quantity,
+                ci.product_id,
+                ci.created_at,
+                p.name,
+                p.price,
+                p.image,
+                p.in_stock
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.user_id = ?`,
+            [userId]
+        );
+
+        res.json(cartItems);
+    } catch (error) {
+        console.error('Ошибка получения корзины:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// добавление товара в корзину
+app.post('/api/cart', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { productId, quantity = 1 } = req.body;
+
+        // Проверяем, есть ли товар в БД
+        const [product] = await db.execute(
+            'SELECT id FROM products WHERE id = ?',
+            [productId]
+        );
+
+        if (product.length === 0) {
+            return res.status(404).json({ message: 'Товар не найден' });
+        }
+
+        // Проверяем, есть ли уже такой товар в корзине 
+        const [existing] = await db.execute(
+            'SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?',
+            [userId, productId]
+        );
+
+        if (existing.length > 0) {
+            // товар уже есть — обновляем количество
+            const newQuantity = existing[0].quantity + quantity;
+            await db.execute(
+                'UPDATE cart_items SET quantity = ? WHERE id = ?',
+                [newQuantity, existing[0].id]
+            );
+        } else {
+            // товара нет — добавляем новую строку
+            const id = `cart_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+            await db.execute(
+                'INSERT INTO cart_items (id, user_id, product_id, quantity) VALUES (?, ?, ?, ?)',
+                [id, userId, productId, quantity]
+            );
+        }
+
+        // Возвращаем обновлённую корзину
+        const [cartItems] = await db.execute(
+            `SELECT 
+                ci.id,
+                ci.quantity,
+                ci.product_id,
+                ci.created_at,
+                p.name,
+                p.price,
+                p.image,
+                p.in_stock
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.user_id = ?`,
+            [userId]
+        );
+
+        res.json(cartItems);
+    } catch (error) {
+        console.error('Ошибка добавления в корзину:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// изменение количества товара в корзине
+app.put('/api/cart/:itemId', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { itemId } = req.params;
+        const { quantity } = req.body;
+
+        // проверка, что quantity положительное число
+        if (!quantity || quantity < 1) {
+            return res.status(400).json({ message: 'Количество должно быть больше 0' });
+        }
+
+        // проверка, что товар в корзине принадлежит этому пользователю
+        const [cartItem] = await db.execute(
+            'SELECT id FROM cart_items WHERE id = ? AND user_id = ?',
+            [itemId, userId]
+        );
+
+        if (cartItem.length === 0) {
+            return res.status(404).json({ message: 'Товар в корзине не найден' });
+        }
+
+        // обновляем количество
+        await db.execute(
+            'UPDATE cart_items SET quantity = ? WHERE id = ?',
+            [quantity, itemId]
+        );
+
+        // Возвращаем обновлённую корзину
+        const [cartItems] = await db.execute(
+            `SELECT 
+                ci.id,
+                ci.quantity,
+                ci.product_id,
+                ci.created_at,
+                p.name,
+                p.price,
+                p.image,
+                p.in_stock
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.user_id = ?`,
+            [userId]
+        );
+
+        res.json(cartItems);
+    } catch (error) {
+        console.error('Ошибка обновления количества:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// удаление товара из корзины
+app.delete('/api/cart/:itemId', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { itemId } = req.params;
+
+        // проверка, что товар в корзине принадлежит этому пользователю
+        const [cartItem] = await db.execute(
+            'SELECT id FROM cart_items WHERE id = ? AND user_id = ?',
+            [itemId, userId]
+        );
+
+        if (cartItem.length === 0) {
+            return res.status(404).json({ message: 'Товар в корзине не найден' });
+        }
+
+        // Удаляем товар
+        await db.execute(
+            'DELETE FROM cart_items WHERE id = ?',
+            [itemId]
+        );
+
+        // Возвращаем обновлённую корзину
+        const [cartItems] = await db.execute(
+            `SELECT 
+                ci.id,
+                ci.quantity,
+                ci.product_id,
+                ci.created_at,
+                p.name,
+                p.price,
+                p.image,
+                p.in_stock
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.user_id = ?`,
+            [userId]
+        );
+
+        res.json(cartItems);
+    } catch (error) {
+        console.error('Ошибка удаления товара из корзины:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// очистка всей корзины
+app.delete('/api/cart', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        // Удаляем все товары пользователя из корзины
+        await db.execute(
+            'DELETE FROM cart_items WHERE user_id = ?',
+            [userId]
+        );
+
+        // Возвращаем пустую корзину
+        res.json([]);
+    } catch (error) {
+        console.error('Ошибка очистки корзины:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// ============================================================
 // ЗАПУСК СЕРВЕРА
 // ============================================================
 
