@@ -86,7 +86,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import EmptyMessage from '@/components/EmptyMessage.vue'
 import CartItem from '@/components/CartItem.vue'
 import CheckoutModal from '@/components/CheckoutModal.vue'
-import { getCartItemsWithProducts, saveCurrentCart, removeFromCart, getCurrentUser, clearCart } from '@/data'
+import { getCartItemsWithProducts, saveGuestCart, removeFromCart, getCurrentUser, clearCart } from '@/data'
 import type { CartItemWithProduct } from '@/types'
 
 // ============ КОНСТАНТЫ ============
@@ -175,7 +175,7 @@ async function handleClearCart() {
             await clearCart()
         } else {
             // Гость — очищаем sessionStorage
-            saveCurrentCart([])
+            saveGuestCart([])
         }
         
         // Перезагружаем корзину

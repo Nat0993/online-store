@@ -205,7 +205,8 @@ import { ref, computed } from 'vue'
 import {
   getCartItemsWithProducts,
   addOrder,
-  saveCurrentCart,
+  saveGuestCart,
+  clearCart,
   getCurrentUser,
   updateCurrentUser
 } from '@/data'
@@ -666,7 +667,12 @@ async function handleSubmit(): Promise<void> {
     const savedOrder = addOrder(fullOrderData)
 
     // 10. Очищаем корзину
-    saveCurrentCart([])
+    const user = getCurrentUser()
+    if (user) {
+      await clearCart() // для авторизованного
+    } else {
+      saveGuestCart([]) // для гостя
+    }
 
     // 11. Уведомляем другие компоненты об обновлении корзины
     window.dispatchEvent(new CustomEvent('cart:update'))

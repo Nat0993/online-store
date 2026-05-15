@@ -91,12 +91,13 @@
 // ============ ИМПОРТЫ ============
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
-  getCurrentCart,
+  getCartItemsWithProducts,
+  getGuestCart,
   getCurrentFavorites,
   getCurrentUser,
   logoutUser
 } from '../data'
-import type { NavLink, User, CartItem, FavoriteItem } from '@/types/index';
+import type { NavLink, User, CartItemWithProduct, FavoriteItem } from '@/types/index';
 import AuthModal from './AuthModal.vue'
 import { useRouter } from 'vue-router'
 
@@ -120,7 +121,8 @@ const MAX_NAME_LENGTH = 15;
 const isMenuOpen = ref(false)
 
 const user = ref<User | null>(null)
-const cartItems = ref<CartItem[]>([])
+const cartItems = ref<CartItemWithProduct[]>([])
+const cartTotalItems = ref(0)
 const favorites = ref<FavoriteItem[]>([])
 
 const authModalRef = ref<InstanceType<typeof AuthModal> | null>(null)
@@ -147,11 +149,6 @@ const displayName = computed(() => {
   }
 
   return name
-})
-
-// Вычисляем общее количество товаров в корзине
-const cartTotalItems = computed(() => {
-  return cartItems.value.reduce((total, item) => total + item.quantity, 0)
 })
 
 // Форматируем для отображения (99+)
@@ -216,18 +213,24 @@ function handleLogout() {
   }))
 }
 
-function loadCartAndFavorites() {
-  cartItems.value = getCurrentCart()
-  favorites.value = getCurrentFavorites()
+//счетчик корзины
+async function loadCartCount() {
+  const user = getCurrentUser();
+
+  if(user) {
+    //авторизован - через API
+    const cart = await getCartItemsWithProducts();
+    cartTotalItems.value = cart.reduce((sum, item) => sum + item.quantity, 0);
+  } else {
+    //гость - из sessionStorage
+    const cart = getGuestCart();
+    cartTotalItems.value = cart.reduce((sum, item) => sum + item.quantity, 0);
+  }
 }
 
 function handleAuthChange() {
   user.value = getCurrentUser()
-  loadCartAndFavorites()
-}
-
-function handleCartUpdate() {
-  cartItems.value = getCurrentCart()
+  loadCartCount()
 }
 
 function handleFavoritesUpdate() {
@@ -239,11 +242,11 @@ function handleFavoritesUpdate() {
 onMounted(() => {
   // 1. Загружаем начальные данные
   user.value = getCurrentUser()
-  loadCartAndFavorites()
+  loadCartCount()
 
   // 2. Подписываемся на события
   window.addEventListener('auth:change', handleAuthChange)
-  window.addEventListener('cart:update', handleCartUpdate)
+  window.addEventListener('cart:update', loadCartCount)
   window.addEventListener('favorites:update', handleFavoritesUpdate)
   document.addEventListener('click', handleClickOutside)
 })
@@ -251,7 +254,7 @@ onMounted(() => {
 onUnmounted(() => {
   // 3. Отписываемся при удалении компонента
   window.removeEventListener('auth:change', handleAuthChange)
-  window.removeEventListener('cart:update', handleCartUpdate)
+  window.removeEventListener('cart:update', loadCartCount)
   window.removeEventListener('favorites:update', handleFavoritesUpdate)
   document.removeEventListener('click', handleClickOutside)
 })
