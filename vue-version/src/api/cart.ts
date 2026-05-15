@@ -111,7 +111,7 @@ export async function removeFromCartApi(cartItemId: string): Promise<CartItemWit
 }
 
 // очистить всю корзину
-export async function clearCartApi(): Promise<void> {
+export async function clearCartApi(): Promise<CartItemWithProduct[]> {
     const token = getAuthToken();
     if (!token) throw new Error('Необходима авторизация');
 
@@ -124,5 +124,5 @@ export async function clearCartApi(): Promise<void> {
     });
 
     const data = await handleResponse(response);
-    return data.map(transformCartItem);
+    return Array.isArray(data) ? data.map(transformCartItem) : [];
 }
