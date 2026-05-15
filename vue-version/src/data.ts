@@ -216,10 +216,11 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
 // Работа с корзиной
 
 /**
- * Получает корзину гостевого пользователя
- * @returns {Array} массив товаров в корзине
+ * Получает корзину гостя из sessionStorage
+ * @returns {CartItem[]} массив товаров в корзине гостя
+ * @throws {Error} если вызывается для авторизованного пользователя
  */
-export const getCurrentCart = (): CartItem[] => {
+export const getGuestCart = (): CartItem[] => {
     const user = getCurrentUser();
 
     // Если пользователь авторизован — корзина в БД, но эта функция синхронная,
@@ -227,29 +228,29 @@ export const getCurrentCart = (): CartItem[] => {
     // А эта функция пусть работает только для гостей
     if (user) {
         // Для авторизованных эта функция не должна использоваться
-        console.warn('getCurrentCart не предназначен для авторизованных пользователей');
-        return [];
+        console.error('getGuestCart не предназначен для авторизованных пользователей');
+        throw new Error('Для авторизованных должна использоваться getCartItemsWithProducts()');
     }
 
-    // Гость — берём из sessionStorage
-    return loadFromLocalStorage<CartItem[]>('cart_guest') || [];
+    const guestCart = sessionStorage.getItem('cart_guest');
+    return guestCart ? JSON.parse(guestCart) : [];
 };
 
 /**
- * Сохраняет корзину гостя 
- * @param {Array} cartData - данные корзины
+ * Сохраняет корзину гостя в sessionStorage
+ * @param {CartItem[]} cartData - данные корзины гостя
+ * @throws {Error} если вызывается для авторизованного пользователя
  */
-export const saveCurrentCart = (cartData: CartItem[]): void => {
+export const saveGuestCart = (cartData: CartItem[]): void => {
     const user = getCurrentUser();
     
     if (user) {
         // Авторизованным не сохраняем в localStorage, только через API
-        console.warn('saveCurrentCart не предназначен для авторизованных пользователей');
-        return;
+        console.error('saveGuestCart не предназначен для авторизованных пользователей');
+        throw new Error('Для авторизованных должны использоваться API-функции (addToCart, removeFromCart и т.д.)');
     }
     
-    // Гость — сохраняем в sessionStorage
-    saveToLocalStorage<CartItem[]>('cart_guest', cartData);
+    sessionStorage.setItem('cart_guest', JSON.stringify(cartData));
 };
 
 /**
@@ -300,7 +301,7 @@ export async function updateCartQuantity(cartItemId: string, newQuantity: number
 /**
  * Ощичает корзину пользователя
  */
-export const clearCart = async (): Promise<CartItemWithProduct[] | void> => {
+export const clearCart = async (): Promise<CartItemWithProduct[]> => {
     const emptyCart = await clearCartApi();
     return emptyCart;
 };
@@ -442,7 +443,7 @@ function getCurrentStorage(): Storage {
  * @param {string} key - ключ
  * @param {any} data - данные
  */
-export const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
+const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
     try {
 
         // Для остальных данных - в зависимости от пользователя
@@ -459,7 +460,7 @@ export const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
  * @param {string} key - ключ
  * @returns {any} данные или null
  */
-export function loadFromLocalStorage<T>(key: StorageKey): T | null {
+function loadFromLocalStorage<T>(key: StorageKey): T | null {
     try {
 
         // Для остальных данных - в зависимости от пользователя
@@ -491,7 +492,7 @@ export const registerUser = async (userData: UserData): Promise<User | null> => 
     setCurrentUser(user);
 
     // 4. Мигрируем гостевые данные
-    migrateGuestToUser(user.id);
+    // migrateGuestToUser(user.id);
 
     //5. Отправляем событие
     window.dispatchEvent(new CustomEvent('auth:change', {
@@ -514,7 +515,7 @@ export const loginUser = async (email: string, password: string): Promise<User |
 
     localStorage.setItem('auth_token', token);
     setCurrentUser(user);
-    migrateGuestToUser(user.id);
+    // migrateGuestToUser(user.id);
 
     window.dispatchEvent(new CustomEvent('auth:change', {
         detail: { user, type: 'register' }
