@@ -144,6 +144,19 @@ export interface ApiCartItem {
     description: string;
 }
 
+//избранное
+export interface ApiFavoriteItem {
+    id: string;
+    product_id: string;
+    created_at: string;
+    name: string;
+    price: number;
+    image: string;
+    in_stock: number;
+    category_id: string;
+    description: string;
+}
+
 
 //Типы
 
