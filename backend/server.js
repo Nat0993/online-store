@@ -661,6 +661,112 @@ app.delete('/api/cart', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// МАРШРУТЫ ДЛЯ ИЗБРАННОГО
+// ============================================================
+
+//получить все избранные товары текущ пользователя
+app.get('/api/favorites', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        const [favorites] = await db.execute(
+            `SELECT f.id, f.product_id, f.created_at,
+            p.name, p.price, p.image, p.in_stock, p.category_id, p.description
+            FROM favorites f
+            JOIN products p ON f.product_id = p.id
+            WHERE f.user_id = ?`,
+            [userId]
+        );
+
+        res.json(favorites);
+    } catch (error) {
+        console.error('Ошибка получения избранного:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+})
+
+//добавить товар в избранное
+app.post('/api/favorites', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { productId } = req.body;
+
+        if(!productId) {
+            res.status(400).json({ message: 'productId обязателен' })
+        }
+        
+        // проверяем, есть ли товар в БД
+        const [product] = await db.execute(
+            'SELECT id FROM products WHERE id = ?',
+            [productId]
+        );
+
+        if (product.length === 0) {
+            return res.status(404).json({ message: 'Товар не найден' });
+        }
+
+        // генерируем ID для избранного
+        const id = `fav_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+
+        // добавляем в избранное (если уже есть — UNIQUE KEY выдаст ошибку)
+        await db.execute(
+            'INSERT INTO favorites (id, user_id, product_id) VALUES (?, ?, ?)',
+            [id, userId, productId]
+        );
+
+        // возвращаем обновлённое избранное
+        const [favorites] = await db.execute(
+            `SELECT f.id, f.product_id, f.created_at,
+                    p.name, p.price, p.image, p.in_stock, p.category_id, p.description
+             FROM favorites f
+             JOIN products p ON f.product_id = p.id
+             WHERE f.user_id = ?`,
+            [userId]
+        );
+
+        res.json(favorites);
+    } catch (error) {
+        console.error('Ошибка добавления в избранное:', error);
+        
+        // Обработка дубликата (UNIQUE KEY)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Товар уже в избранном' });
+        }
+        
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+})
+
+//удалить товар из избранного
+app.delete('/api/favorites/:productId', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { productId } = req.params;
+
+        // удаляем
+        await db.execute(
+            'DELETE FROM favorites WHERE user_id = ? AND product_id = ?',
+            [userId, productId]
+        );
+
+        // возвращаем обновлённое избранное
+        const [favorites] = await db.execute(
+            `SELECT f.id, f.product_id, f.created_at,
+                    p.name, p.price, p.image, p.in_stock, p.category_id, p.description
+             FROM favorites f
+             JOIN products p ON f.product_id = p.id
+             WHERE f.user_id = ?`,
+            [userId]
+        );
+
+        res.json(favorites);
+    } catch (error) {
+        console.error('Ошибка удаления из избранного:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+})
+
+// ============================================================
 // ЗАПУСК СЕРВЕРА
 // ============================================================
 
