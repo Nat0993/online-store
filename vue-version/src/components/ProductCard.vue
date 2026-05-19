@@ -65,12 +65,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Product } from '../types'
 import {
     getGuestCart,
-    getCurrentFavorites,
+    getGuestFavorites,
     addToCart as addToCartData,
     updateCartQuantity,
     toggleFavorite as toggleFavoriteData,
     getCartItemsWithProducts,
-    removeFromCart
+    removeFromCart,
+    getFavoritesWithProducts
 } from '../data'
 
 // ============ ПРОПСЫ ============
@@ -130,8 +131,8 @@ async function updateCartState() {
     }
 }
 
-function updateFavoriteState() {
-    const favorites = getCurrentFavorites()
+async function updateFavoriteState() {
+    const favorites = await getFavoritesWithProducts()
     isFavorite.value = favorites.some(fav => fav.productId === props.product.id)
 }
 
@@ -170,9 +171,9 @@ async function decreaseQuantity() {
 }
 
 /** Переключение избранного (добавить/удалить) */
-function toggleFavorite() {
-    toggleFavoriteData(props.product.id) // 1. Переключаем в хранилище
-    updateFavoriteState() // 2. Обновляем локальное состояние
+async function toggleFavorite() {
+    await toggleFavoriteData(props.product.id) // 1. Переключаем в хранилище
+    await updateFavoriteState() // 2. Обновляем локальное состояние
     window.dispatchEvent(new CustomEvent('favorites:update')) // 3. Уведомляем другие компоненты
 }
 
