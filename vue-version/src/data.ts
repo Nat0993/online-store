@@ -3,6 +3,7 @@ import { fetchProductsFromAPI, fetchProductByIdFromApi } from "./api/products";
 import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categories";
 import { registerUserApi, loginUserApi, getCurrentUserApi, updateCurrentUserApi } from "./api/auth";
 import { fetchCartFromApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi } from './api/cart';
+import {fetchFavoritesApi, addToFavoritesApi, removeFromFavoritesApi } from "./api/favorites";
 import type {
     Product,
     Category,
@@ -159,6 +160,8 @@ function generateId(prefix: 'item' | 'cart' | 'fav' | 'order' | 'user' = 'item')
 
 // Функции для работы с данными
 
+
+// ============ ТОВАРЫ ============
 /**
  * Получает товары по ID категории
  * @param {string} categoryId - ID категории
@@ -189,6 +192,8 @@ export const getProductById = async (id: string): Promise<Product | null> => {
     return isValidProduct(product) ? product : null;
 };
 
+
+// ============ КАТЕГОРИИ ============
 /**
  * Получает все категории
  * @returns {Promise<Category[]>} массив категорий
@@ -213,7 +218,7 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
     return isValidCategory(category) ? category : null;
 };
 
-// Работа с корзиной
+// ============ КОРЗИНА ============
 
 /**
  * Получает корзину гостя из sessionStorage
@@ -306,65 +311,91 @@ export const clearCart = async (): Promise<CartItemWithProduct[]> => {
     return emptyCart;
 };
 
-// Избранное
+// ============ ИЗБРАННОЕ ============
 
 /**
- * Получает избранное текущего пользователя
- * @returns {Array} массив избранных товаров
+ * Получает избранное гостя из sessionStorage
+ * @returns {FavoriteItem[]} массив избранных товаров
  */
-export const getCurrentFavorites = (): FavoriteItem[] => {
-    const user = getCurrentUser();
-    const key = user ? `favorites_${user.id}` : 'favorites_guest';
-    return loadFromLocalStorage<FavoriteItem[]>(key as StorageKey) || [];
+export const getGuestFavorites = (): FavoriteItem[] => {
+    const guestFavorites = sessionStorage.getItem('favorites_guest');
+    return guestFavorites ? JSON.parse(guestFavorites) : [];
 };
 
 /**
- * Сохраняет избранное текущего пользователя
- * @param {Array} favoritesData - данные избранного
+ * Сохраняет избранное гостя в sessionStorage
+ * @param {FavoriteItem[]} favoritesData - данные избранного
  */
-export const saveCurrentFavorites = (favoritesData: FavoriteItem[]): void => {
-    const user = getCurrentUser();
-    const key = user ? `favorites_${user.id}` : 'favorites_guest';
-    saveToLocalStorage<FavoriteItem[]>(key as StorageKey, favoritesData);
+export const saveGuestFavorites = (favoritesData: FavoriteItem[]): void => {
+    sessionStorage.setItem('favorites_guest', JSON.stringify(favoritesData));
 };
 
 /**
  * Добавляет или удаляет товар из избранного
  * @param {string} productId - ID товара
- * @returns {Array} обновленное избранное
+ * @returns {Promise<FavoriteItem[]>} обновлённый массив избранного
  */
-export const toggleFavorite = (productId: string): FavoriteItem[] => {
-    const favorites = getCurrentFavorites();
-    const existingIndex = favorites.findIndex(fav => fav.productId === productId);
+export const toggleFavorite = async (productId: string): Promise<FavoriteItem[]> => {
+    const user = getCurrentUser();
 
-    if (existingIndex > -1) {
-        favorites.splice(existingIndex, 1);
+    if (user) {
+        // авторизованный пользователь — работаем через API
+        const favorites = await fetchFavoritesApi();
+        const isFavorite = favorites.some(fav => fav.productId === productId);
+        
+        if (isFavorite) {
+            return await removeFromFavoritesApi(productId);
+        } else {
+            return await addToFavoritesApi(productId);
+        }
     } else {
-        favorites.push({
-            id: generateId('fav'),
-            productId: productId,
-            addedAt: new Date().toISOString()
-        });
+        // гость — работаем с sessionStorage
+        const favorites = getGuestFavorites();
+        const existingIndex = favorites.findIndex(fav => fav.productId === productId);
+        
+        if (existingIndex > -1) {
+            // удаляем
+            favorites.splice(existingIndex, 1);
+        } else {
+            // добавляем
+            favorites.push({
+                id: generateId('fav'),
+                productId: productId,
+                addedAt: new Date().toISOString()
+            });
+        }
+        
+        saveGuestFavorites(favorites);
+        return favorites;
     }
-
-    saveCurrentFavorites(favorites);
-    return favorites;
 };
 
 /**
  * Получает избранное с полной информацией о товарах
- * @returns {Array} массив избранного с товарами
+ * @returns {Promise<FavoriteItem[]>} массив избранного с товарами
  */
 export const getFavoritesWithProducts = async (): Promise<FavoriteItem[]> => {
-    const favorites = getCurrentFavorites();
+    const user = getCurrentUser();
 
-    const favoritesWithProducts = await Promise.all(
-        favorites.map(async (fav) => {
-            const product = await getProductById(fav.productId);
-            return { ...fav, product };
-        })
-    )
-    return favoritesWithProducts.filter((fav): fav is FavoriteItem & { product: Product } => fav.product !== null);
+    if (user) {
+        // Авторизованный — получаем с сервера (уже с продуктами)
+        return await fetchFavoritesApi();
+    } else {
+        // Гость — получаем из sessionStorage и подгружаем продукты
+        const favorites = getGuestFavorites();
+        
+        const favoritesWithProducts = await Promise.all(
+            favorites.map(async (fav) => {
+                const product = await getProductById(fav.productId);
+                return { ...fav, product: product || undefined };
+            })
+        );
+        
+        // Фильтруем только те, где product найден
+        return favoritesWithProducts.filter(
+            (fav): fav is FavoriteItem & { product: Product } => fav.product !== undefined
+        );
+    }
 };
 
 // Заказы
