@@ -64,7 +64,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Product } from '../types'
 import {
-    getCurrentCart,
+    getGuestCart,
     getCurrentFavorites,
     addToCart as addToCartData,
     updateCartQuantity,
@@ -114,7 +114,7 @@ async function updateCartStateForAuth() {
 
 /** Обновляет количество для гостей */
 function updateCartStateForGuest() {
-    const cart = getCurrentCart()
+    const cart = getGuestCart()
     const item = cart.find(item => item.productId === props.product.id)
     quantity.value = item?.quantity || 0
     cartItemId.value = item?.id || null
