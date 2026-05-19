@@ -59,6 +59,19 @@ CREATE TABLE IF NOT EXISTS cart_items (
 );
 
 -- ============================================
+-- Таблица: favorites (избранное)
+-- ============================================
+CREATE TABLE IF NOT EXISTS favorites (
+    id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_product (user_id, product_id)
+);
+
+-- ============================================
 -- Записываем данные: categories
 -- ============================================
 INSERT INTO categories (id, name, image, description) VALUES 
