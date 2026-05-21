@@ -664,7 +664,7 @@ async function handleSubmit(): Promise<void> {
     }
 
     // 9. Сохраняем заказ
-    const savedOrder = addOrder(fullOrderData)
+    const savedOrder = await addOrder(fullOrderData)
 
     // 10. Очищаем корзину
     const user = getCurrentUser()

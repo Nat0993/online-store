@@ -102,7 +102,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import EmptyMessage from '@/components/EmptyMessage.vue'
 import OrderItem from '@/components/OrderItem.vue'
 import ProfileModal from '@/components/ProfileModal.vue'
-import { getCurrentUser, getCurrentOrders } from '@/data'
+import { getCurrentUser, getCurrentUserOrders } from '@/data'
 import type { User, Order } from '@/types'
 
 // ============ РЕАКТИВНЫЕ ПЕРЕМЕННЫЕ ============
@@ -135,10 +135,10 @@ const sortedOrders = computed(() => {
 // ============ МЕТОДЫ ============
 
 /** Загружает данные пользователя и заказы */
-function loadProfileData() {
+async function loadProfileData() {
   user.value = getCurrentUser()
   if (user.value) {
-    orders.value = getCurrentOrders()
+    orders.value = await getCurrentUserOrders()
   }
 }
 
@@ -153,9 +153,9 @@ function handleAuthChange() {
 }
 
 /** Обработчик обновления заказов */
-function handleOrdersUpdate() {
+async function handleOrdersUpdate() {
   if (user.value) {
-    orders.value = getCurrentOrders()
+    orders.value = await getCurrentUserOrders()
   }
 }
 
