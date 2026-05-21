@@ -64,8 +64,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Product } from '../types'
 import {
-    getGuestCart,
-    getGuestFavorites,
     addToCart as addToCartData,
     updateCartQuantity,
     toggleFavorite as toggleFavoriteData,
@@ -97,6 +95,7 @@ const isFavorite = ref(false)
 /** Путь к спрайту с иконками (обычная переменная, не реактивная — не меняется) */
 const spriteUrl = '/src/assets/images/sprite.svg'
 
+/** ID товара в корзине (не сам товар) */
 const cartItemId = ref<string | null>(null)
 
 // ============ ВЫЧИСЛЯЕМЫЕ СВОЙСТВА ============
@@ -105,30 +104,13 @@ const cartItemId = ref<string | null>(null)
 const formattedPrice = computed(() => props.product.price.toLocaleString())
 
 // ============ ФУНКЦИИ ОБНОВЛЕНИЯ СОСТОЯНИЯ ============
-/** Обновляет количество для авторизованных */
-async function updateCartStateForAuth() {
-    const cart = await getCartItemsWithProducts()
-    const item = cart.find(item => item.productId === props.product.id)
-    quantity.value = item?.quantity || 0
-    cartItemId.value = item?.id || null
-}
-
-/** Обновляет количество для гостей */
-function updateCartStateForGuest() {
-    const cart = getGuestCart()
-    const item = cart.find(item => item.productId === props.product.id)
-    quantity.value = item?.quantity || 0
-    cartItemId.value = item?.id || null
-}
 
 /** Обновляет количество в зависимости от пользователя */
 async function updateCartState() {
-    const user = localStorage.getItem('currentUser')
-    if (user) {
-        await updateCartStateForAuth()
-    } else {
-        updateCartStateForGuest()
-    }
+  const cart = await getCartItemsWithProducts()  // одна универсальная функция
+    const item = cart.find(item => item.productId === props.product.id)
+    quantity.value = item?.quantity || 0
+    cartItemId.value = item?.id || null
 }
 
 async function updateFavoriteState() {
@@ -138,8 +120,12 @@ async function updateFavoriteState() {
 
 // ============ ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ (ОБРАБОТЧИКИ) ============
 async function addToCart() {
-    await addToCartData(props.product.id)
-    await updateCartState()
+    const updatedCart = await addToCartData(props.product.id)
+    const newItem = updatedCart.find(item => item.productId === props.product.id)
+    if (newItem) {
+        quantity.value = newItem.quantity
+        cartItemId.value = newItem.id
+    }
     window.dispatchEvent(new CustomEvent('cart:update'))
 }
 
@@ -149,8 +135,12 @@ async function increaseQuantity() {
         await updateCartQuantity(cartItemId.value, newQuantity)
         quantity.value = newQuantity
     } else {
-        await addToCartData(props.product.id, 1)
-        await updateCartState()
+        const updatedCart = await addToCartData(props.product.id, 1)
+        const newItem = updatedCart.find(item => item.productId === props.product.id)
+        if (newItem) {
+            quantity.value = newItem.quantity
+            cartItemId.value = newItem.id
+        }
     }
     window.dispatchEvent(new CustomEvent('cart:update'))
 }

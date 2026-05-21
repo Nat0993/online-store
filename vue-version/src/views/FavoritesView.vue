@@ -114,9 +114,9 @@ function removeFromFavorites(productId: string) {
     slidingItems.value = itemsAfter
 
     // Ждём анимацию
-    setTimeout(() => {
+    setTimeout(async () => {
         // Удаляем из данных
-        toggleFavorite(productId)
+        await toggleFavorite(productId)
         
         // Уведомляем другие компоненты
         window.dispatchEvent(new CustomEvent('favorites:update'))

@@ -3,7 +3,7 @@ import { fetchProductsFromAPI, fetchProductByIdFromApi } from "./api/products";
 import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categories";
 import { registerUserApi, loginUserApi, getCurrentUserApi, updateCurrentUserApi } from "./api/auth";
 import { fetchCartFromApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi } from './api/cart';
-import {fetchFavoritesApi, addToFavoritesApi, removeFromFavoritesApi } from "./api/favorites";
+import { fetchFavoritesApi, addToFavoritesApi, removeFromFavoritesApi } from "./api/favorites";
 import { addOrderApi, addGuestOrderApi, fetchOrdersApi } from './api/orders';
 
 import type {
@@ -17,14 +17,14 @@ import type {
 
 import type { CartItemWithProduct, OrderData, UserData } from './types/index';
 
-type StorageKey = 
-  | `cart_${string}` 
-  | `favorites_${string}` 
-  | `orders_${string}` 
-  | 'currentUser'
-  | 'cart_guest' 
-  | 'favorites_guest' 
-  | 'orders_guest';
+type StorageKey =
+    | `cart_${string}`
+    | `favorites_${string}`
+    | `orders_${string}`
+    | 'currentUser'
+    | 'cart_guest'
+    | 'favorites_guest'
+    | 'orders_guest';
 
 
 /**
@@ -225,20 +225,8 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
 /**
  * Получает корзину гостя из sessionStorage
  * @returns {CartItem[]} массив товаров в корзине гостя
- * @throws {Error} если вызывается для авторизованного пользователя
  */
 export const getGuestCart = (): CartItem[] => {
-    const user = getCurrentUser();
-
-    // Если пользователь авторизован — корзина в БД, но эта функция синхронная,
-    // поэтому для авторизованных лучше использовать getCartItemsWithProducts
-    // А эта функция пусть работает только для гостей
-    if (user) {
-        // Для авторизованных эта функция не должна использоваться
-        console.error('getGuestCart не предназначен для авторизованных пользователей');
-        throw new Error('Для авторизованных должна использоваться getCartItemsWithProducts()');
-    }
-
     const guestCart = sessionStorage.getItem('cart_guest');
     return guestCart ? JSON.parse(guestCart) : [];
 };
@@ -246,71 +234,148 @@ export const getGuestCart = (): CartItem[] => {
 /**
  * Сохраняет корзину гостя в sessionStorage
  * @param {CartItem[]} cartData - данные корзины гостя
- * @throws {Error} если вызывается для авторизованного пользователя
  */
 export const saveGuestCart = (cartData: CartItem[]): void => {
-    const user = getCurrentUser();
-    
-    if (user) {
-        // Авторизованным не сохраняем в localStorage, только через API
-        console.error('saveGuestCart не предназначен для авторизованных пользователей');
-        throw new Error('Для авторизованных должны использоваться API-функции (addToCart, removeFromCart и т.д.)');
-    }
-    
     sessionStorage.setItem('cart_guest', JSON.stringify(cartData));
 };
 
 /**
- * Добавляет товар в корзину
+ * Добавляет товар в корзину (и для гостя, и для авторизованного)
  * @param {string} productId - ID товара
  * @param {number} [quantity=1] - количество
- * @returns {Array} обновленная корзина
+ * @returns {Promise<CartItemWithProduct[]>} обновленная корзина
  */
 export const addToCart = async (productId: string, quantity: number = 1): Promise<CartItemWithProduct[]> => {
-    const updatedCart = await addToCartApi(productId, quantity);
-    return updatedCart;
+    const user = getCurrentUser();
+
+    if (user) {
+        // авторизованный — через API
+        await addToCartApi(productId, quantity);
+        return await getCartItemsWithProducts();
+    } else {
+        // гость — из sessionStorage
+        const cart = getGuestCart();
+        const existingItem = cart.find(item => item.productId === productId);
+
+        if (existingItem) {
+            //товар уже есть - увеличиваем кол-во
+            existingItem.quantity += quantity;
+        } else {
+            //товара нет - добавляем
+            cart.push({
+                id: generateId('cart'),
+                productId: productId,
+                quantity: quantity,
+                addedAt: new Date().toISOString()
+            });
+        }
+
+        saveGuestCart(cart);
+        return await getCartItemsWithProducts();
+    }
 };
 
 /**
  * Удаляет товар из корзины по его ID в корзине
  * @param {string} cartItemId - ID товара в корзине
- * @returns {Array} обновленная корзина
+ * @returns {Promise<CartItemWithProduct[]>} обновленная корзина
  */
 export const removeFromCart = async (cartItemId: string): Promise<CartItemWithProduct[]> => {
-    const updatedCart = await removeFromCartApi(cartItemId);
-    return updatedCart;
+    const user = getCurrentUser();
+
+    if (user) {
+        // авторизованный — через API
+        await removeFromCartApi(cartItemId);
+        return await getCartItemsWithProducts();
+    } else {
+        // гость — из sessionStorage
+        const cart = getGuestCart();
+        const updatedCart = cart.filter(item => item.id !== cartItemId);
+        saveGuestCart(updatedCart);
+        return await getCartItemsWithProducts();
+    }
 };
 
 /**
  * Получает элементы корзины с полной информацией о товарах
- * @returns {Array} массив элементов корзины с товарами
+ * @returns {Promise<CartItemWithProduct[]>} массив элементов корзины с товарами
  */
 export const getCartItemsWithProducts = async (): Promise<CartItemWithProduct[]> => {
-    const cart = await fetchCartFromApi();
-    return cart;
+    const user = getCurrentUser();
+
+    if (user) {
+        // авторизованный — через API (сервер уже возвращает с товарами)
+        const cart = await fetchCartFromApi();
+        return cart;
+    } else {
+        // гость — из sessionStorage + подгружаем товары
+        const guestCart = getGuestCart();
+
+        const cartWithProducts = await Promise.all(
+            guestCart.map(async (item) => {
+                const product = await getProductById(item.productId);
+                return {
+                    ...item,
+                    product: product || undefined
+                };
+            })
+        );
+
+        // фильтруем только те, где product найден
+        return cartWithProducts.filter(
+            (item): item is CartItemWithProduct => item.product !== undefined
+        );
+    }
 };
 
 /**
  * Обновляет колличество товара в корзине
  * @param {string} cartItemId - ID товара в корзине
  * @param {number} newQuantity - новое количество товара
- * @returns {Array} обновленная корзина
+ * @returns {Promise<CartItemWithProduct[]>} обновленная корзина
  */
 export async function updateCartQuantity(cartItemId: string, newQuantity: number): Promise<CartItemWithProduct[]> {
+
     if (newQuantity <= 0) {
-        // Если количество 0 или меньше — удаляем товар
-        return await removeFromCartApi(cartItemId);
+        return await removeFromCart(cartItemId);
     }
-    const updatedCart = await updateCartQuantityApi(cartItemId, newQuantity);
-    return updatedCart;
+
+    const user = getCurrentUser();
+
+    if (user) {
+        // авторизованный — через API
+        await updateCartQuantityApi(cartItemId, newQuantity);
+        return await getCartItemsWithProducts();
+    } else {
+        // гость — из sessionStorage
+        const cart = getGuestCart();
+        const item = cart.find(item => item.id === cartItemId);
+
+        if (item) {
+            item.quantity = newQuantity;
+            saveGuestCart(cart);
+        }
+
+        return await getCartItemsWithProducts();
+    }
 }
 
 /**
- * Ощичает корзину пользователя
+ * Очищает корзину пользователя
+ * @returns {Promise<CartItemWithProduct[]>} пустая корзина
  */
 export const clearCart = async (): Promise<CartItemWithProduct[]> => {
-    const emptyCart = await clearCartApi();
-    return emptyCart;
+    const user = getCurrentUser();
+
+    if (user) {
+        // авторизованный — через API
+        await clearCartApi();
+    } else {
+        // гость — очищаем sessionStorage
+        saveGuestCart([]);
+    }
+
+    return await getCartItemsWithProducts();
 };
 
 // ============ ИЗБРАННОЕ ============
@@ -344,7 +409,7 @@ export const toggleFavorite = async (productId: string): Promise<FavoriteItem[]>
         // авторизованный пользователь — работаем через API
         const favorites = await fetchFavoritesApi();
         const isFavorite = favorites.some(fav => fav.productId === productId);
-        
+
         if (isFavorite) {
             return await removeFromFavoritesApi(productId);
         } else {
@@ -354,7 +419,7 @@ export const toggleFavorite = async (productId: string): Promise<FavoriteItem[]>
         // гость — работаем с sessionStorage
         const favorites = getGuestFavorites();
         const existingIndex = favorites.findIndex(fav => fav.productId === productId);
-        
+
         if (existingIndex > -1) {
             // удаляем
             favorites.splice(existingIndex, 1);
@@ -366,7 +431,7 @@ export const toggleFavorite = async (productId: string): Promise<FavoriteItem[]>
                 addedAt: new Date().toISOString()
             });
         }
-        
+
         saveGuestFavorites(favorites);
         return favorites;
     }
@@ -385,14 +450,14 @@ export const getFavoritesWithProducts = async (): Promise<FavoriteItem[]> => {
     } else {
         // Гость — получаем из sessionStorage и подгружаем продукты
         const favorites = getGuestFavorites();
-        
+
         const favoritesWithProducts = await Promise.all(
             favorites.map(async (fav) => {
                 const product = await getProductById(fav.productId);
                 return { ...fav, product: product || undefined };
             })
         );
-        
+
         // Фильтруем только те, где product найден
         return favoritesWithProducts.filter(
             (fav): fav is FavoriteItem & { product: Product } => fav.product !== undefined
@@ -415,7 +480,7 @@ export const getFavoritesWithProducts = async (): Promise<FavoriteItem[]> => {
  */
 export const addOrder = async (orderData: OrderData): Promise<Order> => {
     const user = getCurrentUser();
-    
+
     if (user) {
         // Авторизованный пользователь
         return await addOrderApi(orderData);
@@ -429,9 +494,9 @@ export const addOrder = async (orderData: OrderData): Promise<Order> => {
  * Получает заказы текущего пользователя (только для авторизованных)
  * @returns {Promise<Order[]>} массив заказов
  */
-export const getCurrentUserOrders  = async (): Promise<Order[]> => {
+export const getCurrentUserOrders = async (): Promise<Order[]> => {
     const user = getCurrentUser();
-    
+
     if (user) {
         // Авторизованный — получаем через API
         return await fetchOrdersApi();
@@ -506,7 +571,7 @@ function loadFromLocalStorage<T>(key: StorageKey): T | null {
 export const registerUser = async (userData: UserData): Promise<User | null> => {
 
     // 1. Отправляем запрос на сервер
-    const {token, user} = await registerUserApi(userData);
+    const { token, user } = await registerUserApi(userData);
 
     // 2. Сохраняем токен
     localStorage.setItem('auth_token', token);
@@ -533,8 +598,8 @@ export const registerUser = async (userData: UserData): Promise<User | null> => 
  * @throws {Error} если неверный email или пароль
  */
 export const loginUser = async (email: string, password: string): Promise<User | null> => {
-    
-    const {token, user} = await loginUserApi({email, password});
+
+    const { token, user } = await loginUserApi({ email, password });
 
     localStorage.setItem('auth_token', token);
     setCurrentUser(user);
@@ -561,7 +626,7 @@ export function migrateGuestToUser(userId: string): void {
             const guestCartData: CartItem[] = JSON.parse(guestCart);
             const userCartKey = `cart_${userId}`;
             const userCartData = loadFromLocalStorage<CartItem[]>(userCartKey as StorageKey) || [];
-            
+
             if (guestCartData.length > 0) {
                 const mergedCart = mergeCartData(userCartData, guestCartData);
                 localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
@@ -580,7 +645,7 @@ export function migrateGuestToUser(userId: string): void {
             const guestFavData: FavoriteItem[] = JSON.parse(guestFavorites);
             const userFavKey = `favorites_${userId}`;
             const userFavData = loadFromLocalStorage<FavoriteItem[]>(userFavKey as StorageKey) || [];
-            
+
             if (guestFavData.length > 0) {
                 const mergedFav = mergeFavoritesData(userFavData, guestFavData);
                 localStorage.setItem(userFavKey, JSON.stringify(mergedFav));
@@ -599,7 +664,7 @@ export function migrateGuestToUser(userId: string): void {
             const guestOrdersData: Order[] = JSON.parse(guestOrders);
             const userOrdersKey = `orders_${userId}`;
             const userOrdersData = loadFromLocalStorage<Order[]>(userOrdersKey as StorageKey) || [];
-            
+
             if (guestOrdersData.length > 0) {
                 const mergedOrders = [...guestOrdersData, ...userOrdersData];
                 localStorage.setItem(userOrdersKey, JSON.stringify(mergedOrders));
@@ -672,7 +737,7 @@ export const setCurrentUser = (user: User): void => {
 export const getCurrentUser = (): User | null => {
     const userJson = localStorage.getItem('currentUser');
     if (!userJson) return null;
-    
+
     try {
         return JSON.parse(userJson) as User;
     } catch {
@@ -694,9 +759,9 @@ export const logoutUser = (): void => {
  * @returns {Object|null} обновленный пользователь или null
  */
 export const updateCurrentUser = async (updates: Partial<UserData>): Promise<User | null> => {
-    
+
     const token = localStorage.getItem('auth_token');
-    
+
     if (!token) {
         console.error('Нет токена авторизации');
         return null;
@@ -704,9 +769,9 @@ export const updateCurrentUser = async (updates: Partial<UserData>): Promise<Use
 
     try {
         const updatedUser = await updateCurrentUserApi(token, updates);
-        
+
         setCurrentUser(updatedUser);
-        
+
         return updatedUser;
     } catch (error) {
         console.error('Ошибка обновления пользователя:', error);

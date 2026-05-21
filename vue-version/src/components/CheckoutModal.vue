@@ -667,12 +667,7 @@ async function handleSubmit(): Promise<void> {
     const savedOrder = await addOrder(fullOrderData)
 
     // 10. Очищаем корзину
-    const user = getCurrentUser()
-    if (user) {
-      await clearCart() // для авторизованного
-    } else {
-      saveGuestCart([]) // для гостя
-    }
+    await clearCart()
 
     // 11. Уведомляем другие компоненты об обновлении корзины
     window.dispatchEvent(new CustomEvent('cart:update'))
