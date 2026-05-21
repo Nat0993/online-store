@@ -93,7 +93,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
   getCartItemsWithProducts,
   getGuestCart,
-  getCurrentFavorites,
+  getFavoritesWithProducts,
   getCurrentUser,
   logoutUser
 } from '../data'
@@ -233,8 +233,8 @@ function handleAuthChange() {
   loadCartCount()
 }
 
-function handleFavoritesUpdate() {
-  favorites.value = getCurrentFavorites()
+async function handleFavoritesUpdate() {
+  favorites.value = await getFavoritesWithProducts()
 }
 
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============
