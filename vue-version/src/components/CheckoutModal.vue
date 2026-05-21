@@ -460,9 +460,9 @@ function getItemsWord(count: number): string {
 /**
  * Открывает модальное окно
  */
-function open(): void {
+async function open(): Promise<void> {
   // Загружаем актуальную корзину
-  loadCart()
+  await loadCart()
 
   // Проверяем, что корзина не пуста
   if (cartItems.value.length === 0) {
