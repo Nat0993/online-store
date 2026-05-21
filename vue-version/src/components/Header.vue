@@ -233,6 +233,7 @@ async function loadFavoritesCount () {
 function handleAuthChange() {
   user.value = getCurrentUser()
   loadCartCount()
+  loadFavoritesCount()
 }
 
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============
