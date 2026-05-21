@@ -4,6 +4,8 @@ import { fetchCategoriesFromApi, fetchCategoryByIdFromApi } from "./api/categori
 import { registerUserApi, loginUserApi, getCurrentUserApi, updateCurrentUserApi } from "./api/auth";
 import { fetchCartFromApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi } from './api/cart';
 import {fetchFavoritesApi, addToFavoritesApi, removeFromFavoritesApi } from "./api/favorites";
+import { addOrderApi, addGuestOrderApi, fetchOrdersApi } from './api/orders';
+
 import type {
     Product,
     Category,
@@ -398,69 +400,59 @@ export const getFavoritesWithProducts = async (): Promise<FavoriteItem[]> => {
     }
 };
 
-// Заказы
+// ============ ЗАКАЗЫ ============
 
 /**
- * Генерирует уникальный номер заказа
+ * Генерирует уникальный номер заказа (только для фронта)
  * @returns {string} номер заказа в формате "ORD-XXXXXXXX"
  */
-export function generateOrderNumber(): string {
-    const timestamp = Date.now().toString();
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `ORD-${timestamp.slice(-8)}-${random}`;
-}
+//генерация теперь на сервере
 
 /**
- * Добавляет новый заказ
- * @param {Object} orderData - данные заказа
- * @returns {Object} созданный заказ с номером
+ * Создаёт новый заказ
+ * @param {OrderData} orderData - данные заказа (без id, orderNumber, createdAt)
+ * @returns {Promise<Order>} созданный заказ
  */
-export const addOrder = (orderData: OrderData): Order => {
+export const addOrder = async (orderData: OrderData): Promise<Order> => {
     const user = getCurrentUser();
-    const key = user ? `orders_${user.id}` : 'orders_guest';
-
-    const orders = getCurrentOrders();
-
-    const orderNumber = generateOrderNumber();
-    const order = {
-        ...orderData,
-        id: generateId('order'),
-        orderNumber: orderNumber,
-        createdAt: new Date().toISOString(),
-        userId: user?.id || null,
-        isGuest: !user
-    };
-
-    orders.push(order);
-    saveToLocalStorage<Order[]>(key as StorageKey, orders);
-
-    console.log('Заказ сохранен:', { key, order });
-    return order;
+    
+    if (user) {
+        // Авторизованный пользователь
+        return await addOrderApi(orderData);
+    } else {
+        // Гость
+        return await addGuestOrderApi(orderData);
+    }
 };
 
 /**
- * Получает заказы текущего пользователя/гостя
- * (для истории заказов)
- * @returns {Array} массив заказов
+ * Получает заказы текущего пользователя (только для авторизованных)
+ * @returns {Promise<Order[]>} массив заказов
  */
-export const getCurrentOrders = (): Order[] => {
+export const getCurrentUserOrders  = async (): Promise<Order[]> => {
     const user = getCurrentUser();
-    const key = user ? `orders_${user.id}` : 'orders_guest';
-    return loadFromLocalStorage<Order[]>(key as StorageKey) || [];
+    
+    if (user) {
+        // Авторизованный — получаем через API
+        return await fetchOrdersApi();
+    } else {
+        // Гость не видит историю заказов
+        return [];
+    }
 };
 
 /**
- * Находит заказ по номеру
+ * Получает заказ по номеру (только для авторизованных)
  * @param {string} orderNumber - номер заказа
- * @returns {Object|null} заказ или null
+ * @returns {Promise<Order | null>} заказ или null
  */
-export const getOrderByNumber = (orderNumber: string): Order | null => {
-    const orders = getCurrentOrders();
+export const getOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
+    const orders = await getCurrentUserOrders();
     return orders.find(order => order.orderNumber === orderNumber) || null;
 };
 
 
-// Хранение данных
+// ============ ХРАНЕНИЕ ДАННЫХ ============
 
 /**
  * Определяет, какое хранилище использовать для текуш пользователя 
