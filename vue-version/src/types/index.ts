@@ -1,6 +1,6 @@
-
-
-//Интерфейсы
+// ============================================
+// Интерфейсы
+// ============================================
 
 //Товар
 export interface Product {
@@ -111,7 +111,9 @@ export interface SocialLink {
     label: string;
 }
 
-// API types (ответы от бэкенда)
+// ============================================
+// API types (ответы от бэкенда) — заказы
+// ============================================
 
 //товары
 export interface ApiProduct {
@@ -157,8 +159,42 @@ export interface ApiFavoriteItem {
     description: string;
 }
 
+// товар в заказе
+export interface ApiOrderItem {
+    id: string;
+    order_id: string;
+    product_id: string;
+    product_name: string;
+    quantity: number;
+    price: number;
+    image: string | null;
+}
 
-//Типы
+// заказ 
+export interface ApiOrder {
+    id: string;
+    order_number: string;
+    customer_last_name: string;
+    customer_first_name: string;
+    customer_middle_name: string | null;
+    customer_phone: string;
+    customer_email: string;
+    customer_address: string;
+    customer_comment: string | null;
+    payment_method: string;
+    subtotal: number;
+    delivery: number;
+    total: number;
+    created_at: string;
+    user_id: string | null;
+    is_guest: boolean;
+    items: ApiOrderItem[];
+}
+
+
+// ============================================
+// Типы
+// ============================================
 
 //Способ оплаты 
 export type PaymentMethod = 'card' | 'cash' | 'card_courier';

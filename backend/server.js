@@ -691,10 +691,10 @@ app.post('/api/favorites', authenticateToken, async (req, res) => {
         const userId = req.user.userId;
         const { productId } = req.body;
 
-        if(!productId) {
+        if (!productId) {
             res.status(400).json({ message: 'productId обязателен' })
         }
-        
+
         // проверяем, есть ли товар в БД
         const [product] = await db.execute(
             'SELECT id FROM products WHERE id = ?',
@@ -727,12 +727,12 @@ app.post('/api/favorites', authenticateToken, async (req, res) => {
         res.json(favorites);
     } catch (error) {
         console.error('Ошибка добавления в избранное:', error);
-        
+
         // Обработка дубликата (UNIQUE KEY)
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ message: 'Товар уже в избранном' });
         }
-        
+
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 })
@@ -764,7 +764,173 @@ app.delete('/api/favorites/:productId', authenticateToken, async (req, res) => {
         console.error('Ошибка удаления из избранного:', error);
         res.status(500).json({ message: 'Ошибка сервера' });
     }
-})
+});
+
+// ============================================================
+// МАРШРУТЫ ДЛЯ ЗАКАЗОВ
+// ============================================================
+
+//создать заказ (авторизованный пользователь)
+app.post('/api/orders', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const orderData = req.body;
+
+        // генерируем id заказа на сервере
+        const orderId = `order_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+
+        // генерируем номер заказа на сервере
+        const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+        await db.execute(
+            `INSERT INTO orders 
+             (id, order_number, user_id, customer_last_name, customer_first_name, 
+              customer_middle_name, customer_phone, customer_email, customer_address, 
+              customer_comment, payment_method, subtotal, delivery, total, is_guest)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                orderId, orderNumber, userId,
+                orderData.customer.lastName, orderData.customer.firstName,
+                orderData.customer.middleName || null, orderData.customer.phone,
+                orderData.customer.email, orderData.customer.address,
+                orderData.customer.comment || null, orderData.payment,
+                orderData.subtotal, orderData.delivery, orderData.total,
+                false
+            ]
+        );
+
+        for (const item of orderData.items) {
+            const itemId = `order_item_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+            await db.execute(
+                `INSERT INTO order_items 
+                 (id, order_id, product_id, product_name, quantity, price, image)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [itemId, orderId, item.productId, item.productName, item.quantity, item.price, item.image || null]
+            );
+        }
+
+        res.status(201).json({
+            id: orderId,
+            order_number: orderNumber,
+            ...orderData,
+            createdAt: new Date().toISOString(),
+            userId: userId,
+            isGuest: false
+        });
+    } catch (error) {
+        console.error('Ошибка создания заказа:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+//создать заказ (гость)
+app.post('/api/orders/guest', async (req, res) => {
+    try {
+        const orderData = req.body;
+
+        // генерируем id заказа на сервере
+        const orderId = `order_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+
+        // генерируем номер заказа на сервере
+        const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+        await db.execute(
+            `INSERT INTO orders 
+             (id, order_number, user_id, customer_last_name, customer_first_name, 
+              customer_middle_name, customer_phone, customer_email, customer_address, 
+              customer_comment, payment_method, subtotal, delivery, total, is_guest)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                orderId, orderNumber, null,
+                orderData.customer.lastName, orderData.customer.firstName,
+                orderData.customer.middleName || null, orderData.customer.phone,
+                orderData.customer.email, orderData.customer.address,
+                orderData.customer.comment || null, orderData.payment,
+                orderData.subtotal, orderData.delivery, orderData.total,
+                true
+            ]
+        );
+
+        for (const item of orderData.items) {
+            const itemId = `order_item_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+            await db.execute(
+                `INSERT INTO order_items 
+                 (id, order_id, product_id, product_name, quantity, price, image)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [itemId, orderId, item.productId, item.productName, item.quantity, item.price, item.image || null]
+            );
+        }
+
+        res.status(201).json({
+            id: orderId,
+            order_number: orderNumber,
+            ...orderData,
+            createdAt: new Date().toISOString(),
+            userId: null,
+            isGuest: true
+        });
+    } catch (error) {
+        console.error('Ошибка создания заказа для гостя:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+//получить заказы авторизованного пользователя
+app.get('/api/orders', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        //получаем все заказы пользователя из БД
+        const [orders] = await db.execute(
+            `SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC`,
+            [userId]
+        );
+
+        //для каждого заказа получаем его товары
+        const ordersWithItems = await Promise.all(
+            orders.map(async (order) => {
+                const [items] = await db.execute(
+                    `SELECT * FROM order_items WHERE order_id = ?`,
+                    [order.id]
+                );
+
+                return {
+                    id: order.id,
+                    order_number: order.order_number,
+                    customer_last_name: order.customer_last_name,
+                    customer_first_name: order.customer_first_name,
+                    customer_middle_name: order.customer_middle_name,
+                    customer_phone: order.customer_phone,
+                    customer_email: order.customer_email,
+                    customer_address: order.customer_address,
+                    customer_comment: order.customer_comment,
+                    payment_method: order.payment_method,
+                    subtotal: Number(order.subtotal),
+                    delivery: Number(order.delivery),
+                    total: Number(order.total),
+                    created_at: order.created_at,
+                    user_id: order.user_id,
+                    is_guest: order.is_guest === 1,
+                    items: items.map(item => ({
+                        id: item.id,
+                        order_id: item.order_id,
+                        product_id: item.product_id,
+                        product_name: item.product_name,
+                        quantity: item.quantity,
+                        price: Number(item.price),
+                        image: item.image
+                    }))
+                };
+            })
+        );
+
+        // отправляем данные на фронт
+        res.json(ordersWithItems);
+    } catch (error) {
+        console.error('Ошибка получения заказов:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
 
 // ============================================================
 // ЗАПУСК СЕРВЕРА
