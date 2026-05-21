@@ -13,19 +13,14 @@ import cors from 'cors';
 //библиотека для работы с MySQL
 import mysql from 'mysql2/promise';
 
-//библиотека для чтения переменных из файла .env
-import dotenv from 'dotenv';
+//загрузка переменных окружения из .env (срабатывает сразу при импорте)
+import 'dotenv/config';
 
 //библиотека для хеширования паролей
 import bcrypt from 'bcryptjs';
 
 //библиотека для создания JWT-токенов
 import jwt from 'jsonwebtoken';
-
-// ============================================================
-// Загружаем переменные из .env
-// ============================================================
-dotenv.config();
 
 // ============================================================
 // Добавляем секретный ключ
@@ -91,7 +86,7 @@ const authenticateToken = async (req, res, next) => {
 
         // Проверяем (расшифровываем) токен с помощью секретного ключа
         // jwt.verify - проверяет, что токен не подделан и не просрочен
-        const user = await jwt.verify(token, process.env.JWT_SECRET); //данные, которые идут в токен при логине/регистрации
+        const user = jwt.verify(token, process.env.JWT_SECRET); //данные, которые идут в токен при логине/регистрации
         req.user = user;
         next();
     } catch (error) {
