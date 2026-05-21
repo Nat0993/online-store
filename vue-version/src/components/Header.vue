@@ -121,9 +121,8 @@ const MAX_NAME_LENGTH = 15;
 const isMenuOpen = ref(false)
 
 const user = ref<User | null>(null)
-const cartItems = ref<CartItemWithProduct[]>([])
 const cartTotalItems = ref(0)
-const favorites = ref<FavoriteItem[]>([])
+const favoritesCount = ref(0)
 
 const authModalRef = ref<InstanceType<typeof AuthModal> | null>(null)
 // ============ ВЫЧИСЛЕНИЯ ============
@@ -156,9 +155,6 @@ const formattedCartCount = computed(() => {
   const count = cartTotalItems.value
   return count > 99 ? '99+' : count.toString()
 })
-
-// Количество избранных товаров
-const favoritesCount = computed(() => favorites.value.length)
 
 // Форматируем для отображения
 const formattedFavoritesCount = computed(() => {
@@ -228,13 +224,15 @@ async function loadCartCount() {
   }
 }
 
+//счетчик избранного
+async function loadFavoritesCount () {
+  const favorites = await getFavoritesWithProducts();
+  favoritesCount.value = favorites.length;
+}
+
 function handleAuthChange() {
   user.value = getCurrentUser()
   loadCartCount()
-}
-
-async function handleFavoritesUpdate() {
-  favorites.value = await getFavoritesWithProducts()
 }
 
 // ============ ЖИЗНЕННЫЙ ЦИКЛ ============
@@ -243,11 +241,12 @@ onMounted(() => {
   // 1. Загружаем начальные данные
   user.value = getCurrentUser()
   loadCartCount()
+  loadFavoritesCount()
 
   // 2. Подписываемся на события
   window.addEventListener('auth:change', handleAuthChange)
   window.addEventListener('cart:update', loadCartCount)
-  window.addEventListener('favorites:update', handleFavoritesUpdate)
+  window.addEventListener('favorites:update', loadFavoritesCount)
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -255,7 +254,7 @@ onUnmounted(() => {
   // 3. Отписываемся при удалении компонента
   window.removeEventListener('auth:change', handleAuthChange)
   window.removeEventListener('cart:update', loadCartCount)
-  window.removeEventListener('favorites:update', handleFavoritesUpdate)
+  window.removeEventListener('favorites:update', loadFavoritesCount)
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
