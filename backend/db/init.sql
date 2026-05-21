@@ -72,6 +72,43 @@ CREATE TABLE IF NOT EXISTS favorites (
 );
 
 -- ============================================
+-- Таблица: orders (заказы)
+-- ============================================
+CREATE TABLE IF NOT EXISTS orders (
+    id VARCHAR(50) PRIMARY KEY,
+    order_number VARCHAR(50) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NULL,
+    customer_last_name VARCHAR(100),
+    customer_first_name VARCHAR(100),
+    customer_middle_name VARCHAR(100),
+    customer_phone VARCHAR(20),
+    customer_email VARCHAR(255),
+    customer_address TEXT,
+    customer_comment TEXT,
+    payment_method VARCHAR(50),
+    subtotal DECIMAL(10,2),
+    delivery DECIMAL(10,2),
+    total DECIMAL(10,2),
+    is_guest BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- ============================================
+-- Таблица: order_items (товары в заказе)
+-- ============================================
+CREATE TABLE IF NOT EXISTS order_items (
+    id VARCHAR(50) PRIMARY KEY,
+    order_id VARCHAR(50) NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+    product_name VARCHAR(255),
+    quantity INT NOT NULL,
+    price DECIMAL(10,2),
+    image VARCHAR(500),
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
+
+-- ============================================
 -- Записываем данные: categories
 -- ============================================
 INSERT INTO categories (id, name, image, description) VALUES 
