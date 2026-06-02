@@ -108,6 +108,14 @@ app.post('/api/auth/register', async (req, res) => {
         // req.body - это объект, который Express собрал из JSON-запроса
         const { email, password, firstName, lastName, middleName, phone } = req.body;
 
+        // Простые проверки
+        if (!email || !email.includes('@')) {
+            return res.status(400).json({ message: 'Некорректный email' });
+        }
+        if (!password || password.length < 6) {
+            return res.status(400).json({ message: 'Пароль должен быть минимум 6 символов' });
+        }
+
         // Проверяем, есть ли уже пользователь с таким email в БД
         // [existing] - деструктуризация (первый элемент массива)
         const [existing] = await db.execute(
