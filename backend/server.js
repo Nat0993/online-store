@@ -936,6 +936,96 @@ app.get('/api/orders', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// МИГРАЦИЯ ГОСТЕВЫХ ДАННЫХ
+// ============================================================
+
+// 1. Миграция корзины и избранного
+app.post('/api/migrate/guest-data', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { email, cart, favorites } = req.body;
+
+        if (!userId || !email) {
+            return res.status(400).json({ message: 'userId и email обязательны' });
+        }
+
+        // ===== МИГРАЦИЯ КОРЗИНЫ =====
+        for (const guestItem of cart) {
+            const [existing] = await db.execute(
+                `SELECT id, quantity FROM cart_items 
+                 WHERE user_id = ? AND product_id = ?`,
+                [userId, guestItem.productId]
+            );
+
+            if (existing.length > 0) {
+                const newQuantity = existing[0].quantity + guestItem.quantity;
+                await db.execute(
+                    `UPDATE cart_items SET quantity = ? WHERE id = ?`,
+                    [newQuantity, existing[0].id]
+                );
+            } else {
+                const cartItemId = `cart_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+                await db.execute(
+                    `INSERT INTO cart_items (id, user_id, product_id, quantity, created_at)
+                     VALUES (?, ?, ?, ?, NOW())`,
+                    [cartItemId, userId, guestItem.productId, guestItem.quantity]
+                );
+            }
+        }
+
+        // ===== МИГРАЦИЯ ИЗБРАННОГО =====
+        for (const guestFav of favorites) {
+            const [existing] = await db.execute(
+                `SELECT id FROM favorites WHERE user_id = ? AND product_id = ?`,
+                [userId, guestFav.productId]
+            );
+
+            if (existing.length === 0) {
+                const favId = `fav_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+                await db.execute(
+                    `INSERT INTO favorites (id, user_id, product_id, created_at)
+                     VALUES (?, ?, ?, NOW())`,
+                    [favId, userId, guestFav.productId]
+                );
+            }
+        }
+
+        res.json({ message: 'Миграция завершена' });
+
+    } catch (error) {
+        console.error('Ошибка миграции:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// 2. Привязка заказов по email
+app.post('/api/auth/link-orders-by-email', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email обязателен' });
+        }
+
+        const [result] = await db.execute(
+            `UPDATE orders 
+             SET user_id = ?, is_guest = FALSE 
+             WHERE user_id IS NULL AND customer_email = ?`,
+            [userId, email]
+        );
+
+        res.json({ 
+            message: 'Заказы привязаны',
+            count: result.affectedRows //количество мигрированных заказов
+        });
+    } catch (error) {
+        console.error('Ошибка привязки заказов:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// ============================================================
 // ЗАПУСК СЕРВЕРА
 // ============================================================
 
