@@ -5,6 +5,7 @@ import { registerUserApi, loginUserApi, getCurrentUserApi, updateCurrentUserApi 
 import { fetchCartFromApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi } from './api/cart';
 import { fetchFavoritesApi, addToFavoritesApi, removeFromFavoritesApi } from "./api/favorites";
 import { addOrderApi, addGuestOrderApi, fetchOrdersApi } from './api/orders';
+import { migrateGuestDataApi, linkOrdersByEmailApi } from './api/migration';
 
 import type {
     Product,
@@ -16,15 +17,6 @@ import type {
 } from './types/index';
 
 import type { CartItemWithProduct, OrderData, UserData } from './types/index';
-
-type StorageKey =
-    | `cart_${string}`
-    | `favorites_${string}`
-    | `orders_${string}`
-    | 'currentUser'
-    | 'cart_guest'
-    | 'favorites_guest'
-    | 'orders_guest';
 
 
 /**
@@ -517,50 +509,6 @@ export const getOrderByNumber = async (orderNumber: string): Promise<Order | nul
 };
 
 
-// ============ ХРАНЕНИЕ ДАННЫХ ============
-
-/**
- * Определяет, какое хранилище использовать для текуш пользователя 
- */
-function getCurrentStorage(): Storage {
-    return getCurrentUser() ? localStorage : sessionStorage;
-}
-
-/**
- * Сохраняет данные в правильное хранилище
- * @param {string} key - ключ
- * @param {any} data - данные
- */
-const saveToLocalStorage = <T>(key: StorageKey, data: T): void => {
-    try {
-
-        // Для остальных данных - в зависимости от пользователя
-        const storage = getCurrentStorage();
-        storage.setItem(key, JSON.stringify(data));
-        console.log(`Данные сохранены в ${storage === localStorage ? 'localStorage' : 'sessionStorage'}: ${key}`);
-    } catch (error) {
-        console.error(`Ошибка сохранения в ${key}:`, error);
-    }
-};
-
-/**
- * Загружает данные из нужного хранилища
- * @param {string} key - ключ
- * @returns {any} данные или null
- */
-function loadFromLocalStorage<T>(key: StorageKey): T | null {
-    try {
-
-        // Для остальных данных - в зависимости от пользователя
-        const storage = getCurrentStorage();
-        const data = storage.getItem(key);
-        return data ? JSON.parse(data) as T : null;
-    } catch (error) {
-        console.error(`Ошибка загрузки из ${key}:`, error);
-        return null;
-    }
-};
-
 // Пользователи
 
 /**
@@ -580,7 +528,8 @@ export const registerUser = async (userData: UserData): Promise<User | null> => 
     setCurrentUser(user);
 
     // 4. Мигрируем гостевые данные
-    // migrateGuestToUser(user.id);
+    await migrateGuestToUser(user.email);
+    await linkOrdersByEmail(user.email);
 
     //5. Отправляем событие
     window.dispatchEvent(new CustomEvent('auth:change', {
@@ -603,7 +552,9 @@ export const loginUser = async (email: string, password: string): Promise<User |
 
     localStorage.setItem('auth_token', token);
     setCurrentUser(user);
-    // migrateGuestToUser(user.id);
+    
+    await migrateGuestToUser(user.email);
+    await linkOrdersByEmail(user.email);
 
     window.dispatchEvent(new CustomEvent('auth:change', {
         detail: { user, type: 'register' }
@@ -612,114 +563,60 @@ export const loginUser = async (email: string, password: string): Promise<User |
 };
 
 /**
- * Мигрирует гостевые данные в пользовательские (в рамках одной сессии)
- * @param {string} userId - ID пользователя
+ * Мигрирует гостевые данные в пользовательские 
+ * @param {string} email - Email пользователя
  */
-//TODO: сделать миграцию из гостевых в БД
-export function migrateGuestToUser(userId: string): void {
-    console.log(`Миграция гостевых данных для пользователя ${userId}`);
+export async function migrateGuestToUser(email: string): Promise<void> {
+    // получаем гостевые данные
+    const guestCart = getGuestCart();
+    const guestFavorites = getGuestFavorites();
 
-    // Мигрируем корзину
-    const guestCart = sessionStorage.getItem('cart_guest');
-    if (guestCart) {
-        try {
-            const guestCartData: CartItem[] = JSON.parse(guestCart);
-            const userCartKey = `cart_${userId}`;
-            const userCartData = loadFromLocalStorage<CartItem[]>(userCartKey as StorageKey) || [];
-
-            if (guestCartData.length > 0) {
-                const mergedCart = mergeCartData(userCartData, guestCartData);
-                localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
-                sessionStorage.removeItem('cart_guest');
-                console.log(`Мигрировано ${guestCartData.length} товаров в корзине`);
-            }
-        } catch (error) {
-            console.error('Ошибка миграции корзины:', error);
-        }
+    // если данных нет — выходим
+    if (guestCart.length === 0 && guestFavorites.length === 0) {
+        console.log('Нет гостевых данных для миграции');
+        return;
     }
 
-    // Мигрируем избранное
-    const guestFavorites = sessionStorage.getItem('favorites_guest');
-    if (guestFavorites) {
-        try {
-            const guestFavData: FavoriteItem[] = JSON.parse(guestFavorites);
-            const userFavKey = `favorites_${userId}`;
-            const userFavData = loadFromLocalStorage<FavoriteItem[]>(userFavKey as StorageKey) || [];
+    try {
+        await migrateGuestDataApi(
+            email,
+            guestCart.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity
+            })),
+            guestFavorites.map(item => ({
+                productId: item.productId
+            }))
+        );
 
-            if (guestFavData.length > 0) {
-                const mergedFav = mergeFavoritesData(userFavData, guestFavData);
-                localStorage.setItem(userFavKey, JSON.stringify(mergedFav));
-                sessionStorage.removeItem('favorites_guest');
-                console.log(`Мигрировано ${guestFavData.length} избранных товаров`);
-            }
-        } catch (error) {
-            console.error('Ошибка миграции избранного:', error);
-        }
-    }
-
-    // Мигрируем заказы
-    const guestOrders = sessionStorage.getItem('orders_guest');
-    if (guestOrders) {
-        try {
-            const guestOrdersData: Order[] = JSON.parse(guestOrders);
-            const userOrdersKey = `orders_${userId}`;
-            const userOrdersData = loadFromLocalStorage<Order[]>(userOrdersKey as StorageKey) || [];
-
-            if (guestOrdersData.length > 0) {
-                const mergedOrders = [...guestOrdersData, ...userOrdersData];
-                localStorage.setItem(userOrdersKey, JSON.stringify(mergedOrders));
-                sessionStorage.removeItem('orders_guest');
-                console.log(`Мигрировано ${guestOrdersData.length} заказов`);
-            }
-        } catch (error) {
-            console.error('Ошибка миграции заказов:', error);
-        }
+        // Очищаем гостевые данные
+        sessionStorage.removeItem('cart_guest');
+        sessionStorage.removeItem('favorites_guest');
+        
+        console.log('Миграция успешно завершена');
+        
+        // Уведомляем компоненты об обновлении
+        window.dispatchEvent(new CustomEvent('cart:update'));
+        window.dispatchEvent(new CustomEvent('favorites:update'));
+        
+    } catch (error) {
+        console.error('Ошибка миграции гостевых данных:', error);
     }
 }
 
 /**
- * Объединяет данные корзины
+ * Привязывает заказы гостя по email (после регистрации/входа)
+ * @param {string} email - Email пользователя
  */
-function mergeCartData(userCart: CartItem[], guestCart: CartItem[]): CartItem[] {
-    const merged = [...userCart];
-    const productMap = new Map<string, CartItem>();
-
-    // Создаем карту пользовательской корзины для быстрого доступа
-    userCart.forEach(item => {
-        if (item && item.productId) {
-            productMap.set(item.productId, item);
-        }
-    });
-
-    // Добавляем гостевые товары
-    guestCart.forEach(guestItem => {
-        if (!guestItem || !guestItem.productId) return;
-
-        const existingItem = productMap.get(guestItem.productId);
-
-        if (existingItem) {
-            // Если товар уже есть - увеличиваем количество
-            existingItem.quantity += guestItem.quantity;
-        } else {
-            // Если товара нет - добавляем
-            merged.push(guestItem);
-            productMap.set(guestItem.productId, guestItem);
-        }
-    });
-
-    return merged;
-}
-
-/**
- * Объединяет избранные товары
- */
-function mergeFavoritesData(userFavorites: FavoriteItem[], guestFavorites: FavoriteItem[]): FavoriteItem[] {
-    const productIds = new Set(userFavorites.map(fav => fav.productId));
-    const uniqueGuestFavorites = guestFavorites.filter(fav =>
-        !productIds.has(fav.productId)
-    );
-
-    return [...userFavorites, ...uniqueGuestFavorites];
+async function linkOrdersByEmail(email: string): Promise<void> {
+    try {
+        await linkOrdersByEmailApi(email);
+        console.log('Заказы привязаны');
+        // Уведомляем об обновлении заказов
+        window.dispatchEvent(new CustomEvent('orders:update'));
+    } catch (error) {
+        console.error('Ошибка привязки заказов:', error);
+    }
 }
 
 /**
